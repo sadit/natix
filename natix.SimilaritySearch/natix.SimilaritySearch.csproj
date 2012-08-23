@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{AD5B0C40-3664-4FEE-8AB2-D51F0EE6EDDB}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>natix.SimilaritySearch</RootNamespace>
+    <AssemblyName>natix.SimilaritySearch</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Commands.cs" />
+    <Compile Include="Dirty.cs" />
+    <Compile Include="QueryStream.cs" />
+    <Compile Include="Spaces\Sequences\StringLevenshteinSpace.cs" />
+    <Compile Include="Spaces\Sequences\StringSpace.cs" />
+    <Compile Include="Spaces\Sequences\StringLCSSpace.cs" />
+    <Compile Include="Spaces\Sequences\StringHammingSpace.cs" />
+    <Compile Include="Spaces\Sequences\StringJaccardSpace.cs" />
+    <Compile Include="Spaces\Sequences\StringDiceSpace.cs" />
+    <Compile Include="Spaces\Sequences\StringIntersectionSpace.cs" />
+    <Compile Include="Spaces\Sequences\StringPrefixLengthSpace.cs" />
+    <Compile Include="Spaces\Vectors\VectorSpace.cs" />
+    <Compile Include="Spaces\Vectors\DocumentSpace.cs" />
+    <Compile Include="Spaces\Bitmaps\BinH8Space.cs" />
+    <Compile Include="Spaces\Bitmaps\BinQ8HammingSpace.cs" />
+    <Compile Include="Spaces\Bitmaps\AudioSpace.cs" />
+    <Compile Include="Spaces\Bitmaps\AudioTimeDomainSpace.cs" />
+    <Compile Include="Spaces\Bitmaps\BinQGram.cs" />
+    <Compile Include="Spaces\Bitmaps\BinQ8JaccardSpace.cs" />
+    <Compile Include="Spaces\Bitmaps\BinQ8ORSpace.cs" />
+    <Compile Include="Spaces\Vectors\MinkowskiVectorSpace.cs" />
+    <Compile Include="Spaces\Vectors\CosineVectorSpace.cs" />
+    <Compile Include="Spaces\SampleSpace.cs" />
+    <Compile Include="Spaces\SpaceGenericIO.cs" />
+    <Compile Include="Result\ResultList.cs" />
+    <Compile Include="Result\IResult.cs" />
+    <Compile Include="Result\ResultPair.cs" />
+    <Compile Include="Result\ResultInfo.cs" />
+    <Compile Include="Result\Result.cs" />
+    <Compile Include="Result\ResultTies.cs" />
+    <Compile Include="Indexes\Index.cs" />
+    <Compile Include="Indexes\Sequential.cs" />
+    <Compile Include="Indexes\KNR\KnrSeqSearch.cs" />
+    <Compile Include="Indexes\KNR\KnrSeqSearchFootrule.cs" />
+    <Compile Include="Indexes\KNR\KnrSeqSearchJaccard.cs" />
+    <Compile Include="Indexes\KNR\KnrSeqSearchRelMatches.cs" />
+    <Compile Include="Indexes\KNR\KnrSeqSearchSpearmanRho.cs" />
+    <Compile Include="Indexes\LSH\LSC.cs" />
+    <Compile Include="Indexes\LSH\MCCLSC.cs" />
+    <Compile Include="Indexes\LSH\MLSC.cs" />
+    <Compile Include="Indexes\LC\LC_IRNN.cs" />
+    <Compile Include="Indexes\LC\LC_ParallelSearch.cs" />
+    <Compile Include="Indexes\LC\LC_PRNN.cs" />
+    <Compile Include="Indexes\LC\LC_RNN.cs" />
+    <Compile Include="Indexes\LC\PolyIndexLC.cs" />
+    <Compile Include="Indexes\LC\PolyIndexLC_Approx.cs" />
+    <Compile Include="Indexes\LSH\LSC_H1.cs" />
+    <Compile Include="Indexes\LSH\LSC_H8.cs" />
+    <Compile Include="Indexes\LSH\MLSC_H1.cs" />
+    <Compile Include="Indexes\LSH\MLSC_H8.cs" />
+    <Compile Include="Indexes\LSH\LSC_CyclicH8.cs" />
+    <Compile Include="Indexes\LSH\MLSC_CyclicH8.cs" />
+    <Compile Include="Indexes\LC\LC.cs" />
+    <Compile Include="Indexes\LC\LC_ParallelBuild.cs" />
+    <Compile Include="Indexes\IndexGenericIO.cs" />
+    <Compile Include="Spaces\NullSpace.cs" />
+    <Compile Include="Indexes\PI\BinPerms.cs" />
+    <Compile Include="Indexes\PI\BinPermsTwoBit.cs" />
+    <Compile Include="Indexes\PI\Perms.cs" />
+    <Compile Include="Indexes\BasicIndex.cs" />
+    <Compile Include="Indexes\KNR\CNAPP.cs" />
+    <Compile Include="Spaces\MetricDB.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\natix\natix.csproj">
+      <Project>{53075BDC-9E14-4DE2-A1E0-90E713317ED1}</Project>
+      <Name>natix</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Indexes\PI\" />
+  </ItemGroup>
+</Project>

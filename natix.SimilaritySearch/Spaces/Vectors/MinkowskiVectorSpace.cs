@@ -1,0 +1,69 @@
+//
+//   Copyright 2012 Eric Sadit Tellez <sadit@dep.fie.umich.mx>
+//
+//   Licensed under the Apache License, Version 2.0 (the "License");
+//   you may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+// 
+using System;
+using System.IO;
+using System.Collections;
+using System.Collections.Generic;
+
+namespace natix.SimilaritySearch
+{
+	/// <summary>
+	/// Vector space
+	/// </summary>
+	public class MinkowskiVectorSpace<T> : VectorSpace<T>
+	{
+		static INumeric<T> Num = (INumeric<T>)(natix.Numeric.Get (typeof(T)));
+
+		public override void Load (BinaryReader Input)
+		{
+			base.Load(Input);
+			this.P = Input.ReadInt32 ();
+		}
+
+		public override void Save(BinaryWriter Output)
+		{	
+			base.Save(Output);
+			Output.Write((int) this.P);
+		}
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		public MinkowskiVectorSpace () : base()
+		{
+		}
+
+		/// <summary>
+		/// Distance wrapper for any P-norm
+		/// </summary>
+		public override double Dist (object _a, object _b)
+		{
+			this.numdist++;
+			IList<T> a = (IList<T>) _a;
+			IList<T> b = (IList<T>) _b;
+			switch (this.P) {
+			case 1:
+				return Num.DistL1 (a, b);
+			case 2:
+				return Num.DistL2 (a, b);
+			case -1:
+				return Num.DistLInf (a, b);
+			default:
+				return Num.DistLP (a, b, this.P, true);
+			}
+		}
+	}
+}
