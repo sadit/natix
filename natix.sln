@@ -1,0 +1,70 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "natix", "natix\natix.csproj", "{53075BDC-9E14-4DE2-A1E0-90E713317ED1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "natix.InformationRetrieval", "natix.InformationRetrieval\natix.InformationRetrieval.csproj", "{581867C3-BD84-4D45-A90C-FF8F827F5517}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "natix.SimilaritySearch", "natix.SimilaritySearch\natix.SimilaritySearch.csproj", "{AD5B0C40-3664-4FEE-8AB2-D51F0EE6EDDB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CFTDB", "CFTDB\CFTDB.csproj", "{DE6A956E-F5FA-455A-B87D-7AC086DB52CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test-cftdb", "test-cftdb\test-cftdb.csproj", "{47B59581-7A0A-4B88-99F3-5BEEF36E26D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test-ir", "test-ir\test-ir.csproj", "{731053DF-956A-49D7-8652-8FF3FA532761}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test-simsearch", "test-simsearch\test-simsearch.csproj", "{523EF5EC-3A5D-4FD6-B682-9B1BA6150601}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{47B59581-7A0A-4B88-99F3-5BEEF36E26D5}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{47B59581-7A0A-4B88-99F3-5BEEF36E26D5}.Debug|Any CPU.Build.0 = Debug|x86
+		{47B59581-7A0A-4B88-99F3-5BEEF36E26D5}.Debug|x86.ActiveCfg = Debug|x86
+		{47B59581-7A0A-4B88-99F3-5BEEF36E26D5}.Debug|x86.Build.0 = Debug|x86
+		{47B59581-7A0A-4B88-99F3-5BEEF36E26D5}.Release|Any CPU.ActiveCfg = Release|x86
+		{47B59581-7A0A-4B88-99F3-5BEEF36E26D5}.Release|Any CPU.Build.0 = Release|x86
+		{47B59581-7A0A-4B88-99F3-5BEEF36E26D5}.Release|x86.ActiveCfg = Release|x86
+		{47B59581-7A0A-4B88-99F3-5BEEF36E26D5}.Release|x86.Build.0 = Release|x86
+		{523EF5EC-3A5D-4FD6-B682-9B1BA6150601}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{523EF5EC-3A5D-4FD6-B682-9B1BA6150601}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{523EF5EC-3A5D-4FD6-B682-9B1BA6150601}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{523EF5EC-3A5D-4FD6-B682-9B1BA6150601}.Debug|x86.Build.0 = Debug|Any CPU
+		{523EF5EC-3A5D-4FD6-B682-9B1BA6150601}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{523EF5EC-3A5D-4FD6-B682-9B1BA6150601}.Release|Any CPU.Build.0 = Release|Any CPU
+		{523EF5EC-3A5D-4FD6-B682-9B1BA6150601}.Release|x86.ActiveCfg = Release|Any CPU
+		{523EF5EC-3A5D-4FD6-B682-9B1BA6150601}.Release|x86.Build.0 = Release|Any CPU
+		{53075BDC-9E14-4DE2-A1E0-90E713317ED1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53075BDC-9E14-4DE2-A1E0-90E713317ED1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53075BDC-9E14-4DE2-A1E0-90E713317ED1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53075BDC-9E14-4DE2-A1E0-90E713317ED1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{581867C3-BD84-4D45-A90C-FF8F827F5517}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{581867C3-BD84-4D45-A90C-FF8F827F5517}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{581867C3-BD84-4D45-A90C-FF8F827F5517}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{581867C3-BD84-4D45-A90C-FF8F827F5517}.Release|Any CPU.Build.0 = Release|Any CPU
+		{731053DF-956A-49D7-8652-8FF3FA532761}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{731053DF-956A-49D7-8652-8FF3FA532761}.Debug|Any CPU.Build.0 = Debug|x86
+		{731053DF-956A-49D7-8652-8FF3FA532761}.Debug|x86.ActiveCfg = Debug|x86
+		{731053DF-956A-49D7-8652-8FF3FA532761}.Debug|x86.Build.0 = Debug|x86
+		{731053DF-956A-49D7-8652-8FF3FA532761}.Release|Any CPU.ActiveCfg = Release|x86
+		{731053DF-956A-49D7-8652-8FF3FA532761}.Release|Any CPU.Build.0 = Release|x86
+		{731053DF-956A-49D7-8652-8FF3FA532761}.Release|x86.ActiveCfg = Release|x86
+		{731053DF-956A-49D7-8652-8FF3FA532761}.Release|x86.Build.0 = Release|x86
+		{AD5B0C40-3664-4FEE-8AB2-D51F0EE6EDDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD5B0C40-3664-4FEE-8AB2-D51F0EE6EDDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD5B0C40-3664-4FEE-8AB2-D51F0EE6EDDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD5B0C40-3664-4FEE-8AB2-D51F0EE6EDDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE6A956E-F5FA-455A-B87D-7AC086DB52CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE6A956E-F5FA-455A-B87D-7AC086DB52CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE6A956E-F5FA-455A-B87D-7AC086DB52CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE6A956E-F5FA-455A-B87D-7AC086DB52CD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = natix\natix.csproj
+	EndGlobalSection
+EndGlobal
