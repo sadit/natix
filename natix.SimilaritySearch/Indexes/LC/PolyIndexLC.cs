@@ -27,43 +27,50 @@ namespace natix.SimilaritySearch
 {
 	public class PolyIndexLC : BasicIndex
 	{
-		protected IList<LC_RNN> lc_list;
-		protected IUnionIntersection ui_alg;
-		
+		public IList<LC_RNN> LC_LIST;
+		public IUnionIntersection UI_ALG;
+
 		public PolyIndexLC ()
 		{
 		}
 		
 		public IList<LC_RNN> GetIndexList ()
 		{
-			return this.lc_list;
+			return this.LC_LIST;
 		}
-				
-		public  void Build (string[] indexlist)
+
+		public void Build (IList<LC_RNN> indexlist, int max_instances=int.MaxValue)
 		{
-			this.lc_list = new List<LC_RNN> (indexlist.Length);
-			foreach (var name in indexlist) {
-				this.lc_list.Add((LC_RNN)IndexGenericIO.Load(name));
+			this.LC_LIST = new List<LC_RNN> ();
+			max_instances = Math.Min(max_instances, indexlist.Count);
+			for (int i = 0; i < max_instances; ++i) {
+				this.LC_LIST.Add(indexlist[i]);
 			}
 		}
 
-		public override void Save (BinaryWriter Output)
-		{
-			base.Save(Output);
-			Output.Write((int) this.lc_list.Count);
-			for (int i = 0; i < this.lc_list.Count; ++i) {
-				IndexGenericIO.Save(Output, this.lc_list[i]);
+		public override MetricDB DB {
+			get {
+				return this.LC_LIST[0].DB;
+			}
+			set {
 			}
 		}
+		public override void Save (BinaryWriter Output)
+		{
+			Output.Write((int) this.LC_LIST.Count);
+			for (int i = 0; i < this.LC_LIST.Count; ++i) {
+				IndexGenericIO.Save(Output, this.LC_LIST[i]);
+			}
+		}
+
 		public override void Load (BinaryReader Input)
 		{
-			base.Load (Input);
-			this.ui_alg = new FastUIArray8 (this.DB.Count);
 			var count = Input.ReadInt32 ();
-			this.lc_list = new LC_RNN [count];
+			this.LC_LIST = new LC_RNN [count];
 			for (int i = 0; i < count; ++i) {
-				this.lc_list[i] = (LC_RNN)IndexGenericIO.Load(Input);
+				this.LC_LIST[i] = (LC_RNN)IndexGenericIO.Load(Input);
 			}
+			this.UI_ALG = new FastUIArray8 (this.DB.Count);
 		}
 
 		public override IResult SearchRange (object q, double radius)
@@ -71,11 +78,11 @@ namespace natix.SimilaritySearch
 			IList<IList<IRankSelect>> M = new List<IList<IRankSelect>> ();
 			IResult R = this.DB.CreateResult (this.DB.Count, false);
 			var cache = new Dictionary<int,double> ();
-			foreach (var I in this.lc_list) {
+			foreach (var I in this.LC_LIST) {
 				var L = I.PartialSearchRange (q, radius, R, cache);
 				M.Add (L);
 			}
-			var C = this.ui_alg.ComputeUI (M);
+			var C = this.UI_ALG.ComputeUI (M);
 			foreach (int docid in C) {
 				var dist = this.DB.Dist (q, this.DB [docid]);
 				if (dist <= radius) {
@@ -84,13 +91,13 @@ namespace natix.SimilaritySearch
 			}
 			return R;
 		}
-		
+
 		public override IResult SearchKNN (object q, int K, IResult R)
 		{
 			byte[] A = new byte[ this.DB.Count ];
 			var queue = new Queue<IEnumerator<IRankSelect>> ();
 			var cache = new Dictionary<int,double> ();
-			foreach (var I in this.lc_list) {
+			foreach (var I in this.LC_LIST) {
 				var L = I.PartialSearchKNN (q, K, R, cache).GetEnumerator ();
 				if (L.MoveNext ()) {				
 					queue.Enqueue (L);

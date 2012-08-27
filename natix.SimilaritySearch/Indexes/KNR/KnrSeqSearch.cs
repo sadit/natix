@@ -28,16 +28,40 @@ namespace natix.SimilaritySearch
 		public Index R;
 		public IRankSelectSeq SEQ;
 
+		public KnrSeqSearch GetSortedByPrefix (SequenceBuilder seq_builder = null, PermutationBuilder perm_builder = null)
+		{
+			int n = this.DB.Count;
+			var seqs = new IList<int>[n];
+			var perm = new int[n];
+			for (int i = 0; i < n; ++i) {
+				seqs [i] = this.GetStoredKnr (i);
+				perm [i] = i;
+			}
+			// please speed up this method using another sorting method
+			// Sorting.Sort<int> (perm, (x,y) => StringSpace<int>.LexicographicCompare (seqs [x], seqs [y]));
+			Sorting.Sort<IList<int>,int> (seqs, perm, (x,y) => StringSpace<int>.LexicographicCompare (x, y));
+			var S = new ListGen<int> ((int i) => seqs [i / this.K] [i % this.K], n * this.K);
+			if (perm_builder == null) {
+				perm_builder = PermutationBuilders.GetSuccCyclicPerms (24);
+			}
+			if (seq_builder == null) {
+				seq_builder = SequenceBuilders.GetSeqXLB_DiffSet64(24, 63);
+			}
+			var knr = new KnrSeqSearch();
+			knr.DB = new PermutedSpace("", this.DB, perm_builder(perm));
+			knr.K = this.K;
+			knr.MAXCAND = this.MAXCAND;
+			knr.R = this.R;
+			knr.SEQ = seq_builder(S, this.R.DB.Count);
+			return knr;
+		}
+
 		public override void Save (BinaryWriter Output)
 		{
 			base.Save(Output);
 			Output.Write(this.K);
 			Output.Write(this.MAXCAND);
-			SpaceGenericIO.Save(Output, this.R.DB, false);
-			var refs = this.R.DB;
-			this.R.DB = new NullSpace();
 			IndexGenericIO.Save(Output, this.R);
-			this.R.DB = refs;
 			RankSelectSeqGenericIO.Save(Output, this.SEQ);
 		}
 
@@ -46,9 +70,7 @@ namespace natix.SimilaritySearch
 			base.Load(Input);
 			this.K = Input.ReadInt32 ();
 			this.MAXCAND = Input.ReadInt32 ();
-			var refs = SpaceGenericIO.Load(Input, false);
 			this.R = IndexGenericIO.Load(Input);
-			this.R.DB = refs;
 			this.SEQ = RankSelectSeqGenericIO.Load(Input);
 		}
 
@@ -101,11 +123,11 @@ namespace natix.SimilaritySearch
 			return qseq;
 		}
 
-		public IList<UInt16> GetStoredKnr (int docid)
+		public int[] GetStoredKnr (int docid)
 		{
-			var L = new ushort[this.K];
+			var L = new int[this.K];
 			for (int i = 0, start_pos = this.K * docid; i < this.K; ++i) {
-				L [i] = (ushort)this.SEQ.Access (start_pos + i);
+				L [i] = this.SEQ.Access (start_pos + i);
 			}
 			return L;
 		}

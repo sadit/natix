@@ -36,11 +36,7 @@ namespace natix.SimilaritySearch
 			Output.Write(this.K);
 			Output.Write(this.MINOCC);
 			//Output.Write(this.MAXCAND);
-			SpaceGenericIO.Save(Output, this.R.DB, false);
-			var refs = this.R.DB;
-			this.R.DB = new NullSpace();
 			IndexGenericIO.Save(Output, this.R);
-			this.R.DB = refs;
 			for (int i = 0, sigma = this.R.DB.Count; i < sigma; ++i) {
 				RankSelectGenericIO.Save(Output, this.INVINDEX[i]);
 			}
@@ -52,9 +48,7 @@ namespace natix.SimilaritySearch
 			this.K = Input.ReadInt32 ();
 			this.MINOCC = Input.ReadInt32 ();
 			//this.MAXCAND = Input.ReadInt32 ();
-			var refs = SpaceGenericIO.Load(Input, false);
 			this.R = IndexGenericIO.Load(Input);
-			this.R.DB = refs;
 			int sigma = this.R.DB.Count;
 			this.INVINDEX = new IRankSelect[sigma];
 			for (int i = 0; i < sigma; ++i) {
@@ -89,7 +83,6 @@ namespace natix.SimilaritySearch
 				this.INVINDEX[i] = bitmap_builder(list);
 			}
 		}
-
 
 		public int[] GetKnr (object q)
 		{

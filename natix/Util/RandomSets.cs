@@ -51,7 +51,7 @@ namespace natix
 		{
 			return new ListGen<int> ((int i) => min + i, max - min);
 		}
-		
+
 		/// <summary>
 		/// Expands a range into a list (it uses a list generator) [0,count-1]
 		/// </summary>
@@ -65,9 +65,9 @@ namespace natix
 		{
 			return new ListGen<int> ((int i) => i, count);
 		}
-		
+
 		/// <summary>
-		///  A random subset of size n, in random order, of items between min_value and max_value.
+		///  A random subset of size n, in random order, of items in the range [min_value,max_value).
 		/// </summary>
 		public static int[] GetRandomSubSet (int min_value, int max_value, int n)
 		{
@@ -89,63 +89,28 @@ namespace natix
 				marked [r] = true;
 				c++;
 			}
-			// old implementation
-			/* HashSet<int> H = new HashSet<int> ();
-		    int[] R = new int[n];
-			while (H.Count < n) {
-				int prev_len_H = H.Count;
-				int v = rand.Next (min_value, max_value);
-				H.Add (v);
-				if (prev_len_H < H.Count) {
-					R [prev_len_H] = v;
-				}
-			}*/
 			return R;
 		}
-		
-//		/// <summary>
-//		/// Returns a sample of spacerefs
-//		/// </summary>
-//		/// <param name="spacerefs">
-//		/// Space to be processed
-//		/// </param>
-//		/// <param name="numrefs">
-//		/// Number of references
-//		/// </param>
-//		/// <param name="random">
-//		/// If true a uniform random sample is performed
-//		/// </param>
-//		/// <returns>
-//		/// The sample (docid array)
-//		/// </returns>
-//		public static IList<int> GetRandomSample (Space<T> spacerefs, int numrefs, bool random)
-//		{
-//			if (numrefs < 0) {
-//				numrefs = maxvalue;
-//			}
-//			if (!random) {
-//				int[] p = new int[numrefs];
-//				for (int i = 0; i < numrefs; i++) {
-//					p [i] = i;
-//				}
-//				return p;
-//			}
-//			Random rand = new Random ();
-//			HashSet<int> m = new HashSet<int> ();
-//			int l = spacerefs.Count - 1;
-//			while (m.Count < numrefs) {
-//				int pidx = (int)(rand.NextDouble () * l);
-//				m.Add (pidx);
-//			}
-//			return (new List<int> (m));	
-//		}
-		
+
 		/// <summary>
-		/// Select "n" items randomly from "list"
+		/// Gets the identity permutation of size n
 		/// </summary>
-		public static T[] GetRandomSubset<T> (IList<T> list, int n)
+		/// <returns>
+		public static int[] GetIdentity (int n)
 		{
-			var I = GetRandomSubSet (0, list.Count - 1, n);
+			var I = new int[n];
+			for (int i = 0; i < n; ++i) {
+				I[i] = i;
+			}
+			return I;
+		}
+
+		/// <summary>
+		/// Select "samplesize" items randomly from "list"
+		/// </summary>
+		public static T[] GetRandomSubSet<T> (IList<T> list, int samplesize)
+		{
+			var I = GetRandomSubSet (0, list.Count - 1, samplesize);
 			int len = I.Length;
 			T[] R = new T[len];
 			for (int i = 0; i < len; i++) {

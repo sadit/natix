@@ -23,51 +23,41 @@ using natix.SortingSearching;
 namespace natix.SimilaritySearch
 {
 	/// <summary>
-	/// A sample of an space
+	/// A permuted space
 	/// </summary>
-	public class SampleSpace : MetricDB
+	public class PermutedSpace : MetricDB
 	{
 		public MetricDB DB;
-		public IList<int> SAMPLE;
+		public IPermutation PERM;
 
 		public void Save (BinaryWriter Output)
 		{
 			Output.Write(this.Name);
-			Output.Write((int)this.SAMPLE.Count);
-			PrimitiveIO<int>.WriteVector(Output, this.SAMPLE);
+			PermutationGenericIO.Save(Output, this.PERM);
 			SpaceGenericIO.SmartSave(Output, this.DB);
 		}
 
 		public void Load (BinaryReader Input)
 		{
 			this.Name = Input.ReadString ();
-			var count = Input.ReadInt32 ();
-			this.SAMPLE = new int[count];
-			PrimitiveIO<int>.ReadFromFile(Input, count, this.SAMPLE);
+			this.PERM = PermutationGenericIO.Load(Input);
 			this.DB = SpaceGenericIO.SmartLoad(Input, true);
 		}
 
-		public SampleSpace ()
+		public PermutedSpace ()
 		{
 		}
 
-		public SampleSpace (string name, MetricDB db, int samplesize)
+		public PermutedSpace (string name, MetricDB db, IPermutation perm)
 		{
 			this.Name = name;
 			this.DB = db;
-			this.SAMPLE = RandomSets.GetRandomSubSet(samplesize, db.Count);
-		}
-
-		public SampleSpace (string name, MetricDB db, IList<int> sample)
-		{
-			this.Name = name;
-			this.DB = db;
-			this.SAMPLE = sample;
+			this.PERM = perm;
 		}
 		
 		public int Count {
 			get {
-				return this.SAMPLE.Count;
+				return this.PERM.Count;
 			}
 		}
 		
@@ -98,9 +88,10 @@ namespace natix.SimilaritySearch
 		
 		public object this [int docid] {
 			get {
-				var p = this.SAMPLE [docid];
+				var p = this.PERM [docid];
 				return this.DB [p];
 			}
 		}
+
 	}
 }

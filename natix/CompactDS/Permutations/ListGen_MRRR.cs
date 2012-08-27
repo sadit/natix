@@ -24,7 +24,8 @@ using natix.SortingSearching;
 namespace natix.CompactDS
 {
 	/// <summary>
-	/// A CyclicPerms without saving the main permutation PERM, it will be assigned.
+	/// A CyclicPerms without saving the main permutation PERM, it must be assigned later
+	/// on an algorithm
 	/// </summary>
 	public class ListGen_MRRR : CyclicPerms_MRRR
 	{

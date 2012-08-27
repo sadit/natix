@@ -96,7 +96,7 @@ namespace natix.SimilaritySearch
 			int numiterations = rest_list.Count / bsize + 1;
 			var seq = new int[this.DB.Count];
 			var rand = new Random ();
-			Console.WriteLine ("XXX BEGIN BuildFixedM rest_list.Count: {0}", rest_list.Count);
+			Console.WriteLine ("XXX BEGIN Build rest_list.Count: {0}", rest_list.Count);
 			while (rest_list.Count > 0) {
 				int center;
 				int i;
@@ -120,7 +120,7 @@ namespace natix.SimilaritySearch
 				}
 				iteration++;
 			}
-			Console.WriteLine ("XXX END BuildFixedM rest_list.Count: {0}, iterations: {1}", rest_list.Count, iteration);
+			Console.WriteLine ("XXX END Build rest_list.Count: {0}, iterations: {1}", rest_list.Count, iteration);
 			return seq;
 		}
 	

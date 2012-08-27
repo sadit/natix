@@ -49,11 +49,7 @@ namespace natix.SimilaritySearch
 			Output.Write(this.permcenter);
 			Output.Write(this.MOD);
 			SpaceGenericIO.Save(Output, this.REFS, false);
-			SpaceGenericIO.Save(Output, this.IndexHamming.DB, false);
-			var prevdb = this.IndexHamming.DB;
-			this.IndexHamming.DB = new NullSpace();
 			IndexGenericIO.Save(Output, this.IndexHamming);
-			this.IndexHamming.DB = prevdb;
 		}
 
 		public override void Load (BinaryReader Input)	
@@ -63,10 +59,7 @@ namespace natix.SimilaritySearch
 			this.permcenter = Input.ReadBoolean();
 			this.MOD = Input.ReadInt32 ();
 			this.REFS = SpaceGenericIO.Load(Input, false);
-			var hs = SpaceGenericIO.Load(Input, false);
-			var idx = (BasicIndex) IndexGenericIO.Load (Input);
-			this.IndexHamming = idx;
-			idx.DB = hs;
+			this.IndexHamming = IndexGenericIO.Load(Input);
 		}
 		/// <summary>
 		/// Constructor
@@ -115,7 +108,7 @@ namespace natix.SimilaritySearch
 				}
 			}
 			var binperms = new BinH8Space();
-			binperms.Build ("hamming-space-mapping", DATA);
+			binperms.Build ("", DATA);
 			var seq = new Sequential ();
 			seq.Build(binperms);
 			this.IndexHamming = seq;

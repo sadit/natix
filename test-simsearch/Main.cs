@@ -56,7 +56,7 @@ namespace testsimsearch
 			if (original != null) {
 				this.AssertEqualityDB (original, db1);
 			}
-			this.Test(name, db1, "queries-colors-256", 0.01, 300, 32, 512);
+			this.Test(name, db1, "queries-colors-256", 300, 32, 512);
 		}
 
 		public void TestNasa ()
@@ -76,7 +76,7 @@ namespace testsimsearch
 			if (original != null) {
 				this.AssertEqualityDB (original, db1);
 			}
-			this.Test(name, db1, "queries-nasa-256", 0.01, 300, 32, 512);
+			this.Test(name, db1, "queries-nasa-256", 300, 32, 512);
 		}
 
 		public void TestEnglish ()
@@ -99,7 +99,7 @@ namespace testsimsearch
 				this.AssertEqualityDB (original, db1);
 			}
 			db1.StringParser = (string s) => s.ToCharArray();
-			this.Test(name, db1, "queries-english-256", 1, 300, 32, 512);
+			this.Test(name, db1, "queries-english-256", 300, 32, 512);
 		}
 
 		public void AssertEqualityDB (MetricDB db0, MetricDB db1)
@@ -114,7 +114,7 @@ namespace testsimsearch
 			Console.WriteLine("OK");
 		}
 
-		public void Test (string nick, MetricDB db, string queries, double ringwidth, int num_centers, int num_perms, int num_refs)
+		public void Test (string nick, MetricDB db, string queries, int num_centers, int num_perms, int num_refs)
 		{
 			var qstream = new QueryStream (queries);
 			var reslist = new List<string> ();
@@ -136,101 +136,114 @@ namespace testsimsearch
 			/// 
 
 			// LC_RNN
-			reslist.Add(this.TestLC ("Index.LC_RNN." + nick, db, num_centers, new LC_RNN (), queries, qstream));
+			reslist.Add (this.TestLC ("Index.LC_RNN." + nick, db, num_centers, new LC_RNN (), queries, qstream));
 			// LC
-			reslist.Add(this.TestLC ("Index.LC." + nick, db, num_centers, new LC (), queries, qstream));
+			reslist.Add (this.TestLC ("Index.LC." + nick, db, num_centers, new LC (), queries, qstream));
 			// LC_IRNN
-			reslist.Add(this.TestLC ("Index.LC_IRNN." + nick, db, num_centers, new LC_IRNN (), queries, qstream));
+			reslist.Add (this.TestLC ("Index.LC_IRNN." + nick, db, num_centers, new LC_IRNN (), queries, qstream));
 			// LC_PRNN
-			reslist.Add(this.TestLC ("Index.LC_PRNN." + nick, db, num_centers, new LC_PRNN (), queries, qstream));
+			reslist.Add (this.TestLC ("Index.LC_PRNN." + nick, db, num_centers, new LC_PRNN (), queries, qstream));
 			// LC_ParallelBuild
-			reslist.Add(this.TestLC ("Index.LC_ParallelBuild." + nick, db, num_centers, new LC_ParallelBuild (), queries, qstream));
+			reslist.Add (this.TestLC ("Index.LC_ParallelBuild." + nick, db, num_centers, new LC_ParallelBuild (), queries, qstream));
 
 			/// 
 			/// Permutation Based Indexes
 			///
 
 			// Permutations
-			reslist.Add(this.TestPI ("Index.Perms." + nick, db, num_perms, new Perms (), queries, qstream));
+			reslist.Add (this.TestPI ("Index.Perms." + nick, db, num_perms, new Perms (), queries, qstream));
 			// Brief Index
-			reslist.Add(this.TestPI ("Index.BinPerms." + nick, db, num_perms, new BinPerms (), queries, qstream));
+			reslist.Add (this.TestPI ("Index.BinPerms." + nick, db, num_perms, new BinPerms (), queries, qstream));
 			// BinPermsTwoBits
-			reslist.Add(this.TestPI ("Index.BinPermsTwoBits." + nick, db, num_perms, new BinPermsTwoBit(), queries, qstream));
-
+			reslist.Add (this.TestPI ("Index.BinPermsTwoBits." + nick, db, num_perms, new BinPermsTwoBit (), queries, qstream));
 			///
 			/// KNR
 			///
 
-			// KnrSeqSearch
-
 			{
-				var idxname = "Index.KnrSeqSearch." + nick;
 				KnrSeqSearch idx;
+				var idxname = "Index.KnrSeqSearch." + nick;
 				if (File.Exists (idxname)) {
 					idx = (KnrSeqSearch)IndexGenericIO.Load (idxname);
 				} else {
 					Console.WriteLine ("** Starting construction of '{0}'", idxname);
-					var knr = new KnrSeqSearch();
-					var sample = RandomSets.GetRandomSubSet(num_refs, db.Count);
-					var refsdb = new SampleSpace(db.Name + ".refs", db, sample);
-					var refsidx = new LC();
-					refsidx.Build(refsdb, refsdb.Count / 10);
-					knr.Build(db, refsidx, 7);
+					var knr = new KnrSeqSearch ();
+					var sample = RandomSets.GetRandomSubSet (num_refs, db.Count);
+					var refsdb = new SampleSpace ("", db, sample);
+					var refsidx = new LC ();
+					refsidx.Build (refsdb, refsdb.Count / 10);
+					knr.Build (db, refsidx, 7);
 					IndexGenericIO.Save (idxname, knr);
 					idx = knr;
 				}
 				idx.MAXCAND = 1024;
-				// PP-Index
-				var resname = "Res." + idxname + "." + queries + ".PPIndex";
-				var searchops = new ShellSearchOptions (queries, idxname, resname);
-				if (!File.Exists (resname)) {
-					Commands.Search (idx, qstream.Iterate (), searchops);
+				this.TestKNR(idx, idxname, queries, num_refs, reslist, (I) => I);
+				Console.WriteLine ("==== Working on a permuted space");
+				idxname = idxname + ".proximity-sorted";
+				if (!File.Exists(idxname)) {
+					idx = idx.GetSortedByPrefix();
+					idx.MAXCAND = 1024;
+					IndexGenericIO.Save(idxname, idx);
+				} else {
+					idx = (KnrSeqSearch)IndexGenericIO.Load(idxname);
 				}
-				reslist.Add (resname);
-
-				// Spearman Footrule
-				resname = "Res." + idxname + "." + queries + ".SF";
-				if (!File.Exists (resname)) {
-					searchops = new ShellSearchOptions (queries, idxname, resname);
-					Commands.Search (new KnrSeqSearchFootrule(idx), qstream.Iterate (), searchops);
-				}
-				reslist.Add (resname);
-
-				// Spearman Rho
-				resname = "Res." + idxname + "." + queries + ".SR";
-				if (!File.Exists (resname)) {
-					searchops = new ShellSearchOptions (queries, idxname, resname);
-					Commands.Search (new KnrSeqSearchSpearmanRho(idx), qstream.Iterate (), searchops);
-				}
-				reslist.Add (resname);
-
-				// Jaccard
-				resname = "Res." + idxname + "." + queries + ".Jaccard";
-				if (!File.Exists (resname)) {
-					searchops = new ShellSearchOptions (queries, idxname, resname);
-					Commands.Search (new KnrSeqSearchJaccard(idx), qstream.Iterate (), searchops);
-				}
-				reslist.Add (resname);
-
-				// RelMatches
-				resname = "Res." + idxname + "." + queries + ".RelMatches";
-				if (!File.Exists (resname)) {
-					searchops = new ShellSearchOptions (queries, idxname, resname);
-					Commands.Search (new KnrSeqSearchRelMatches(idx), qstream.Iterate (), searchops);
-				}
-				reslist.Add (resname);
-
-				// CNAPP
-				reslist.Add(_Test("Index.CNAPP." + nick, db, () => {
-					var cnapp = new CNAPP();
-					// cnapp.Build(idx, idx.K-2);
-					cnapp.Build(idx, 1);
-					return cnapp;
-				}, queries));
+				this.TestKNR(idx, idxname, queries, num_refs, reslist, (I) => new PermutedIndex(I));
 			}
-
 			reslist.Add("--horizontal");
 			Commands.Check(reslist);
+		}
+
+		public void TestKNR(KnrSeqSearch idx, string idxname, string queries, int num_refs, IList<string> reslist, Func<Index,Index> map)
+		{
+			// KnrSeqSearch
+			var qstream = new QueryStream(queries);
+			// PP-Index
+			var resname = "Res." + idxname + "." + queries + ".PPIndex";
+			var searchops = new ShellSearchOptions (queries, idxname, resname);
+			if (!File.Exists (resname)) {
+				Commands.Search (map(idx), qstream.Iterate (), searchops);
+			}
+			reslist.Add (resname);
+
+			// Spearman Footrule
+			resname = "Res." + idxname + "." + queries + ".SF";
+			if (!File.Exists (resname)) {
+				searchops = new ShellSearchOptions (queries, idxname, resname);
+				Commands.Search (map(new KnrSeqSearchFootrule(idx)), qstream.Iterate (), searchops);
+			}
+			reslist.Add (resname);
+
+			// Spearman Rho
+			resname = "Res." + idxname + "." + queries + ".SR";
+			if (!File.Exists (resname)) {
+				searchops = new ShellSearchOptions (queries, idxname, resname);
+				Commands.Search (map(new KnrSeqSearchSpearmanRho(idx)), qstream.Iterate (), searchops);
+			}
+			reslist.Add (resname);
+
+			// Jaccard
+			resname = "Res." + idxname + "." + queries + ".Jaccard";
+			if (!File.Exists (resname)) {
+				searchops = new ShellSearchOptions (queries, idxname, resname);
+				Commands.Search (map(new KnrSeqSearchJaccard(idx)), qstream.Iterate (), searchops);
+			}
+			reslist.Add (resname);
+
+			// RelMatches
+			resname = "Res." + idxname + "." + queries + ".RelMatches";
+				if (!File.Exists (resname)) {
+				searchops = new ShellSearchOptions (queries, idxname, resname);
+				Commands.Search (map(new KnrSeqSearchRelMatches(idx)), qstream.Iterate (), searchops);
+			}
+			reslist.Add (resname);
+
+			// CNAPP
+			reslist.Add(_Test("Index.CNAPP." + idxname, idx.DB, () => {
+				var cnapp = new CNAPP();
+				// cnapp.Build(idx, idx.K-2);
+				cnapp.Build(idx, 1);
+				return map(cnapp);
+			}, queries));
 		}
 
 		public string TestPI(string idxname, MetricDB db, int num_perms, dynamic pi, string queries, QueryStream qstream)
@@ -241,7 +254,7 @@ namespace testsimsearch
 				idx = IndexGenericIO.Load(idxname);
 			} else {
 				Console.WriteLine ("** Starting construction of '{0}'", idxname);
-				pi.Build (db, new SampleSpace (db.Name + ".refs", db, dbperms));
+				pi.Build (db, new SampleSpace ("", db, dbperms));
 				IndexGenericIO.Save (idxname, pi);
 				idx = pi;
 			}

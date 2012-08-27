@@ -126,7 +126,7 @@ namespace natix.SimilaritySearch
 				VECS[i] = this.GetInverseBuild (i);
 			}
 			var INVS = new MinkowskiVectorSpace<GType>();
-			INVS.Build(db.Name + ".invperms", VECS, 2);
+			INVS.Build("", VECS, 2);
 			this.INVPERMS = INVS;
 		}
 

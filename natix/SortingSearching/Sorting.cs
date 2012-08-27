@@ -119,9 +119,12 @@ namespace natix.SortingSearching
 			qsort<KeyType, ValueType> (Keys, Values, startIndex, startIndex + length - 1, cmpfun);
 		}
 		
-		static Random rand = new Random();
-		public static void qsort<KeyType, ValueType> (IList<KeyType> Keys, IList<ValueType> Values, int low0, int high0, Comparison<KeyType> cmp)
+		// static Random rand = new Random();
+		public static void qsort<KeyType, ValueType> (IList<KeyType> Keys, IList<ValueType> Values, int low0, int high0, Comparison<KeyType> cmp, Random rand = null)
 		{
+			if (rand == null) {
+				rand = new Random();
+			}
 			// adapted from source ./mcs/class/corlib/System/Array.cs, from mono-2.6.4 source
 			// the modifications are:
 			// IList<T>, generics support
@@ -153,10 +156,10 @@ namespace natix.SortingSearching
 				}
 			}
 			if (low0 < high) {
-				qsort<KeyType, ValueType> (Keys, Values, low0, high, cmp);
+				qsort<KeyType, ValueType> (Keys, Values, low0, high, cmp, rand);
 			}
 			if (low < high0) {
-				qsort<KeyType, ValueType> (Keys, Values, low, high0, cmp);
+				qsort<KeyType, ValueType> (Keys, Values, low, high0, cmp, rand);
 			}
 		}
 				

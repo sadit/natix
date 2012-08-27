@@ -58,7 +58,6 @@
     <Compile Include="SortingSearching\InPlaceCountingSort.cs" />
     <Compile Include="SortingSearching\FastSortSubLinear.cs" />
     <Compile Include="SortingSearching\PQueueSL.cs" />
-    <Compile Include="SortingSearching\SortSeq.cs" />
     <Compile Include="SortingSearching\SkipList2.cs" />
     <Compile Include="SortingSearching\SkipList.cs" />
     <Compile Include="Util\RandomSets.cs" />
@@ -228,6 +227,9 @@
     <Compile Include="CompactDS\Bitmaps\SArrayHGGMN.cs" />
     <Compile Include="Sets\Intersection\IIntersection.cs" />
     <Compile Include="Sets\Intersection\HwangLinMBlock.cs" />
+    <Compile Include="SortingSearching\Sequences\SortSeqOLD.cs" />
+    <Compile Include="SortingSearching\Sequences\SortSeq.cs" />
+    <Compile Include="SortingSearching\TopK.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -256,6 +258,7 @@
     <Folder Include="CompactDS\IntCoders\OctetCodes\" />
     <Folder Include="CompactDS\IntCoders\SearchingCodesOctet\" />
     <Folder Include="CompactDS\Graphs\" />
+    <Folder Include="SortingSearching\Sequences\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>

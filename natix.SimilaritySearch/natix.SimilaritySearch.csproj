@@ -97,6 +97,9 @@
     <Compile Include="Indexes\BasicIndex.cs" />
     <Compile Include="Indexes\KNR\CNAPP.cs" />
     <Compile Include="Spaces\MetricDB.cs" />
+    <Compile Include="Spaces\PermutedSpace.cs" />
+    <Compile Include="Indexes\PermutedIndex.cs" />
+    <Compile Include="Indexes\Pivots\CompactPivots.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -107,5 +110,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Indexes\PI\" />
+    <Folder Include="Indexes\Pivots\" />
   </ItemGroup>
 </Project>

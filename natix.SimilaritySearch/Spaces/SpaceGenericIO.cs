@@ -26,13 +26,7 @@ namespace natix.SimilaritySearch
 	/// </summary>
 	public class SpaceGenericIO
 	{
-		static Dictionary< string, MetricDB > cache = new Dictionary< string, MetricDB >();
-
-		public static void SetCache(string path, MetricDB sp)
-		{
-			var full_path = Path.GetFullPath (sp.Name);
-			cache[full_path] = sp;
-		}
+		public static Dictionary< string, MetricDB > CACHE = new Dictionary< string, MetricDB >();
 
 		public static MetricDB Load (string path, bool save_into_cache = true)
 		{
@@ -41,9 +35,12 @@ namespace natix.SimilaritySearch
 			}
 			MetricDB sp;
 			var full_path = Path.GetFullPath (path);
-			if (cache.TryGetValue (full_path, out sp)) {
+			Console.Write("XXX Searching MetricDB: '{0}', save_into_cache: {1}", full_path, save_into_cache);
+			if (CACHE.TryGetValue (full_path, out sp)) {
+				Console.WriteLine (", using CACHE");
 				return sp;
 			}
+			Console.WriteLine (", loading path");
 			using (var Input = new BinaryReader(File.OpenRead(full_path))) {
 				sp = Load (Input, save_into_cache);
 			}
@@ -54,42 +51,54 @@ namespace natix.SimilaritySearch
 		{
 			var typename = Input.ReadString ();
 			var type = Type.GetType (typename);
+			Console.WriteLine ("XXX Loading Typename: '{0}'", typename);
 			MetricDB sp = (MetricDB)Activator.CreateInstance (type);
 			sp.Load (Input);
 			if (save_into_cache) {
-				SetCache(sp.Name, sp);
+				CACHE[Path.GetFullPath(sp.Name)] = sp;
 			}
 			return sp;
 		}
 
 		public static void Save (string path, MetricDB sp, bool save_into_cache = true)
 		{
-			var prevname = sp.Name;
+			// var prevname = sp.Name;
 			sp.Name = path;
 			using (var Output = new BinaryWriter(File.Create(path))) {
 				Save (Output, sp, save_into_cache);
 			}
-			sp.Name = prevname;
+			// sp.Name = prevname;
 		}
 
 		public static void Save (BinaryWriter Output, MetricDB sp, bool save_into_cache)
 		{
 			Output.Write(sp.GetType ().ToString());
-			Console.WriteLine ("XXXX {0}", sp);
 			sp.Save(Output);
 			if (save_into_cache) {
-				SetCache(sp.Name, sp);
+				CACHE[Path.GetFullPath(sp.Name)] = sp;
 			}
 		}
 
-		public static void RemoveCache (string dbname)
+		public static void SmartSave (BinaryWriter Output, MetricDB db)
 		{
-			cache.Remove (Path.GetFullPath(dbname));
+			if (db.Name == null) {
+				db.Name = "";
+			}
+			Output.Write (db.Name);
+			if (db.Name == "") {
+				SpaceGenericIO.Save(Output, db, false);
+			}
 		}
-		
-		public static void RemoveAllFromCache ()
+
+		public static MetricDB SmartLoad (BinaryReader Input, bool save_cache)
 		{
-			cache.Clear ();
+			var dbname = Input.ReadString ();
+			if (dbname == "") {
+				return SpaceGenericIO.Load(Input, false);
+			} else {
+				return SpaceGenericIO.Load(dbname, save_cache);
+			}
 		}
+
 	}
 }

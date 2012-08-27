@@ -63,7 +63,7 @@ namespace natix.SimilaritySearch
 			byte[] A = new byte[ this.DB.Count ];
 			var cache = new Dictionary<int,double> ();
 			// var threshold = this.GetIndexList().Count - this.max_threshold_error;
-			foreach (var I in this.lc_list) {
+			foreach (var I in this.LC_LIST) {
 				var L = I.PartialSearchRange (q, radius, R, cache);
 				M.Add (this.CutRSList (L));
 				foreach (var rs in L) {
@@ -100,7 +100,7 @@ namespace natix.SimilaritySearch
 			byte[] A = new byte[ this.DB.Count ];
 			var queue = new Queue<IEnumerator<IRankSelect>> ();
 			var cache = new Dictionary<int,double> ();
-			foreach (var I in this.lc_list) {
+			foreach (var I in this.LC_LIST) {
 				var L = I.PartialSearchKNN (q, K, R, cache).GetEnumerator ();
 				if (L.MoveNext ()) {				
 					queue.Enqueue (L);

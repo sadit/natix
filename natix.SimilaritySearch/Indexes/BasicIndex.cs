@@ -35,15 +35,14 @@ namespace natix.SimilaritySearch
 
 		public virtual void Load (BinaryReader Input)
 		{
-			var dbname = Input.ReadString();
-			this.DB = SpaceGenericIO.Load(dbname);
+			this.DB = SpaceGenericIO.SmartLoad(Input, true);
 		}
 
 		public virtual void Save (BinaryWriter Output)
 		{
-			Output.Write(this.DB.Name);
+			SpaceGenericIO.SmartSave(Output, this.DB);
 		}
-
+		                        
 		/// <summary>
 		/// Constructor
 		/// </summary>
