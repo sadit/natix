@@ -109,7 +109,9 @@ namespace natix.CompactDS
 			if (H_builder == null) {
 				H_builder = BitmapBuilders.GetGGMN_wt(20);
 			}
-			this.H = H_builder(new FakeBitmap(BH));
+			//Console.WriteLine ("==== BH.CountBits: {0}, N: {1}, M: {2}, numLowerBits: {3}, BH: {4}", BH.CountBits, N, M, numLowerBits, BH);
+			var fb = new FakeBitmap(BH);
+			this.H = H_builder(fb);
 		}
 		
 		public static byte Log_N_over_M (int n, int m)
@@ -119,7 +121,7 @@ namespace natix.CompactDS
 	
 		public void Build (IList<int> orderedList, int n = 0, BitmapFromBitStream H_builder = null)
 		{
-			if (n <= 0 && orderedList.Count > 0) {
+			if (n == 0 && orderedList.Count > 0) {
 				n = orderedList[orderedList.Count - 1] + 1;
 			}
 			byte z = Log_N_over_M(n, orderedList.Count);

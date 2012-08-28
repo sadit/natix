@@ -62,7 +62,7 @@ namespace natix.CompactDS
 		{
 			return delegate (IList<int> L) {
 				var rs = new SArray ();
-				rs.Build (L, -1, H_builder);
+				rs.Build (L, 0, H_builder);
 				return rs;
 			};
 		}

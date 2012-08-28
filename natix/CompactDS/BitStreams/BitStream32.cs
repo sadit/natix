@@ -98,7 +98,7 @@ namespace natix.CompactDS
 				for (int j = 0; j < 4 && i < this.Buffer.Count; i++, j++) {
 					u |= ((uint)buffer[i + j]) << (8 * j);
 				}
-				this.Buffer[m] = u;
+				this.Buffer.Add (u);
 			}
 		}
 		
