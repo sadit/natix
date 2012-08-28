@@ -41,7 +41,6 @@ namespace natix.CompactDS
 			typeof(PlainSortedList),
 			typeof(RankSelectBlocks),
 			typeof(SArray),
-			typeof(SArrayHS0),
 			typeof(RRR),
 			typeof(RRRv2),
 			typeof(RankSelectRL)

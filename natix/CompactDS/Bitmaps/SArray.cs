@@ -31,23 +31,7 @@ namespace natix.CompactDS
 		int N;
 		public IRankSelect H;
 		public ListIFS L;
-		
-		virtual protected void CreateH (IBitStream BH, short Brank, int Bselect)
-		{
-			var _H = new DArray ();
-			_H.Build (BH, Brank, Bselect);
-			//var _H = new GGMN ();
-			//_H.Build (BH, Brank);
-			this.H = _H;
-		}
-		
-		virtual protected void LoadH (BinaryReader br)
-		{
-			this.H = new DArray ();
-			// this.H = new GGMN ();
-			this.H.Load (br);
-		}
-		
+
 		public override void AssertEquality (IRankSelect obj)
 		{
 			var other = obj as SArray;
@@ -87,7 +71,7 @@ namespace natix.CompactDS
 			return (1 << this.GetNumLowerBits()) - 1;
 		}
 		
-		public void Build (IList<int> orderedList, int n, byte numLowerBits)
+		public void Build (IList<int> orderedList, int n, byte numLowerBits, BitmapFromBitStream H_builder = null)
 		{
 			//this.M = orderedList.Count;
 			int M = orderedList.Count;
@@ -120,12 +104,12 @@ namespace natix.CompactDS
 				BH.Write (true);
 			}
 			//an additional technical zero
-			BH.Write (false, M-prevblock);
+			BH.Write (false, M - prevblock);
 			BH.Write (false);
-			
-			// Creating indexes for H
-			// BH.Seek (0);
-			this.CreateH (BH, 8, 32);
+			if (H_builder == null) {
+				H_builder = BitmapBuilders.GetGGMN_wt(20);
+			}
+			this.H = H_builder(new FakeBitmap(BH));
 		}
 		
 		public static byte Log_N_over_M (int n, int m)
@@ -133,26 +117,21 @@ namespace natix.CompactDS
 			return (byte)Math.Ceiling( Math.Log(n * 1.0 / m, 2) );
 		}
 	
-		public void Build (IList<int> orderedList, int n)
+		public void Build (IList<int> orderedList, int n = 0, BitmapFromBitStream H_builder = null)
 		{
+			if (n <= 0 && orderedList.Count > 0) {
+				n = orderedList[orderedList.Count - 1] + 1;
+			}
 			byte z = Log_N_over_M(n, orderedList.Count);
 			if (z == 0) {
 				z++;
 			}
 			// Console.WriteLine("n: {0}, m: {1}, z: {2}", n, orderedList.Count, z);
-			this.Build( orderedList, n, z);
+			this.Build( orderedList, n, z, H_builder);
 		}
 
-		public void Build (IList<int> orderedList)
-		{
-			int n = 0;
-			if (orderedList.Count > 0) {
-				n = orderedList[orderedList.Count - 1] + 1;
-			}
-			this.Build (orderedList, n);
-		}
 
-		public void Build (IBitStream bitmap)
+		public void Build (IBitStream bitmap, BitmapFromBitStream H_builder = null)
 		{
 			IList<int> L = new List<int> ();
 			for (int i = 0; i < bitmap.CountBits; i++) {
@@ -160,20 +139,20 @@ namespace natix.CompactDS
 					L.Add (i);
 				}
 			}
-			this.Build (L, (int)bitmap.CountBits);
+			this.Build (L, (int)bitmap.CountBits, H_builder);
 		}
 		
 		public override void Save (BinaryWriter bw)
 		{
 			bw.Write ((int)this.N);
-			this.H.Save (bw);
+			RankSelectGenericIO.Save(bw, this.H);
 			this.L.Save (bw);
 		}
 		
 		public override void Load (BinaryReader br)
 		{
 			this.N = br.ReadInt32 ();
-			this.LoadH (br);
+			this.H = RankSelectGenericIO.Load(br);
 			var list = new ListIFS ();
 			list.Load (br);
 			this.L = list;

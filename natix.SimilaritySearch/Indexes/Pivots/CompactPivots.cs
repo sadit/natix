@@ -64,9 +64,13 @@ namespace natix.SimilaritySearch
 		public void Build (MetricDB db, int num_pivs, int search_pivs, SequenceBuilder seq_builder = null)
 		{
 			if (seq_builder == null) {
-				// seq_builder = SequenceBuilders.GetSeqXLB_DiffSet64(16, 63);
+				// seq_builder = SequenceBuilders.GetSeqXLB_SArray64(24);
+				// seq_builder = SequenceBuilders.GetIISeq(BitmapBuilders.GetSArray(BitmapBuilders.GetGGMN_wt(8)));
+				seq_builder = SequenceBuilders.GetIISeq(BitmapBuilders.GetSArray(BitmapBuilders.GetDArray_wt (12, 64)));
+				// seq_builder = SequenceBuilders.GetIISeq(BitmapBuilders.GetDiffSetRL2(31));
+				// seq_builder = SequenceBuilders.GetSeqXLB_DiffSet64(24, 31);
 				// seq_builder = SequenceBuilders.GetWT_GGMN_BinaryCoding(12);
-				seq_builder = SequenceBuilders.GetWT_BinaryCoding(BitmapBuilders.GetRRR_wt(12));
+				// seq_builder = SequenceBuilders.GetWT_BinaryCoding(BitmapBuilders.GetRRR_wt(12));
 			}
 			this.DB = db;
 			this.PIVS = new SampleSpace("", db, num_pivs);
@@ -85,23 +89,28 @@ namespace natix.SimilaritySearch
 				int sigma = 0;
 				this.ComputeStats(seq, i);
 				for (int j = 0; j < n; ++j) {
-					var sym = this.Discretize (seq[j], i);
+					var sym = this.Discretize (seq[j], this.STDDEV[i]);
 					S[j] = sym;
 					sigma = Math.Max (sigma, sym);
 				}
-				Console.WriteLine ("XXX piv_id: {0}, sigma: {1}", i, sigma+1);
 				this.SEQ[i] = seq_builder(S, sigma + 1);
+				if (i % 10 == 0) {
+					Console.WriteLine ("XXX advance: {0}/{1}, sigma: {2}", i, num_pivs, sigma+1);
+				}
 			}
 		}
 
-		public virtual int Discretize (double d, int piv_id)
+		public virtual int Discretize (double d, float stddev)
 		{
-			var stddev = this.STDDEV [piv_id];
-			var sym = (int)(d / stddev);
+			var sym = d / stddev;
+			if (ushort.MaxValue < sym) {
+				// we should have really small values, other values are problems induced by Result.MaxValue
+				sym = ushort.MaxValue;
+			}
 			/*if (sym >= 4) {
 				--sym;
 			}*/
-			return sym;
+			return (int)sym;
 		}
 
 		protected void ComputeStats(float[] seq, int piv_id)
@@ -123,64 +132,74 @@ namespace natix.SimilaritySearch
 
 		public override IResult SearchKNN (object q, int K, IResult res)
 		{
-//			throw new NotImplementedException();
 			var m = this.PIVS.Count;
-			var PIVS_ID = (this.PIVS as SampleSpace).SAMPLE;
-			var P = new TopK<Tuple<double, int, int, IRankSelectSeq>> (this.SEARCHPIVS);
+			var max = Math.Min (this.SEARCHPIVS, m);
+			var P = new TopK<Tuple<double, float, IRankSelectSeq>> (max);
+			var A = new byte[this.DB.Count];
+			var _PIVS = (this.PIVS as SampleSpace).SAMPLE;
 			for (int piv_id = 0; piv_id < m; ++piv_id) {
+				var stddev = this.STDDEV [piv_id];
 				var dqp = this.DB.Dist (q, this.PIVS [piv_id]);
-				res.Push(PIVS_ID[ piv_id ], dqp);
-				var start_sym = Math.Max (this.Discretize (dqp - radius, piv_id), 0);
 				var seq = this.SEQ [piv_id];
-				var end_sym = Math.Min (this.Discretize (dqp + radius, piv_id), seq.Sigma - 1);
-				var count = 0;
-				var n = seq.Count;
-				for (int s = start_sym; s <= end_sym; ++s) {
-					count += seq.Rank (s, n - 1);
-				}
-				P.Push (count, Tuple.Create (dqp, start_sym, end_sym, seq));
+				A[_PIVS[piv_id]] = (byte)max;
+				res.Push(_PIVS[piv_id], dqp);
+				var start_sym = Math.Max (this.Discretize (dqp, stddev), 0);
+				var end_sym = this.Discretize (dqp, stddev);
+				var count = Math.Min(start_sym, Math.Abs(seq.Sigma - 1 - end_sym));
+				P.Push (count, Tuple.Create (dqp, stddev, seq));
 			}
-			HashSet<int> A = new HashSet<int>();
-			HashSet<int> B = null;
-			int I = 0;
+			var queue = new Queue<IEnumerator<IRankSelect>> ();
 			foreach (var p in P.Items.Traverse()) {
 				var tuple = p.Value;
-				var dpq = tuple.Item1;
-				var start_sym = tuple.Item2;
-				var end_sym = tuple.Item3;
-				var seq = tuple.Item4;
-				for (int s = start_sym; s <= end_sym; ++s) {
-					var rs = seq.Unravel(s);
-					var count1 = rs.Count1;
-					for (int i = 1; i < count1; ++i) {
-						if (B == null) {
-							A.Add( rs.Select1(i) );
-						} else {
-							var pos = rs.Select1(i);
-							if (A.Contains(pos)) {
-								B.Add( pos );
-							}
-						}
+				var it = this.IteratePartsKNN(res, tuple.Item1, tuple.Item2, tuple.Item3).GetEnumerator();
+				if (it.MoveNext()) {
+					queue.Enqueue(it);
+				}
+			}
+			while (queue.Count > 0) {
+				var L = queue.Dequeue();
+				var rs = L.Current;
+				var count1 = rs.Count1;
+				// Console.WriteLine ("queue-count: {0}", queue.Count);
+				for (int i = 1; i <= count1; ++i) {
+					var item = rs.Select1 (i);
+					A [item]++;
+					if (A [item] == max) {
+						var dist = this.DB.Dist (q, this.DB [item]);
+						res.Push (item, dist);
 					}
 				}
-				if (B == null) {
-					B = new HashSet<int>();
-				} else {
-					A = B;
-					B = new HashSet<int>();
-				}
-				++I;
-			}
-			Console.WriteLine();
-			B = null;
-			var res = new Result(this.DB.Count, false);
-			foreach (var docid in A) {
-				var d = this.DB.Dist(this.DB[docid], q);
-				if (d <= radius) {
-					res.Push(docid, d);
+				if (L.MoveNext ()) {
+					queue.Enqueue (L);
 				}
 			}
 			return res;
+		}
+
+		public IEnumerable<IRankSelect> IteratePartsKNN (IResult res, double dqp, float stddev, IRankSelectSeq seq)
+		{
+			var sym = this.Discretize(dqp, stddev);
+			yield return seq.Unravel(sym);
+			var left = sym - 1;
+			var right = sym + 1;
+			bool do_next = true;
+			while (do_next) {
+				do_next = false;
+				var __left = this.Discretize(dqp - res.CoveringRadius, stddev);
+				if (0 <= left && __left <= left) {
+					yield return seq.Unravel(left);
+					--left;
+					do_next = true;
+				}
+				var __right = this.Discretize(dqp + res.CoveringRadius, stddev);
+				if (right <= __right && right < seq.Sigma) {
+					yield return seq.Unravel(right);
+					++right;
+					do_next = true;
+				}
+				/*Console.WriteLine ("left: {0}, right: {1}, __left: {2}, __right: {3}",
+				                   left, right, __left, __right);*/
+			}
 		}
 
 		public override IResult SearchRange (object q, double radius)
@@ -189,9 +208,10 @@ namespace natix.SimilaritySearch
 			var P = new TopK<Tuple<double, int, int, IRankSelectSeq>> (this.SEARCHPIVS);
 			for (int piv_id = 0; piv_id < m; ++piv_id) {
 				var dqp = this.DB.Dist (q, this.PIVS [piv_id]);
-				var start_sym = Math.Max (this.Discretize (dqp - radius, piv_id), 0);
+				var stddev = this.STDDEV [piv_id];
+				var start_sym = Math.Max (this.Discretize (dqp - radius, stddev), 0);
 				var seq = this.SEQ [piv_id];
-				var end_sym = Math.Min (this.Discretize (dqp + radius, piv_id), seq.Sigma - 1);
+				var end_sym = Math.Min (this.Discretize (dqp + radius, stddev), seq.Sigma - 1);
 				var count = 0;
 				var n = seq.Count;
 				for (int s = start_sym; s <= end_sym; ++s) {
@@ -204,7 +224,7 @@ namespace natix.SimilaritySearch
 			int I = 0;
 			foreach (var p in P.Items.Traverse()) {
 				var tuple = p.Value;
-				var dpq = tuple.Item1;
+				// var dpq = tuple.Item1;
 				var start_sym = tuple.Item2;
 				var end_sym = tuple.Item3;
 				var seq = tuple.Item4;
@@ -230,7 +250,7 @@ namespace natix.SimilaritySearch
 				}
 				++I;
 			}
-			Console.WriteLine();
+			// Console.WriteLine();
 			B = null;
 			var res = new Result(this.DB.Count, false);
 			foreach (var docid in A) {

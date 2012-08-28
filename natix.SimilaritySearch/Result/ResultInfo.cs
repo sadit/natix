@@ -259,6 +259,9 @@ namespace natix.SimilaritySearch
 
 		public double Recall (ResultInfo basis, int basisSize, int resultSize)
 		{
+			if (basisSize == 0 && resultSize == 0) {
+				return 1;
+			}
 			if (resultSize == 0) {
 				return 0;
 			}

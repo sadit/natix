@@ -58,11 +58,11 @@ namespace natix.CompactDS
 			};
 		}
 		
-		public static BitmapFromList GetSArray ()
+		public static BitmapFromList GetSArray (BitmapFromBitStream H_builder = null)
 		{
 			return delegate (IList<int> L) {
 				var rs = new SArray ();
-				rs.Build (L);
+				rs.Build (L, -1, H_builder);
 				return rs;
 			};
 		}
@@ -94,11 +94,11 @@ namespace natix.CompactDS
 			};
 		}
 		
-		public static BitmapFromList GetDArray (short sample_step)
+		public static BitmapFromList GetDArray (short b_rank, short b_select)
 		{
 			return delegate (IList<int> L) {
 				var rs = new DArray ();
-				rs.Build (L, sample_step, sample_step);
+				rs.Build (L, b_rank, b_select);
 				return rs;
 			};
 		}
@@ -116,11 +116,11 @@ namespace natix.CompactDS
 			};
 		}
 
-		public static BitmapFromBitStream GetDArray_wt (short sample_step)
+		public static BitmapFromBitStream GetDArray_wt (short b_rank, short s_rank)
 		{
 			return delegate (FakeBitmap b) {
 				var rs = new DArray ();
-				rs.Build (b.B, sample_step, sample_step);
+				rs.Build (b.B, b_rank, s_rank);
 				return rs;
 			};
 		}

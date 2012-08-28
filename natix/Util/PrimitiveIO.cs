@@ -32,8 +32,11 @@ namespace natix
 		/// <summary>
 		/// Reads "numitems" vectors from rfile, store items in "output" (array or list)
 		/// </summary>
-		public static void ReadFromFile (BinaryReader rfile, int numitems, IList<T> output)
+		public static IList<T> ReadFromFile (BinaryReader rfile, int numitems, IList<T> output = null)
 		{
+			if (output == null) {
+				output = new T[numitems];
+			}
 			if (output.Count > 0) {
 				for (int i = 0; i < output.Count; i++) {
 					output [i] = Num.ReadBinary (rfile);
@@ -43,6 +46,7 @@ namespace natix
 			for (int i = 0; i < numitems; i++) {
 				output.Add (Num.ReadBinary (rfile));
 			}
+			return output;
 		}
 		
 		/// <summary>
@@ -72,22 +76,15 @@ namespace natix
 			return list;
 		}
 
-		/*
-		public static IList<T> ReadVectorFromFile (BinaryReader infile, int size)
-		{
-			var list = new List<T> (size);
-			for (int i = 0; i < size; i++) {
-				list.Add (Num.ReadBinary (infile));
-			}
-			return list;
-		}*/
-
 		static char[] Sep = new char[2] { ' ', ',' };
 		/// <summary>
 		/// Load a single vector from a string, saving in a given vector. Each vector is a list of numbers separated by space or comma.
 		/// </summary>
-		public static IList<T> ReadVectorFromString (string line, IList<T> v, int dim)
+		public static IList<T> ReadVectorFromString (string line, int dim, IList<T> v = null)
 		{
+			if (v == null) {
+				v = new T[dim];
+			}
 			line = line.Trim ();
 			string[] vecs = line.Split (Sep);
 			for (int j = 0; j < dim; j++) {
@@ -111,69 +108,6 @@ namespace natix
 				v[j] = Num.FromDouble (Double.Parse (vecs[j]));
 			}
 			return v;
-		}
-
-		/// <summary>
-		/// Creates (if needed) a binary file parsing an ascii file. Returns the name of the binary file.
-		/// </summary>
-		public static string CreateBinaryFile (string name, int len, int dim)
-		{
-			bool isbinary = (name.EndsWith (".bin") || name.EndsWith (".data"));
-			if (isbinary) {
-				return name;
-			} else {
-				var binname = name + ".bin";
-				if (!File.Exists (binname)) {
-					Console.WriteLine ("** Creating binary mirror: {0}", binname);
-					StreamReader r = new StreamReader (File.OpenRead (name));
-					BinaryWriter w = new BinaryWriter (File.Create (binname));
-					T[] V = new T[dim];
-					for (int i = 0; i < len; i++) {
-						ReadVectorFromString (r.ReadLine (), V, dim);
-						WriteVector (w, V);
-					}
-					w.Close ();
-					r.Close ();
-				}
-				return binname;
-			}
-		}
-		
-		/// <summary>
-		/// Creates a binary representation of a string of numbers
-		/// </summary>
-		public static string CreateBinaryFile (string name)
-		{
-			bool isbinary = (name.EndsWith (".bin") || name.EndsWith (".data"));
-			if (isbinary) {
-				return name;
-			} else {
-				var binname = name + ".bin";
-				if (!File.Exists (binname)) {
-					Console.WriteLine ("** Creating binary mirror: {0}", binname);
-					StreamReader r = new StreamReader (File.OpenRead (name));
-					BinaryWriter w = new BinaryWriter (File.Create (binname, 1 << 20));
-					BinaryWriter wsizes = new BinaryWriter (File.Create (binname + ".sizes", 1 << 20));
-					int lineno = 0;
-					while (!r.EndOfStream) {
-						lineno++;
-						try {
-							var line = r.ReadLine ();
-							var V = ReadVectorFromString (line);
-							WriteVector (w, V);
-							wsizes.Write ((int)V.Count);
-						} catch (FormatException exc) {
-							Console.WriteLine ("XXXXX Filename: {0}, binfile: {1}, Line number: {2}",
-								name, binname, lineno);
-							throw exc;
-						}
-					}
-					r.Close ();
-					w.Close ();
-					wsizes.Close ();
-				}
-				return binname;
-			}
 		}
 
 		/// <summary>

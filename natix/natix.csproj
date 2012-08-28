@@ -90,7 +90,6 @@
     <Compile Include="CompactDS\Bitmaps\RankSelectUltimate.cs" />
     <Compile Include="CompactDS\Bitmaps\RRR.cs" />
     <Compile Include="CompactDS\Bitmaps\SArray.cs" />
-    <Compile Include="CompactDS\Bitmaps\SArrayHS0.cs" />
     <Compile Include="CompactDS\Text\SuffixSearch\SuffixSorter.cs" />
     <Compile Include="CompactDS\Text\SuffixSearch\CSA.cs" />
     <Compile Include="CompactDS\Text\SuffixSearch\FMIndex.cs" />
@@ -224,7 +223,6 @@
     <Compile Include="CompactDS\Graphs\GraphSeq.cs" />
     <Compile Include="CompactDS\Graphs\IGraph.cs" />
     <Compile Include="CompactDS\Sequences\InvIndexXLBSeq.cs" />
-    <Compile Include="CompactDS\Bitmaps\SArrayHGGMN.cs" />
     <Compile Include="Sets\Intersection\IIntersection.cs" />
     <Compile Include="Sets\Intersection\HwangLinMBlock.cs" />
     <Compile Include="SortingSearching\Sequences\SortSeqOLD.cs" />
