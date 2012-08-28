@@ -36,17 +36,17 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// The centers ids
 		/// </summary>
-		protected IList<int> CENTERS;
+		public IList<int> CENTERS;
 		/// <summary>
 		/// All responses to cov()
 		/// </summary>
-		protected IList<float> COV;
+		public IList<float> COV;
 
 		// protected IList<IRankSelect> INVINDEX;
 		/// <summary>
 		/// The index represented as a sequence
 		/// </summary>
-		protected IRankSelectSeq SEQ;
+		public IRankSelectSeq SEQ;
 
 		public override void Load (BinaryReader Input)
 		{

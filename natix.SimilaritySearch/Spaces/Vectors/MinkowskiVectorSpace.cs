@@ -27,18 +27,6 @@ namespace natix.SimilaritySearch
 	{
 		static INumeric<T> Num = (INumeric<T>)(natix.Numeric.Get (typeof(T)));
 
-		public override void Load (BinaryReader Input)
-		{
-			base.Load(Input);
-			this.P = Input.ReadInt32 ();
-		}
-
-		public override void Save(BinaryWriter Output)
-		{	
-			base.Save(Output);
-			Output.Write((int) this.P);
-		}
-
 		/// <summary>
 		/// Constructor
 		/// </summary>
@@ -52,18 +40,18 @@ namespace natix.SimilaritySearch
 		public override double Dist (object _a, object _b)
 		{
 			this.numdist++;
-			IList<T> a = (IList<T>) _a;
-			IList<T> b = (IList<T>) _b;
-			switch (this.P) {
-			case 1:
+			IList<T> a = (IList<T>)_a;
+			IList<T> b = (IList<T>)_b;
+			if (this.P == 1) {
 				return Num.DistL1 (a, b);
-			case 2:
-				return Num.DistL2 (a, b);
-			case -1:
-				return Num.DistLInf (a, b);
-			default:
-				return Num.DistLP (a, b, this.P, true);
 			}
+			if (this.P == 2) {
+				return Num.DistL2 (a, b);
+			}
+			if (this.P == -1) {
+				return Num.DistLInf (a, b);
+			}
+			return Num.DistLP (a, b, this.P, true);
 		}
 	}
 }

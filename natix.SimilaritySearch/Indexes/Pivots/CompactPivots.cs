@@ -61,6 +61,35 @@ namespace natix.SimilaritySearch
 			PrimitiveIO<float>.WriteVector(Output, this.STDDEV);
 		}
 
+		public void Build (CompactPivots idx, int num_pivs, int search_pivs, SequenceBuilder seq_build = null)
+		{
+			this.DB = idx.DB;
+			var P = (idx.PIVS as SampleSpace);
+			var S = new int[num_pivs];
+			this.SEARCHPIVS = search_pivs;
+			this.STDDEV = new float[num_pivs];
+			this.SEQ = new IRankSelectSeq[num_pivs];
+			for (int i = 0; i < num_pivs; ++i) {
+				S[i] = P.SAMPLE[i];
+				this.STDDEV[i] = idx.STDDEV[i];
+				this.SEQ[i] = idx.SEQ[i];
+				if (seq_build != null) {
+					var seq = this.SEQ[i];
+					var _seq = new int[seq.Count];
+					// this construction supposes a fast Select operation rather than a fast access
+					for (int s = 0; s < seq.Sigma; ++s) {
+						var rs = seq.Unravel(s);
+						var count1 = rs.Count1;
+						for (int c = 1; c <= count1; ++c) {
+							_seq[ rs.Select1(c) ] = s;
+						}
+					}
+					this.SEQ[i] = seq_build(_seq, seq.Sigma);
+				}
+			}
+			this.PIVS = new SampleSpace("", P.DB, S);
+		}
+
 		public void Build (MetricDB db, int num_pivs, int search_pivs, SequenceBuilder seq_builder = null)
 		{
 			if (seq_builder == null) {

@@ -39,7 +39,7 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// P norm
 		/// </summary>
-		public int P;
+		public float P;
 		/// <summary>
 		/// Number of distances
 		/// </summary>
@@ -59,6 +59,7 @@ namespace natix.SimilaritySearch
 				PrimitiveIO<T>.ReadFromFile(Input, this.Dimension, vec);
 				this.VECTORS[i] = vec;
 			}
+			this.P = Input.ReadSingle();
 		}
 
 		public virtual void Save(BinaryWriter Output)
@@ -70,6 +71,7 @@ namespace natix.SimilaritySearch
 			for (int i = 0; i < len; ++i) {
 				PrimitiveIO<T>.WriteVector(Output, this.VECTORS[i]);
 			}
+			Output.Write ((float) this.P);
 		}
 
 		/// <summary>
@@ -118,7 +120,7 @@ namespace natix.SimilaritySearch
 			get { return this.VECTORS[docid]; }
 		}
 
-		public void Build (string name, IList<IList<T>> _VECTORS, int _P = -1)
+		public void Build (string name, IList<IList<T>> _VECTORS, float _P = -1)
 		{
 			this.Name = name;
 			this.P = _P;
@@ -135,7 +137,7 @@ namespace natix.SimilaritySearch
 			// read from this.name file
 			this.Dimension = int.Parse (m [0]);
 			int len = int.Parse (m [1]);
-			this.P = int.Parse (m[2]);
+			this.P = float.Parse (m[2]);
 			var dbvecs = Dirty.CombineRelativePath(inputname, m [3]);
 			this.VECTORS = new IList<T>[len];
 			Console.WriteLine ("** Reading vectors from file {0}", dbvecs);
