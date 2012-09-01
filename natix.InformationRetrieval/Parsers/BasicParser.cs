@@ -26,69 +26,31 @@ namespace natix.InformationRetrieval
 {	
 	public abstract class BasicParser
 	{
-		ParserRegex parser_regex;
+		public Tokenizer InputTokenizer;
 		
-		public BasicParser (ParserRegex parser)
+		public BasicParser (Tokenizer t)
 		{
-			this.parser_regex = parser;
+			this.InputTokenizer = t;
 		}
 		
 		public string GetFileSeparator ()
 		{
-			return this.parser_regex.FileSeparator;
+			return this.InputTokenizer.RecordSeparator.ToString();
 		}
 
 		public abstract void AddPlainString (string u);
 		
-		public virtual void AddSingleWord (string u, EntityType t)
+		public virtual void AddSingleWord (Token token)
 		{
-			if (u.Length == 0) {
-				return;
+			if (token.DataType == TokenType.Data && token.Data.Length == 0) {
+					this.AddPlainString (u);
 			}
-			if (t == EntityType.SpecialCharacters || t == EntityType.WhiteSpaces) {
-				for (int i = 0; i < u.Length; i++) {
-					this.AddSingleWord (u [i].ToString (), EntityType.PlainString);
-				}
-				return;
-			}
-			this.AddPlainString (u);
 		}
 
-		void AddWhiteSpace (string w)
-		{
-			// for (int i = 0; i < w.Length; i++) {
-			//	this.AddSingleWord (w[i].ToString());
-			// }
-			this.AddSingleWord (w, EntityType.WhiteSpaces);
-		}
-		
-		void ParseWord (string w)
-		{
-			var M = this.parser_regex.RegexWord.Match (w);
-			if (M.Success) {
-				while (M.Success) {
-					this.AddSingleWord (M.Groups [1].Value, EntityType.SpecialCharacters);
-					this.AddSingleWord (M.Groups [2].Value, EntityType.PlainString);
-					this.AddSingleWord (M.Groups [3].Value, EntityType.SpecialCharacters);
-					M = M.NextMatch ();
-				}
-			} else {
-				this.AddSingleWord (w, EntityType.SpecialCharacters);
-			}
-		}
-		
 		public void Parse (string input_data)
 		{
-			var M = this.parser_regex.RegexWhiteSpace.Match (input_data);
-			if (M.Success) {
-				while (M.Success) {
-					this.AddWhiteSpace (M.Groups [1].Value);
-					this.ParseWord (M.Groups [2].Value);
-					this.AddWhiteSpace (M.Groups [3].Value);
-					M = M.NextMatch ();
-				}
-			} else {
-				this.AddWhiteSpace (input_data);
+			foreach (var token in this.InputTokenizer.Parse(input_data, false)) {
+				this.AddSingleWord (token);
 			}
 		}
 	}

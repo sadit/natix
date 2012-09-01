@@ -28,7 +28,7 @@ namespace natix.InformationRetrieval
 	{
 		public IList<string> Query;
 		
-		public QueryParser (ParserRegex parser) : base(parser)
+		public QueryParser (Tokenizer tokenizer) : base(tokenizer)
 		{
 			this.Query = new List<string> ();
 		}
