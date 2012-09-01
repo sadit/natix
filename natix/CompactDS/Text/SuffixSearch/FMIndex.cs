@@ -195,7 +195,9 @@ namespace natix.CompactDS
 			int i = 0;
 			while (start_pos <= end_pos) {
 				L [i] = this.Locate (start_pos);
-				start_pos++;
+				// Console.WriteLine ("i: {0}, L[i]: {1}, start_pos: {2}", i, L[i], start_pos);
+				++start_pos;
+				++i;
 			}
 			return L;
 		}
@@ -216,21 +218,29 @@ namespace natix.CompactDS
 		
 		public IList<int> Extract (int start_pos, int len)
 		{
-			var Output = new List<int> (len);
+			len = Math.Min (len, this.N - start_pos);
+//			var O = new int[len];
+			// var O = new List<int>(len);
+			var O = new int[len];
 			int end_pos = start_pos + len - 1;
-			int end_index = (int)Math.Ceiling (end_pos / ((float)this.SA_sample_step));
+			int end_index = (int)Math.Ceiling ((end_pos+1) / ((float)this.SA_sample_step));
 			int gap;
 			if (end_index + 1 == this.SA_invsamples.Count) {
 				gap = this.newF.Count - end_pos - 1;
 			} else {
 				gap = this.SA_sample_step - end_pos % this.SA_sample_step;
 			}
-			this._Extract (Output, gap, this.SA_invsamples [end_index], len);
-			return _Reverse (Output);
-		}
-		
-		void _Extract (IList<int> Output, int gap, int start, int len)
-		{
+			//int gap = this.SA_sample_step - end_pos % this.SA_sample_step;
+			/*Console.WriteLine ("XXXX===> CEIL_SAMPLE: {0}, end_pos: {1}, diff: {2}",
+			                   end_index * this.SA_sample_step, end_pos,
+			                   end_index * this.SA_sample_step - end_pos
+			                   );
+			Console.WriteLine ("XXXX start_pos: {0}, end_pos: {1}, len: {2}, this.SA_sample_step: {3}, numinvsamples: {4}, gap: {5}",
+			                   start_pos, end_pos, len, this.SA_sample_step, this.SA_invsamples.Count, gap);
+			                   */
+			//this._Extract (O, gap, this.SA_invsamples [end_index], len);
+			// var end_index = end_pos / this.SA_sample_step;
+			var start = this.SA_invsamples[ end_index ];
 			for (int i = 0; i < gap; ++i) {
 				start = this.LF (start);
 			}
@@ -239,21 +249,28 @@ namespace natix.CompactDS
 					break;
 				}
 				int num_char = this.newF.Rank1 (start);
-				Output.Add (this.charT[num_char - 1]);
+				// O.Add (this.charT[num_char - 1]);
+				O[ len - i - 1 ] = this.charT[num_char - 1];
 				start = this.LF (start);
 			}
+			return O;
+			// return this._Reverse(O);
 		}
 		
-		IList<int> _Reverse (IList<int> Output)
+//		void _Extract (IList<int> O, int gap, int start, int len)
+//		{
+//		}
+		
+		IList<int> _Reverse (IList<int> O)
 		{
-			int mid = Output.Count / 2;
+			int mid = O.Count / 2;
 			for (int left = 0; left < mid; left++) {
-				var u = Output[left];
-				var right = Output.Count - 1 - left;
-				Output[left] = Output[right];
-				Output[right] = u;
+				var u = O[left];
+				var right = O.Count - 1 - left;
+				O[left] = O[right];
+				O[right] = u;
 			}
-			return Output;
+			return O;
 		}
 	}
 }

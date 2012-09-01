@@ -17,6 +17,7 @@ using System.Text;
 using System.IO;
 using natix;
 using natix.CompactDS;
+using natix.InformationRetrieval;
 using cftdb;
 
 namespace testcftdb

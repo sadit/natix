@@ -19,11 +19,11 @@ using System.Collections.Generic;
 using natix;
 using natix.CompactDS;
 
-namespace natix.Se
+namespace natix.Sets
 {
-	public class HashIntersection
+	public class SimpleHashIntersection
 	{
-		public HashIntersection ()
+		public SimpleHashIntersection ()
 		{
 		}
 

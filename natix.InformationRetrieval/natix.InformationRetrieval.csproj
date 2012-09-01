@@ -34,13 +34,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Parsers\BasicParser.cs" />
-    <Compile Include="Parsers\QueryParser.cs" />
-    <Compile Include="Parsers\TextParser.cs" />
-    <Compile Include="EntityType.cs" />
     <Compile Include="ParserRegex.cs" />
     <Compile Include="MapVocSeq.cs" />
     <Compile Include="SeqTextIR.cs" />
+    <Compile Include="Parsers\Token.cs" />
+    <Compile Include="Parsers\Tokenizer.cs" />
+    <Compile Include="Parsers\TokenType.cs" />
+    <Compile Include="Parsers\TextParser.cs" />
+    <Compile Include="Parsers\BasicParser.cs" />
+    <Compile Include="Parsers\QueryParser.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -48,5 +50,8 @@
       <Project>{53075BDC-9E14-4DE2-A1E0-90E713317ED1}</Project>
       <Name>natix</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Parsers\Parser\" />
   </ItemGroup>
 </Project>

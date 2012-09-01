@@ -18,7 +18,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace cftdb
+namespace natix.InformationRetrieval
 {
 	public class Tokenizer
 	{
@@ -59,11 +59,22 @@ namespace cftdb
 			}
 		}
 
+		public IEnumerable<int> ReadInputString (string Input)
+		{
+			for (int i = 0; i < Input.Length; ++i) {
+				yield return Input[i];
+			}
+		}
+
 		public IEnumerable<Token> Parse (StreamReader Input, bool parsing_query)
 		{
 			return this.Parse(this.ReadInputStream(Input), parsing_query);
 		}
 
+		public IEnumerable<Token> Parse (string Input, bool parsing_query)
+		{
+			return this.Parse(this.ReadInputString(Input), parsing_query);
+		}
 
 		public IEnumerable<Token> Parse (IEnumerable<int> Input, bool parsing_query)
 		{

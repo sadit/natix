@@ -29,7 +29,7 @@ namespace natix.InformationRetrieval
 		public IList<string> FileNames;
 		public IList<string> Voc;
 		public IRankSelectSeq Seq;
-		protected ParserRegex parser_regex;
+		public Tokenizer InputTokenizer;
 		protected int sep_symbol;
 		
 		public SeqTextIR ()
@@ -50,13 +50,13 @@ namespace natix.InformationRetrieval
 		
 		public virtual void Build (IEnumerable<string> list, SequenceBuilder seq_builder)
 		{
-			this.parser_regex = ParserRegex.GetTextParser ();
-			var parser = new TextParser (this.parser_regex);
 			this.FileNames = new List<string> ();
 			int docid = 0;
+			this.InputTokenizer = new Tokenizer('\0', '\0', '\0');
+			var parser = new TextParser(this.InputTokenizer);
 			foreach (var filename in list) {
 				this.FileNames.Add (filename);
-				parser.AddSingleWord (parser.GetFileSeparator (), EntityType.Separator);
+				parser.AddPlainString(parser.GetFileSeparator());
 				parser.Parse (File.ReadAllText (filename));
 				if (docid % 500 == 0) {
 					Console.WriteLine ("== reviewing docid {0}, date-time: {1}", docid, DateTime.Now);
@@ -82,8 +82,8 @@ namespace natix.InformationRetrieval
 		public virtual void Load (string basename)
 		{
 			using (var input = new BinaryReader(File.OpenRead(basename))) {
-				this.parser_regex = new ParserRegex ();
-				this.parser_regex.Load (input);
+				this.InputTokenizer = new Tokenizer();
+				this.InputTokenizer.Load(input);
 			}
 			this.FileNames = File.ReadAllLines (basename + ".names");
 			using (var input = new BinaryReader(File.OpenRead(basename + ".seq"))) {
@@ -96,13 +96,13 @@ namespace natix.InformationRetrieval
 					this.Voc [i] = input.ReadString ();
 				}
 			}
-			this.sep_symbol = this.RankVoc (this.parser_regex.FileSeparator);
+			this.sep_symbol = this.RankVoc (this.InputTokenizer.RecordSeparator.ToString());
 		}
 		
 		public virtual void Save (string basename)
 		{
 			using (var output = new BinaryWriter(File.Create(basename))) {
-				this.parser_regex.Save (output);
+				this.InputTokenizer.Save(output);
 			}	
 			using (var output = File.CreateText(basename + ".names")) {
 				foreach (var filename in this.FileNames) {
@@ -122,7 +122,7 @@ namespace natix.InformationRetrieval
 		
 		public virtual IList<int> SearchPhrase (string query, IIntersection<int> ialg, Action<QueryParser> modify_query = null)
 		{
-			var qparser = new QueryParser (this.parser_regex);
+			var qparser = new QueryParser (this.InputTokenizer);
 			qparser.Parse (query);
 			if (null != modify_query) {
 				modify_query (qparser);

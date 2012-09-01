@@ -107,9 +107,8 @@ namespace natix.CompactDS
 			BH.Write (false, M - prevblock);
 			BH.Write (false);
 			if (H_builder == null) {
-				H_builder = BitmapBuilders.GetGGMN_wt(20);
+				H_builder = BitmapBuilders.GetDArray_wt(16,32);
 			}
-			//Console.WriteLine ("==== BH.CountBits: {0}, N: {1}, M: {2}, numLowerBits: {3}, BH: {4}", BH.CountBits, N, M, numLowerBits, BH);
 			var fb = new FakeBitmap(BH);
 			this.H = H_builder(fb);
 		}

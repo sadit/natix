@@ -228,6 +228,8 @@
     <Compile Include="SortingSearching\Sequences\SortSeqOLD.cs" />
     <Compile Include="SortingSearching\Sequences\SortSeq.cs" />
     <Compile Include="SortingSearching\TopK.cs" />
+    <Compile Include="Sets\NumericIntersection\SimpleHashIntersection.cs" />
+    <Compile Include="Sets\NumericIntersection\SvSHashIntersection.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -257,6 +259,7 @@
     <Folder Include="CompactDS\IntCoders\SearchingCodesOctet\" />
     <Folder Include="CompactDS\Graphs\" />
     <Folder Include="SortingSearching\Sequences\" />
+    <Folder Include="Sets\NumericIntersection\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>

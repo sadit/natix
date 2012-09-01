@@ -143,11 +143,11 @@ namespace natix.CompactDS
 			};
 		}
 		
-		public static BitmapFromBitStream GetSArray_wt ()
+		public static BitmapFromBitStream GetSArray_wt (BitmapFromBitStream H_builder = null)
 		{
 			return delegate (FakeBitmap b) {
 				var rs = new SArray ();
-				rs.Build (CreateSortedList (b), b.Count);
+				rs.Build (CreateSortedList (b), b.Count, H_builder);
 				return rs;
 			};
 		}
@@ -181,9 +181,6 @@ namespace natix.CompactDS
 		// 64 bit bitmaps
 		public static BitmapFromList64 GetSArray64 (BitmapFromBitStream H_builder = null)
 		{
-			if (H_builder == null) {
-				H_builder = BitmapBuilders.GetGGMN_wt (12);
-			}
 			return delegate (IList<long> L, long n) {
 				var rs = new SArray64 ();
 				rs.Build (L, n, H_builder);

@@ -17,41 +17,21 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using natix;
+using natix.SortingSearching;
 using natix.CompactDS;
 
-namespace natix.Se
+namespace natix.Sets
 {
-	public class SimpleHashIntersection
+	public class SvSHashIntersection : SimpleHashIntersection
 	{
-		public SimpleHashIntersection ()
+		public SvSHashIntersection () : base()
 		{
 		}
 
-		public virtual HashSet<int> Intersection (IList<IRankSelect> lists)
+		public override HashSet<int> Intersection (IList<IRankSelect> lists)
 		{
-			HashSet<int> A = new HashSet<int> ();
-			HashSet<int> B = new HashSet<int> ();
-
-			var rs = lists[0];
-			var count1 = rs.Count1;
-			for (int i = 1; i <= count1; ++i) {
-				A.Add( rs.Select1(i) );
-			}
-			for(int s = 1; s < lists.Count; ++s) {
-				rs = lists[s];
-				count1 = rs.Count1;
-				for (int i = 1; i <= count1; ++i) {
-					var pos = rs.Select1 (i);
-					if (A.Contains (pos)) {
-						B.Add (pos);
-					}
-				}
-				var C = A;
-				A = B;
-				B = C;
-				B.Clear();
-			}
-			return A;
+			Sorting.Sort<IRankSelect>(lists, (x, y) => x.Count1.CompareTo(y.Count1));
+			return base.Intersection(lists);
 		}
 	}
 }

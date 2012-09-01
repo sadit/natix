@@ -201,7 +201,6 @@ namespace natix.CompactDS
 			if (rank <= 0) {
 				return -1;
 			}
-			// Console.WriteLine ("xxxxxxx> Abs.Count: {0}, rank: {1}, absblocksize: {2}", Abs.Count, rank, this.AbsBlockSize);
 			int absindex = -1;
 			if (this.Abs.Count > 0) {
 				absindex = GenericSearch.FindFirst<uint> ((uint)rank, this.Abs);

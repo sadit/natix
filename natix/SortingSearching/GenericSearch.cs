@@ -24,7 +24,7 @@ namespace natix.SortingSearching
 	{
 		/// <summary>
 		/// Given a sorted array, it finds the last entry u where u <= query.
-		/// It returns min-1 if u > query for every u in the array.
+		/// It returns min-1 if query < L[u]for every L[u] in the array.
 		/// </summary>
 		public static int FindLast<T> (T query, IList<T> data) where T: IComparable
 		{
@@ -37,7 +37,7 @@ namespace natix.SortingSearching
 		}
 
 		/// <summary>
-		/// Find the last entry u where u <= query. It returns min-1 if u > query for every u in the array.
+		/// Find the last entry u where L[u] <= query. It returns min-1 if query < L[u] for every L[u] in the array.
 		/// </summary>
 
 		public static int FindLast<T> (T query, IList<T> data, int min, int max) where T : IComparable
@@ -51,7 +51,7 @@ namespace natix.SortingSearching
 		}
 
 		/// <summary>
-		/// Find the last entry u where u <= query. It returns min-1 if u > query for every u in the array.
+		/// Find the last entry u where u <= query. It returns min-1 if query < L[u] for every L[u] in the array.
 		/// </summary>
 		public static int FindLast<T> (T query, IList<T> data, Comparison<T> cmpfun)
 		{
@@ -64,7 +64,7 @@ namespace natix.SortingSearching
 		}
 
 		/// <summary>
-		/// Find the last u where L[u] <= query. It returns min-1 if u > query for every u in the array.
+		/// Find the last u where L[u] <= query. It returns min-1 if query < L[u] for every L[u] in the array.
 		/// </summary>
 		public static int FindLast<T> (T query, IList<T> data, int min, int max, Comparison<T> cmpfun)
 		{
@@ -89,7 +89,7 @@ namespace natix.SortingSearching
 			return mid;
 		}
 		/// <summary>
-		/// Finds u such that data[u] <= query, if u has repetitions, then the first entry is retrieved.
+		/// Finds u such that data[u] <= query, if data[u] is duplicated, then the first entry is retrieved.
 		/// </summary>
 		public static int FindFirst<T> (T query, IList<T> data, int min, int max, Comparison<T> cmpfun)
 		{

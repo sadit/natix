@@ -14,7 +14,7 @@
 //    limitations under the License.
 using System;
 
-namespace cftdb
+namespace natix.InformationRetrieval
 {
 	public struct Token
 	{

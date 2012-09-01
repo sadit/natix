@@ -37,7 +37,7 @@ namespace natix.InformationRetrieval
 		/// </summary>
 		public List<int> Seq;
 		
-		public TextParser (ParserRegex parser) : base(parser)
+		public TextParser (Tokenizer t) : base(t)
 		{
 			this.Voc = new Dictionary<string, int> ();
 			//this.InvIndex = new List<IList<int>> ();

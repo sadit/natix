@@ -42,8 +42,8 @@ namespace natix.InformationRetrieval
 		
 		public virtual void AddSingleWord (Token token)
 		{
-			if (token.DataType == TokenType.Data && token.Data.Length == 0) {
-					this.AddPlainString (u);
+			if (token.DataType == TokenType.Data && token.Data.Length > 0) {
+				this.AddPlainString (token.Data);
 			}
 		}
 

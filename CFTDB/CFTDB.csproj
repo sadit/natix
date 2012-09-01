@@ -33,9 +33,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Tokenizer.cs" />
-    <Compile Include="Token.cs" />
-    <Compile Include="TokenType.cs" />
     <Compile Include="Table.cs" />
     <Compile Include="ColumnBuilder.cs" />
     <Compile Include="Column.cs" />

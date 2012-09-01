@@ -106,10 +106,11 @@ namespace natix.CompactDS
 			//an additional technical zero
 			H_stream.Write (false, M - prevblock);
 			H_stream.Write (false);
-			// Creating indexes for H
-			// BH.Seek (0);
-			// this.CreateH (H_stream, 8, 32);
-			this.H = H_builder(new FakeBitmap(H_stream));
+			if (H_builder == null) {
+				H_builder = BitmapBuilders.GetDArray_wt(16,32);
+			}
+			var fb = new FakeBitmap(H_stream);
+			this.H = H_builder(fb);
 		}
 		
 		public static byte Log_N_over_M (long n, long m)
@@ -117,23 +118,17 @@ namespace natix.CompactDS
 			return (byte)Math.Ceiling( Math.Log(n * 1.0 / m, 2) );
 		}
 	
-		public void Build (IList<long> orderedList, long n, BitmapFromBitStream H_builder)
+		public void Build (IList<long> orderedList, long n = 0, BitmapFromBitStream H_builder = null)
 		{
+			if (n == 0 && orderedList.Count > 0) {
+				n = orderedList[orderedList.Count - 1] + 1;
+			}
 			byte z = Log_N_over_M(n, orderedList.Count);
 			if (z == 0) {
 				z++;
 			}
 			// Console.WriteLine("n: {0}, m: {1}, z: {2}", n, orderedList.Count, z);
 			this.Build( orderedList, n, z, H_builder);
-		}
-
-		public void Build (IList<long> orderedList, BitmapFromBitStream H_builder)
-		{
-			long n = 0;
-			if (orderedList.Count > 0) {
-				n = orderedList[orderedList.Count - 1] + 1;
-			}
-			this.Build (orderedList, n, H_builder);
 		}
 
 		public void Build (IBitStream bitmap, BitmapFromBitStream H_builder)
