@@ -21,13 +21,13 @@ using natix.CompactDS;
 
 namespace natix.Sets
 {
-	public class SimpleHashIntersection
+	public class SimpleHashIntersection : INumericIntersection
 	{
 		public SimpleHashIntersection ()
 		{
 		}
 
-		public virtual HashSet<int> Intersection (IList<IRankSelect> lists)
+		public virtual ICollection<int> Intersection (IList<IRankSelect> lists)
 		{
 			HashSet<int> A = new HashSet<int> ();
 			HashSet<int> B = new HashSet<int> ();

@@ -230,6 +230,7 @@
     <Compile Include="SortingSearching\TopK.cs" />
     <Compile Include="Sets\NumericIntersection\SimpleHashIntersection.cs" />
     <Compile Include="Sets\NumericIntersection\SvSHashIntersection.cs" />
+    <Compile Include="Sets\NumericIntersection\INumericIntersection.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

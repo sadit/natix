@@ -13,26 +13,15 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 using System;
-using System.IO;
-using System.Collections;
 using System.Collections.Generic;
 using natix;
-using natix.SortingSearching;
 using natix.CompactDS;
 
 namespace natix.Sets
 {
-	public class SvSHashIntersection : SimpleHashIntersection
+	public interface INumericIntersection
 	{
-		public SvSHashIntersection () : base()
-		{
-		}
-
-		public override ICollection<int> Intersection (IList<IRankSelect> lists)
-		{
-			Sorting.Sort<IRankSelect>(lists, (x, y) => x.Count1.CompareTo(y.Count1));
-			return base.Intersection(lists);
-		}
+		ICollection<int> Intersection(IList<IRankSelect> lists);
 	}
 }
 
