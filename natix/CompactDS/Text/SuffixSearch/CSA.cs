@@ -69,7 +69,7 @@ namespace natix.CompactDS
 				PrimitiveIO<int>.ReadFromFile (Input, len, this.charT);
 			}
 			using (var Input = new BinaryReader (File.OpenRead (sa_name + ".psi"))) {
-				int seqlen = this.newF.Count1;
+				int seqlen = this.newF.Count;
 				var seq = new int[seqlen];
 				var L = new List<int>(this.N/this.Sigma + 1);
 				int curr = 0;
@@ -84,7 +84,14 @@ namespace natix.CompactDS
 					L.Clear();
 					PrimitiveIO<int>.ReadFromFile (Input, len, L);
 					for (int j = 0; j < len; ++j) {
-						seq[ L[j] ] = i - 1;
+						var x = L[j];
+						try {
+							seq[ x ] = i - 1;
+						} catch (Exception e) {
+							Console.WriteLine ("== i: {0}, j: {1}, x: {2}, seq-count: {3}, len: {4}",
+							                   i, j, x, seq.Length, len);
+							throw e;
+						}
 					}
 					curr = next;
 				}
