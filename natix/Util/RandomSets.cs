@@ -28,14 +28,6 @@ namespace natix
 	public class RandomSets
 	{
 		/// <summary>
-		/// Takes "count" items from the range [0,n-1]
-		/// </summary>
-		public static int[] GetRandomSubSet (int count, int n)
-		{
-			return GetRandomSubSet (0, count, n);
-		}
-		
-		/// <summary>
 		/// Expands a range into a list (it uses a list generator) [min,max-1]
 		/// </summary>
 		/// <returns>
@@ -67,32 +59,6 @@ namespace natix
 		}
 
 		/// <summary>
-		///  A random subset of size n, in random order, of items in the range [min_value,max_value).
-		/// </summary>
-		public static int[] GetRandomSubSet (int min_value, int max_value, int n)
-		{
-			if (max_value - min_value < n) {
-				n = max_value - min_value;// print some warning message
-			}
-			var marked = new BitStream32 ();
-			marked.Write (false, n);
-			Random rand = new Random ();
-			// start new implementation
-			int[] R = new int[n];
-			int c = 0;
-			while (c < n) {
-				var r = rand.Next (n);
-				if (marked [r]) {
-					continue;
-				}
-				R [c] = r + min_value;
-				marked [r] = true;
-				c++;
-			}
-			return R;
-		}
-
-		/// <summary>
 		/// Gets the identity permutation of size n
 		/// </summary>
 		/// <returns>
@@ -108,16 +74,35 @@ namespace natix
 		/// <summary>
 		/// Select "samplesize" items randomly from "list"
 		/// </summary>
-		public static T[] GetRandomSubSet<T> (IList<T> list, int samplesize)
+		public static T[] GetRandomSubSet<T> (int count, IList<T> list)
 		{
-			var I = GetRandomSubSet (0, list.Count - 1, samplesize);
-			int len = I.Length;
-			T[] R = new T[len];
-			for (int i = 0; i < len; i++) {
+			var I = GetRandomSubSet(count, list.Count);
+			T[] R = new T[count];
+			for (int i = 0; i < count; i++) {
 				R [i] = list [I [i]];
 			}
 			return R;
 		}
+
+		/// <summary>
+		/// Takes "count" items from the range [0,n-1]. Only useful for count << n
+		/// </summary>
+		public static int[] GetRandomSubSet (int count, int n)
+		{
+			var rand = new Random();
+			var D = new HashSet<int>();
+			int[] L = new int[count];
+			while (D.Count < n) {
+				var p = rand.Next(n);
+				if (D.Contains(p)) {
+					continue;
+				}
+				L[D.Count] = p;
+				D.Add(p);
+			}
+			return L;
+		}
+
 		/// <summary>
 		/// Shuffles the list, using a random permutation (Knuth's Fisher-Yates shuffle)
 		/// </summary>
