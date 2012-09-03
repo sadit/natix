@@ -92,7 +92,7 @@ namespace natix
 			var rand = new Random();
 			var D = new HashSet<int>();
 			int[] L = new int[count];
-			while (D.Count < n) {
+			while (D.Count < count) {
 				var p = rand.Next(n);
 				if (D.Contains(p)) {
 					continue;
