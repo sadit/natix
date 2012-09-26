@@ -54,7 +54,11 @@ namespace natix.SimilaritySearch
 			this.Dimension = Input.ReadInt32 ();
 			var len = Input.ReadInt32 ();
 			this.VECTORS = new IList<T>[len];
+			int pc = len / 100 + 1;
 			for (int i = 0; i < len; ++i) {
+				if (i % pc == 0) {
+					Console.WriteLine("== loading vectors: {0}/{1}, {2:0.00}%", i, len, i * 100.0 / len);
+				}
 				var vec = new T[this.Dimension];
 				PrimitiveIO<T>.ReadFromFile(Input, this.Dimension, vec);
 				this.VECTORS[i] = vec;

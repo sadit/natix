@@ -13,7 +13,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
-//   Original filename: natix/CompactDS/Lists/Unsorted/ListIFS.cs
+//   Original filename: natix/CompactDS/Lists/Unsorted/ListIFS8.cs
 // 
 using System;
 using System.Collections;
@@ -26,85 +26,53 @@ namespace natix.CompactDS
 	/// <summary>
 	/// List of integers of fixed size
 	/// </summary>
-	public class ListIFS : ListGenerator<int>, ILoadSave
+	public class ListIFS8 : ListGenerator<int>, ILoadSave
 	{
-		public BinaryCoding Coder;
-		public IBitStream Stream;
-		// int Counter;
-		
-		public static int GetNumBits (int maxvalue)
+		public IList<byte> Data;
+
+		public void Save (BinaryWriter Output)
 		{
-			return (int)Math.Ceiling (Math.Log (maxvalue + 1, 2));
+			Output.Write (this.Data.Count);
+			PrimitiveIO<byte>.WriteVector(Output, this.Data);
+		}
+		
+		public void Load (BinaryReader Input)
+		{
+			var len = Input.ReadInt32();
+			this.Data = PrimitiveIO<byte>.ReadFromFile(Input, len, null);
 		}
 
-		public void Save (BinaryWriter bw)
+		public ListIFS8 () : base()
 		{
-			bw.Write ((int)this.Coder.NumBits);
-			this.Stream.Save (bw);
-		}
-		
-		public void Load (BinaryReader reader)
-		{
-			var numbits = reader.ReadInt32 ();
-			var stream = new BitStream32 ();
-			stream.Load (reader);
-			this.Build (numbits, stream);
-		}
-
-		public ListIFS (int numbits, IBitStream stream) : base()
-		{
-			this.Build (numbits, stream);
-		}
-		
-		public ListIFS (int numbits) : base()
-		{
-			this.Build (numbits, new BitStream32 ());
-		}
-		
-	
-		public void Build (int numbits, IBitStream stream)
-		{
-			this.Coder = new BinaryCoding (numbits);
-			this.Stream = stream;
-		}
-
-		public ListIFS () : base()
-		{
-			this.Stream = null;
-			this.Coder = null;
+			this.Data = new List<byte>();
 		}
 		
 		public override int Count {
 			get {
-				return (int)(this.Stream.CountBits / this.Coder.NumBits);
+				return this.Data.Count;
 			}
 		}
 
 		public void Add (int item, int times)
 		{
 			for (int i = 0; i < times; i++) {
-				this.Coder.ArrayAdd (this.Stream, item);
+				this.Add (item);
 			}
 		}
 
 		public override void Add (int item)
 		{
-			this.Coder.ArrayAdd (this.Stream, item);
+			this.Data.Add((byte)(item & 255));
 		}
 
 		public override int GetItem (int index)
 		{
-			return this.Coder.ArrayGet (this.Stream, index);
+			return this.Data[index];
 		}
 
-		public int GetItem (int index, ContextListI ctx)
-		{
-			return this.GetItem(index);
-		}
-		
 		public override void SetItem (int index, int u)
 		{
-			this.Coder.ArraySet (this.Stream, index, u);
+			this.Data[index] = (byte) ( u & 255);
 		}
 	}
 }

@@ -255,7 +255,7 @@ namespace natix.SimilaritySearch
 				var dcq = pair.dist;
 				var center = pair.docid;
 				if (dcq <= R.CoveringRadius + this.COV [center]) {
-					yield return new SortedListRS(this.SEQ.Unravel(center));
+					yield return new SortedListRSCache(this.SEQ.Unravel(center));
 				}
 			}
 		}

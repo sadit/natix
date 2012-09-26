@@ -13,8 +13,6 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
-//   Original filename: natix/CompactDS/Text/SuffixSearch/CSA.cs
-// 
 using System;
 using System.IO;
 using System.Collections;
@@ -23,7 +21,7 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public class CSA : ITextIndex
+	public class SeqCSA : ITextIndex
 	{
 		public int[] charT;
 		public IRankSelect newF;
@@ -34,7 +32,7 @@ namespace natix.CompactDS
 		public short SA_sample_step;
 
 		
-		public CSA ()
+		public SeqCSA ()
 		{
 		}
 
@@ -56,13 +54,20 @@ namespace natix.CompactDS
 			}
 		}
 		
-		public void Build (string sa_name, SequenceBuilder seq_builder = null)
+		public void Build (string sa_name, SequenceBuilder seq_builder = null, BitmapFromBitStream bitmap_builder = null)
 		{
 			if (seq_builder == null) {
 				seq_builder = SequenceBuilders.GetSeqXLB_DiffSetRL2_64(16, 63);
 			}
 			using (var Input = new BinaryReader (File.OpenRead (sa_name + ".structs"))) {
 				this.newF = RankSelectGenericIO.Load (Input);
+				if (bitmap_builder != null) {
+					var newF_stream = new BitStream32();
+					for (int i = 0; i < this.newF.Count; ++i) {
+						newF_stream.Write (this.newF.Access(i));
+					}
+					this.newF = bitmap_builder(new FakeBitmap(newF_stream));
+				}
 				int len = this.newF.Count1;
 				this.charT = new int[len];
 				// Console.WriteLine ("*****>> charT => {0} bytes", this.charT.Length * 4);

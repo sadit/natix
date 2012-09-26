@@ -25,7 +25,7 @@ namespace  natix.SimilaritySearch
 {
 	public class AudioSpace : MetricDB
 	{
-		public ListIDiff ListOfLengths;
+		public IRankSelect LENS;
 		public int SymbolSize;
 		public int Q;
 		IList< byte > Data;
@@ -37,7 +37,7 @@ namespace  natix.SimilaritySearch
 
 		public void Save(BinaryWriter Output)
 		{
-			this.ListOfLengths.Save(Output);
+			RankSelectGenericIO.Save (Output, this.LENS);
 			Output.Write ((int) this.SymbolSize);
 			Output.Write ((int) this.Q);
 			Output.Write ((int) this.Data.Count);
@@ -47,8 +47,7 @@ namespace  natix.SimilaritySearch
 
 		public void Load (BinaryReader Input)
 		{
-			this.ListOfLengths = new ListIDiff();
-			this.ListOfLengths.Load(Input);
+			this.LENS = RankSelectGenericIO.Load(Input);
 			this.SymbolSize = Input.ReadInt32();
 			this.Q = Input.ReadInt32();
 			var len = Input.ReadInt32 ();
@@ -120,8 +119,9 @@ namespace  natix.SimilaritySearch
 			this.SymbolSize = symsize;
 			this.Name = listname;
 			int linenum = 0;
-			this.ListOfLengths = new ListIDiff ();
+			var lens = new List<int>();
 			var D = new List<byte>();
+			lens.Add(0);
 			foreach (var filename in File.ReadAllLines (listname)) {
 				linenum++;
 				Console.WriteLine ("**** Loading line-number: {0}, file: {1}", linenum, filename);
@@ -130,11 +130,9 @@ namespace  natix.SimilaritySearch
 				foreach (var b in data) {
 					D.Add(b);
 				}
-				//if (data.Count % this.Q > 0) {
-					// padding
-				//}
-				this.ListOfLengths.Add (data.Count);
+				lens.Add(lens[lens.Count-1]+data.Count);
 			}
+			this.LENS = BitmapBuilders.GetSArray().Invoke(lens);
 			this.Data = D;
 		}
 
@@ -151,13 +149,8 @@ namespace  natix.SimilaritySearch
 				
 		public IList<byte> GetAudio (int audioId)
 		{
-		    var dset = this.ListOfLengths.dset;
-			var startPos = 0;
-			if (audioId > 0) {
-				startPos = dset.Select1 (audioId);
-			}
-			var len = this.ListOfLengths [audioId];
-			startPos -= audioId - 1;
+			var startPos = this.LENS.Select1(audioId+1);
+			var len = this.LENS.Select1(audioId+2);
 			return new BinQGram (this.Data, startPos, len);
 		}
 		
@@ -171,8 +164,8 @@ namespace  natix.SimilaritySearch
 		public int GetDocIdFromBlockId (int blockId)
 		{
 			blockId *= this.SymbolSize;
-			int rank1 = this.ListOfLengths.dset.Rank1 (blockId);
-			return this.ListOfLengths.dset.Rank1 (blockId + rank1);
+			int rank1 = this.LENS.Rank1(blockId);
+			return rank1-1;
 		}
 	}
 }

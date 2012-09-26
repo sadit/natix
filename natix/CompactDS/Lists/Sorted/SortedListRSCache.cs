@@ -25,13 +25,15 @@ namespace natix.CompactDS
 	public class SortedListRSCache : ListGenerator<int>
 	{
 		public IRankSelect B;
-		int prev_index = -1;
-		int prev_value = -1;
-		int count = -1;
+		public int prev_index = -1;
+		public int prev_value = -1;
+		public int count = -1;
+		public int shift;
 
-		public SortedListRSCache (IRankSelect rsbitmap)
+		public SortedListRSCache (IRankSelect rsbitmap, int shift = 0)
 		{
 			this.B = rsbitmap;
+			this.shift = shift;
 		}
 		
 		public override int Count {
@@ -49,7 +51,7 @@ namespace natix.CompactDS
 				return this.prev_value;
 			}
 			this.prev_index = index;
-			this.prev_value = this.B.Select1 (index + 1);
+			this.prev_value = this.B.Select1 (index + 1) + shift;
 			return this.prev_value;
 		}
 		

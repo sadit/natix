@@ -26,7 +26,7 @@ namespace natix.CompactDS
 	/// Encodes an array or permutation using a compact representation. Specially useful for lists that
 	/// exhibit large runs. It does not support neither consecutive equal items nor negative items.
 	/// </summary>
-	public class ListIDiffs : ListGenerator<int>, IListI
+	public class ListIDiffsRL : ListGenerator<int>, ILoadSave
 	{
 		public IIEncoder32 ENCODER;
 		public BitStream32 DIFFS;
@@ -35,7 +35,7 @@ namespace natix.CompactDS
 		public IList<long> OFFSETS;
 		public short BLOCKSIZE;
 
-		public ListIDiffs()
+		public ListIDiffsRL()
 		{
 		}
 
@@ -63,10 +63,12 @@ namespace natix.CompactDS
 			var marks = new BitStream32();
 			this.OFFSETS = new List<long>();
 			this.ABSPOS = new List<int>();
+			var run_len = 0;
 			if (inlist.Count > 0) {
 				for (int i = 0; i < n; i++) {
 					var u = inlist [i];
 					if (i % this.BLOCKSIZE == 0) {
+						this.commit_run(ref run_len);
 						marks.Write(true);
 						this.ABSPOS.Add(u);
 						this.OFFSETS.Add(this.DIFFS.CountBits);
@@ -74,19 +76,35 @@ namespace natix.CompactDS
 					}
 					var d = u - inlist [i - 1];
 					if (d == 0) {
-						throw new ArgumentException ("ListIDiffs doesn't support equal consecutive items");
+						throw new ArgumentException ("ListIDiffsRL doesn't support equal consecutive items");
 					}
 					if (d < 0) {
+						this.commit_run(ref run_len);
 						marks.Write(true);
 						this.ABSPOS.Add (u);
 						this.OFFSETS.Add(this.DIFFS.CountBits);
 					} else {
 						marks.Write(false);
-						this.ENCODER.Encode(this.DIFFS, d);
+						if (d==1) {
+							run_len++;
+						} else {
+							this.commit_run(ref run_len);
+							this.ENCODER.Encode(this.DIFFS, d);
+						}
 					}
 				}
 			}
+			this.commit_run(ref run_len);
 			this.MARKS = marks_builder(new FakeBitmap(marks));
+		}
+
+		protected void commit_run (ref int run_len)
+		{
+			if (run_len > 0) {
+				this.ENCODER.Encode(this.DIFFS, 1);
+				this.ENCODER.Encode(this.DIFFS, run_len);
+				run_len = 0;
+			}
 		}
 
 		public virtual void Load (BinaryReader Input)
@@ -115,6 +133,20 @@ namespace natix.CompactDS
 			return this.GetItem(index, new ContextListI());
 		}
 
+		protected int Decode (ContextListI ctx)
+		{
+			if (ctx.run_len > 0) {
+				ctx.run_len--;
+				return 1;
+			} else {
+				var d = this.ENCODER.Decode (this.DIFFS, ctx.ctx);
+				if (d == 1) {
+					ctx.run_len = this.ENCODER.Decode(this.DIFFS, ctx.ctx) - 1;
+				}
+				return d;
+			}
+		}
+
 		public int GetItem (int index, ContextListI ctx)
 		{
 			// equality
@@ -124,25 +156,59 @@ namespace natix.CompactDS
 			var m = this.MARKS.Rank1 (index);
 			// fast forward decoding
 			if (ctx.index < index && m == ctx.block_id) {
-				for (; ctx.index < index; ++ctx.index) {
-					ctx.value += this.ENCODER.Decode(this.DIFFS, ctx.ctx);
+				while (ctx.index < index) {
+					ctx.value += this.Decode(ctx);
+					ctx.index++;
+					if (ctx.index == index) {
+						break;
+					}
+					if (ctx.run_len > 0) {
+						if (ctx.index + ctx.run_len <= index) {
+							ctx.value += ctx.run_len;
+							ctx.index += ctx.run_len;
+							ctx.run_len = 0;
+						} else {
+							var step = ctx.index + ctx.run_len - index;
+							ctx.value += step;
+							ctx.index += step;
+							ctx.run_len -= step;
+						}
+					}
 				}
 				return ctx.value;
 			}
 			ctx.Reset(this.OFFSETS[m-1]);
 			ctx.block_id = m;
 			ctx.value = this.ABSPOS[m-1];
-			ctx.index = index;
 			// if the value is the header
 			if (this.MARKS.Access(index)) {
+				ctx.index = index;
 				return ctx.value;
 			}
-			var count = index - this.MARKS.Select1(m);
-			var acc = 0;
-			for (int i = 0; i < count; ++i) {
-				acc += this.ENCODER.Decode(this.DIFFS, ctx.ctx);
+			ctx.index = this.MARKS.Select1(m);
+			while (ctx.index < index) {
+				ctx.value += this.Decode(ctx);
+				ctx.index++;
+				if (ctx.index == index) {
+					break;
+				}
+				if (ctx.run_len > 0) {
+					//Console.WriteLine ("A index: {0}, value: {1}, runlen: {2}, query index: {3}", ctx.index, ctx.value, ctx.run_len, index);
+					if (ctx.index + ctx.run_len <= index) {
+						//Console.WriteLine ("B index: {0}, value: {1}, runlen: {2}", ctx.index, ctx.value, ctx.run_len);
+						ctx.value += ctx.run_len;
+						ctx.index += ctx.run_len;
+						ctx.run_len = 0;
+					} else {				
+						//Console.WriteLine ("C index: {0}, value: {1}, runlen: {2}", ctx.index, ctx.value, ctx.run_len);
+						var step = Math.Min(index - ctx.index, ctx.run_len);
+						ctx.value += step;
+						ctx.index += step;
+						ctx.run_len -= step;
+					}
+					//Console.WriteLine ("Z index: {0}, value: {1}, runlen: {2}", ctx.index, ctx.value, ctx.run_len);
+				}
 			}
-			ctx.value += acc;
 			return ctx.value;
 		}
 

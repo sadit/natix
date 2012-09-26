@@ -58,7 +58,7 @@ namespace  natix.SimilaritySearch
 	{
 		public int Q;
 		IBitStream Data;
-		public ListIDiff ListOfLengths;
+		public IRankSelect LENS;
 		int numdist = 0;
 		// IList<string> NameList;
 
@@ -68,8 +68,7 @@ namespace  natix.SimilaritySearch
 			this.Name = Input.ReadString ();
 			this.Data = new BitStream32();
 			this.Data.Load(Input);
-			this.ListOfLengths = new ListIDiff();
-			this.ListOfLengths.Load(Input);
+			this.LENS = RankSelectGenericIO.Load(Input);
 		}
 
 		public void Save (BinaryWriter Output)
@@ -77,15 +76,16 @@ namespace  natix.SimilaritySearch
 			Output.Write ((int) this.Q);
 			Output.Write (this.Name);
 			this.Data.Save(Output);
-			this.ListOfLengths.Save(Output);
+			RankSelectGenericIO.Save (Output, this.LENS);
 		}
 
 		public void Build (string listname, int qsize)
 		{
 			this.Q = qsize;
 			int linenum = 0;
-			this.ListOfLengths = new ListIDiff ();
+			var lens = new List<int>();
 			this.Data = new BitStream32();
+			lens.Add (0);
 			foreach (var filename in File.ReadAllLines (listname)) {
 				linenum++;
 				Console.WriteLine ("**** Loading line-number: {0}, file: {1}", linenum, filename);
@@ -96,8 +96,9 @@ namespace  natix.SimilaritySearch
 				if (data.Count % this.Q > 0) {
 					// padding
 				}
-				this.ListOfLengths.Add (data.Count);
+				lens.Add(lens[lens.Count - 1] + data.Count);
 			}
+			this.LENS = BitmapBuilders.GetSArray().Invoke(lens);
 		}
 
 		public string Name {
@@ -160,13 +161,8 @@ namespace  natix.SimilaritySearch
 				
 		public QGramH1 GetAudio (int audioId)
 		{
-		    var dset = this.ListOfLengths.dset;
-			var startPos = 0;
-			if (audioId > 0) {
-				startPos = dset.Select1 (audioId);
-			}
-			var len = this.ListOfLengths [audioId];
-			startPos -= audioId - 1;
+			var startPos = this.LENS.Select1(audioId+1);
+			var len = this.LENS.Select1(audioId+2);
 			return new QGramH1 (this.Data, startPos, len);
 		}
 		
@@ -179,8 +175,9 @@ namespace  natix.SimilaritySearch
 
 		public int GetDocIdFromBlockId (int blockId)
 		{
-			int rank1 = this.ListOfLengths.dset.Rank1 (blockId);
-			return this.ListOfLengths.dset.Rank1 (blockId + rank1);
+
+			int rank1 = this.LENS.Rank1 (blockId);
+			return rank1-1;
 		}
 	}
 }

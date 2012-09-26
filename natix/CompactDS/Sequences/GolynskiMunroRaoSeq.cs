@@ -28,7 +28,7 @@ namespace natix.CompactDS
 		IList<IPermutation> perms;
 		IRankSelect B; // counter in blocks
 		IRankSelect X; // counter per symbol
-		IList<int> Xacc; // accumulated rank for each row in X
+		// IList<int> Xacc; // accumulated rank for each row in X
 		int sigma;
 		int n;
 		// not saved
@@ -53,8 +53,6 @@ namespace natix.CompactDS
 				
 		public GolynskiMunroRaoSeq ()
 		{
-			this.PermBuilder = PermutationBuilders.GetSuccCyclicPerms (16);
-			this.BitmapBuilder = BitmapBuilders.GetGGMN_wt (16);
 		}
 		
 		void Print1Perm (IList<int> p)
@@ -89,7 +87,7 @@ namespace natix.CompactDS
 			}
 		}
 
-		public void Build (IList<int> seq, int sigma)
+		public void Build (IList<int> seq, int sigma, PermutationBuilder perm_builder, BitmapFromBitStream bitmap_builder)
 		{
 			// NOTE: Please check sigma <=> BlockSize in this method
 			this.sigma = sigma;
@@ -108,7 +106,7 @@ namespace natix.CompactDS
 			for (int i = 0; i < this.n; i+= this.sigma) {
 				// writing block separators
 				foreach (var b in X_stream) {
-					b.Write (false);
+					b.Write (true);
 				}
 				// clearing perm B
 				// selecting block size 
@@ -119,14 +117,14 @@ namespace natix.CompactDS
 					var c = lists [j].Count;
 					B_stream.Write (false);
 					if (c > 0) {
-						X_stream [j].Write (true, c);
+						X_stream [j].Write (false, c);
 						B_stream.Write (true, c);
 						foreach (var u in lists[j]) {
 							P.Add (u);
 						}
 					}
 				}
-				var _perm = this.PermBuilder (P);
+				var _perm = perm_builder(P);
 				this.perms.Add (_perm);
 			}
 			var _X_stream = X_stream [0];
@@ -139,37 +137,20 @@ namespace natix.CompactDS
 				}
 			}
 			// If we write a zero at the end of the streams the code is simplified
-			_X_stream.Write (false);
+			_X_stream.Write (true);
 			B_stream.Write (false);
-			this.B = this.BitmapBuilder (new FakeBitmap (B_stream));
-			this.X = this.BitmapBuilder (new FakeBitmap (_X_stream));
-			this.Xacc = new List<int> ();
-			for (int i = 0; i < this.sigma; i++) {
-				int acc_rank = this.X.Rank1 (this.X.Select0 (i * num_blocks + 1));
-				this.Xacc.Add (acc_rank);
-			}
+			this.B = bitmap_builder (new FakeBitmap (B_stream));
+			this.X = bitmap_builder (new FakeBitmap (_X_stream));
 			this.compute_num_blocks ();
 		}
 		
-		public PermutationBuilder PermBuilder {
-			get;
-			set;
-		}
-		
-		public BitmapFromBitStream BitmapBuilder {
-			get;
-			set;
-		}
-		
-		
 		protected int GetBlockRank (int symbol, int block_id)
 		{
-			int rank0 = this.num_blocks * symbol + block_id + 1;
-			int pos = this.X.Select0 (rank0);
-			int rank1 = pos - rank0 + 1;
-			//Console.WriteLine ("get-block-rank> symbol: {0}, block_id: {1}, acc-symbol: {2}, rank0: {3}, rank1: {4}, pos: {5}",
-			//	symbol, block_id, this.Xacc [symbol], rank0, rank1, pos);
-			return rank1 - this.Xacc [symbol];
+			int rank1 = this.num_blocks * symbol + block_id + 1;
+			int pos = this.X.Select1 (rank1);
+			int rank0 = pos - rank1 + 1;
+			var m = symbol*this.num_blocks + 1;
+			return rank0 - this.X.Select1(m) + m - 1;
 		}
 
 		public int Access (int pos)
@@ -177,7 +158,8 @@ namespace natix.CompactDS
 			var block_id = pos / this.sigma;
 			var inv = this.perms [block_id].Inverse (pos % this.sigma);
 			var abs_symbol = this.B.Rank0 (this.B.Select1 (block_id * this.sigma + inv + 1));
-			return (abs_symbol % this.sigma) - 1;
+			// Console.WriteLine ("abs_symbol: {0}", abs_symbol);
+			return (abs_symbol-1) % this.sigma;
 		}
 		
 		public int Select (int symbol, int abs_rank)
@@ -185,8 +167,9 @@ namespace natix.CompactDS
 			if (abs_rank < 1) {
 				return -1;
 			}
-			int rank1_X = this.Xacc [symbol] + abs_rank;
-			int block_id = this.X.Rank0 (this.X.Select1 (rank1_X)) - 1;
+			var m = symbol*this.num_blocks+1;
+			int rank0_X = this.X.Select1(m) - m + 1 + abs_rank;
+			int block_id = this.X.Rank1 (this.X.Select0 (rank0_X)) - 1;
 			block_id = block_id % this.num_blocks;
 			int rel_rank = abs_rank - this.GetBlockRank (symbol, block_id);
 			// now, it looks for the desired symbol in the container block
@@ -218,10 +201,6 @@ namespace natix.CompactDS
 			var ep = this.B.Select0 (rank0 + 1);
 			int rel_rank = 0;
 			int len = ep - sp - 1;
-			/*BitStream32 C = new BitStream32 ((this.B as GGMN).GetBitBlocks ());
-			BitStream32 D = new BitStream32 ((this.X as GGMN).GetBitBlocks ());
-			Console.WriteLine ("B> " + C.ToString ());
-			Console.WriteLine ("X> " + D.ToString ());*/
 			if (len > 0) {
 				int rank1 = sp - rank0 + 1;
 				//var list = new ListShiftIndex<int> (this.perms [block_id], sp % this.sigma, len);
@@ -249,9 +228,9 @@ namespace natix.CompactDS
 			}
 			this.B = RankSelectGenericIO.Load (Input);
 			this.X = RankSelectGenericIO.Load (Input);
-			var len = Input.ReadInt32 ();
+			/*var len = Input.ReadInt32 ();
 			this.Xacc = new int[len];
-			PrimitiveIO<int>.ReadFromFile (Input, len, this.Xacc);
+			PrimitiveIO<int>.ReadFromFile (Input, len, this.Xacc);*/
 			this.compute_num_blocks ();
 		}
 		
@@ -265,8 +244,8 @@ namespace natix.CompactDS
 			}
 			RankSelectGenericIO.Save (Output, this.B);
 			RankSelectGenericIO.Save (Output, this.X);
-			Output.Write ((int)this.Xacc.Count);
-			PrimitiveIO<int>.WriteVector (Output, this.Xacc);
+			/*Output.Write ((int)this.Xacc.Count);
+			PrimitiveIO<int>.WriteVector (Output, this.Xacc);*/
 		}
 		
 	}

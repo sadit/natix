@@ -105,7 +105,7 @@ namespace natix.CompactDS
 		
 		public static IList<int> CreateSortedList (FakeBitmap bitmap)
 		{
-			return new SortedListRS (bitmap.GetGGMN (12));
+			return new SortedListRSCache (bitmap.GetGGMN (12));
 		}
 		
 		

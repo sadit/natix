@@ -42,11 +42,6 @@ namespace natix.CompactDS
 		{
 			this.PERM = perm;
 		}
-	
-		protected override void FinishBuild (object arg)
-		{
-			// To be used by derived classes
-		}
 
 		public override void Save (BinaryWriter Output)
 		{

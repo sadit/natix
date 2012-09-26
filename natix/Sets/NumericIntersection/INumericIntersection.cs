@@ -21,7 +21,7 @@ namespace natix.Sets
 {
 	public interface INumericIntersection
 	{
-		ICollection<int> Intersection(IList<IRankSelect> lists);
+		ICollection<int> Intersection(IList<IList<int>> lists);
 	}
 }
 

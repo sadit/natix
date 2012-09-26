@@ -14,12 +14,26 @@
 //    limitations under the License.
 using System;
 
-namespace natix
+namespace natix.CompactDS
 {
 	public class ContextListI
 	{
+		public int index;
+		public int block_id;
+		public int value;
+		public int run_len;
+		public UnraveledSymbolXLB unraveled_ctx;
+		public BitStreamCtx ctx;
 		public ContextListI ()
 		{
+			this.ctx = new BitStreamCtx();
+			this.Reset();
+		}
+
+		public void Reset (long offset = -1)
+		{
+			this.index = this.block_id = int.MinValue;
+			this.ctx.Seek(offset);
 		}
 	}
 }

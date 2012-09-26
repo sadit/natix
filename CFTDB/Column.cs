@@ -112,7 +112,7 @@ namespace cftdb
 				int symbol;
 				if (q[i] != null && this.GetWordId (q [i], out symbol)) {
 					var rs = this.Seq.Unravel (symbol);
-					var L = new ShiftedSortedListRS (rs, -i);
+					var L = new SortedListRSCache (rs, -i);
 					posting_lists.Add (L);					
 				}
 			}

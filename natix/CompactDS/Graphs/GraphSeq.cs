@@ -122,7 +122,7 @@ namespace natix.CompactDS
 		
 		public IList<int> GetReverse (int node)
 		{
-			return new SortedListRS(this.SEQ.Unravel (node));
+			return new SortedListRSCache(this.SEQ.Unravel (node));
 		}
 	
 	}

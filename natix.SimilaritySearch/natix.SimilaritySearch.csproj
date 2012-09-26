@@ -11,22 +11,22 @@
     <AssemblyName>natix.SimilaritySearch</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>False</Optimize>
     <OutputPath>bin\Debug</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
+    <ConsolePause>False</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>True</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
+    <ConsolePause>False</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -100,16 +100,19 @@
     <Compile Include="Spaces\PermutedSpace.cs" />
     <Compile Include="Indexes\PermutedIndex.cs" />
     <Compile Include="Indexes\Pivots\CompactPivots.cs" />
+    <Compile Include="Indexes\Pivots\LAESA.cs" />
+    <Compile Include="Indexes\Pivots\CompactPivotsLRANS.cs" />
+    <Compile Include="Indexes\Pivots\CompactPivotsTEXTRANS.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="Indexes\PI\" />
+    <Folder Include="Indexes\Pivots\" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\natix\natix.csproj">
       <Project>{53075BDC-9E14-4DE2-A1E0-90E713317ED1}</Project>
       <Name>natix</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Indexes\PI\" />
-    <Folder Include="Indexes\Pivots\" />
   </ItemGroup>
 </Project>

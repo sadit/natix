@@ -60,7 +60,7 @@ namespace natix.CompactDS
 				return this.N;
 			}
 		}
-		
+
 		public override void Save (BinaryWriter W)
 		{
 			W.Write (this.N);

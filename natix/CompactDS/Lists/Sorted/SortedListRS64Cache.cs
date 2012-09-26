@@ -13,8 +13,6 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
-//   Original filename: natix/CompactDS/Lists/SortedListRSCache.cs
-// 
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -22,15 +20,15 @@ using System.IO;
 
 namespace natix.CompactDS
 {
-	public class SortedListRSCache : ListGenerator<int>
+	public class SortedListRS64Cache : ListGenerator<long>
 	{
-		public IRankSelect B;
+		public IRankSelect64 B;
 		public int prev_index = -1;
-		public int prev_value = -1;
+		public long prev_value = -1;
 		public int count = -1;
 		public int shift;
 
-		public SortedListRSCache (IRankSelect rsbitmap, int shift = 0)
+		public SortedListRS64Cache (IRankSelect64 rsbitmap, int shift = 0)
 		{
 			this.B = rsbitmap;
 			this.shift = shift;
@@ -39,13 +37,13 @@ namespace natix.CompactDS
 		public override int Count {
 			get {
 				if (this.count == -1) {
-					this.count = this.B.Count1;
+					this.count = (int)this.B.Count1;
 				}
 				return this.count;
 			}
 		}
 		
-		public override int GetItem (int index)
+		public override long GetItem (int index)
 		{
 			if (index == this.prev_index) {
 				return this.prev_value;
@@ -55,7 +53,7 @@ namespace natix.CompactDS
 			return this.prev_value;
 		}
 		
-		public override void SetItem (int index, int u)
+		public override void SetItem (int index, long u)
 		{
 			throw new NotSupportedException ();
 		}

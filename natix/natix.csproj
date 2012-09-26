@@ -12,26 +12,26 @@
     <Description>The natix library</Description>
     <RootNamespace>natix</RootNamespace>
     <ReleaseVersion>1.0</ReleaseVersion>
-    <SynchReleaseVersion>false</SynchReleaseVersion>
+    <SynchReleaseVersion>False</SynchReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>True</Optimize>
     <OutputPath>bin</OutputPath>
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
+    <ConsolePause>False</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>True</Optimize>
     <OutputPath>bin</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
-    <DebugSymbols>true</DebugSymbols>
+    <ConsolePause>False</ConsolePause>
+    <DebugSymbols>True</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -72,11 +72,6 @@
     <Compile Include="CompactDS\BitStreams\BitStream64.cs" />
     <Compile Include="CompactDS\BitStreams\BitStream32.cs" />
     <Compile Include="CompactDS\BitStreams\IBitStream.cs" />
-    <Compile Include="CompactDS\Lists\SortedListRS.cs" />
-    <Compile Include="CompactDS\Lists\SortedListDiffSet.cs" />
-    <Compile Include="CompactDS\Lists\SortedListSArray.cs" />
-    <Compile Include="CompactDS\Lists\SortedListRL.cs" />
-    <Compile Include="CompactDS\Lists\SortedListRSCache.cs" />
     <Compile Include="CompactDS\Bitmaps\DArray.cs" />
     <Compile Include="CompactDS\Bitmaps\DArrayS0.cs" />
     <Compile Include="CompactDS\Bitmaps\DiffSet.cs" />
@@ -91,7 +86,6 @@
     <Compile Include="CompactDS\Bitmaps\RRR.cs" />
     <Compile Include="CompactDS\Bitmaps\SArray.cs" />
     <Compile Include="CompactDS\Text\SuffixSearch\SuffixSorter.cs" />
-    <Compile Include="CompactDS\Text\SuffixSearch\CSA.cs" />
     <Compile Include="CompactDS\Text\SuffixSearch\FMIndex.cs" />
     <Compile Include="CompactDS\Sequences\WaveletTree.cs" />
     <Compile Include="CompactDS\Bitmaps\RRRv2.cs" />
@@ -105,34 +99,18 @@
     <Compile Include="CompactDS\Bitmaps\GGMN_S0.cs" />
     <Compile Include="CompactDS\Bitmaps\SL_Bitmap.cs" />
     <Compile Include="CompactDS\Permutations\CyclicPerms_MRRR.cs" />
-    <Compile Include="CompactDS\Permutations\SuccCyclicPerms_MRRR.cs" />
     <Compile Include="CompactDS\SequenceBuilders.cs" />
     <Compile Include="CompactDS\Sequences\InvIndexSeq.cs" />
     <Compile Include="CompactDS\Sequences\GolynskiMunroRaoSeq.cs" />
     <Compile Include="CompactDS\Permutations\PlainPerms.cs" />
     <Compile Include="CompactDS\Bitmaps\RankSelectRL.cs" />
-    <Compile Include="CompactDS\Permutations\SuccRLCyclicPerms_MRRR.cs" />
-    <Compile Include="CompactDS\Permutations\RLCyclicPerms_MRRR.cs" />
-    <Compile Include="CompactDS\Permutations\SuccRL2CyclicPerms_MRRR.cs" />
-    <Compile Include="CompactDS\Lists\Unsorted\ListIDiff.cs" />
     <Compile Include="CompactDS\Lists\Unsorted\ListIFS.cs" />
-    <Compile Include="CompactDS\Lists\Unsorted\ListIRRR.cs" />
     <Compile Include="CompactDS\Lists\Unsorted\ListRL.cs" />
     <Compile Include="CompactDS\Lists\Unsorted\ListRL2.cs" />
-    <Compile Include="CompactDS\Lists\Unsorted\ListIWT.cs" />
-    <Compile Include="CompactDS\Lists\Unsorted\ListIWT8.cs" />
-    <Compile Include="CompactDS\Lists\Unsorted\ListSDiff.cs" />
-    <Compile Include="CompactDS\Lists\Unsorted\ListSDiff64.cs" />
-    <Compile Include="CompactDS\Lists\Unsorted\ListSDiffCoder.cs" />
-    <Compile Include="CompactDS\Lists\Unsorted\ListSDiffCoder64.cs" />
-    <Compile Include="CompactDS\Lists\Unsorted\ListSDiffCoderRL.cs" />
     <Compile Include="CompactDS\Lists\Unsorted\ListIGenericIO.cs" />
     <Compile Include="CompactDS\Sequences\RankSelectSeqGenericIO.cs" />
     <Compile Include="CompactDS\Sequences\IRankSelectSeq.cs" />
-    <Compile Include="CompactDS\Sequences\GolynskiSinglePermSeq.cs" />
-    <Compile Include="CompactDS\Sequences\GolynskiListRL2Seq.cs" />
     <Compile Include="CompactDS\Sequences\UnraveledSymbolGolynskiRL.cs" />
-    <Compile Include="CompactDS\Lists\ListEqRL.cs" />
     <Compile Include="CompactDS\BitmapBuilders.cs" />
     <Compile Include="CompactDS\Bitmaps\FakeBitmap.cs" />
     <Compile Include="CompactDS\Permutations\IPermutation.cs" />
@@ -201,7 +179,6 @@
     <Compile Include="CompactDS\Permutations\ListGen_MRRR.cs" />
     <Compile Include="NDesk.Options\Options.cs" />
     <Compile Include="CompactDS\Bitmaps\DiffSetRL2_64.cs" />
-    <Compile Include="CompactDS\Lists\SortedListRS64.cs" />
     <Compile Include="CompactDS\IntCoders\SearchingCodesBinary\BinarySearchCoding64.cs" />
     <Compile Include="CompactDS\IntCoders\BinaryCodes\IIEncoder64.cs" />
     <Compile Include="CompactDS\IntCoders\BinaryCodes\IIEncoder32.cs" />
@@ -215,9 +192,7 @@
     <Compile Include="CompactDS\IntCoders\BinaryCodes\EliasGamma64.cs" />
     <Compile Include="CompactDS\IntCoders\BinaryCodes\EliasDelta64.cs" />
     <Compile Include="CompactDS\Bitmaps\DiffSetRL64.cs" />
-    <Compile Include="CompactDS\Lists\ShiftedSortedListRS.cs" />
     <Compile Include="CompactDS\Bitmaps\BitStreamCtxRL.cs" />
-    <Compile Include="CompactDS\Lists\DividedSortedListRS.cs" />
     <Compile Include="FunLists\ListCastToInt.cs" />
     <Compile Include="FunLists\ListCastFromInt.cs" />
     <Compile Include="CompactDS\Graphs\GraphSeq.cs" />
@@ -231,6 +206,32 @@
     <Compile Include="Sets\NumericIntersection\SimpleHashIntersection.cs" />
     <Compile Include="Sets\NumericIntersection\SvSHashIntersection.cs" />
     <Compile Include="Sets\NumericIntersection\INumericIntersection.cs" />
+    <Compile Include="CompactDS\Text\SuffixSearch\SeqCSA.cs" />
+    <Compile Include="CompactDS\Text\SuffixSearch\CSA.cs" />
+    <Compile Include="CompactDS\Lists\Unsorted\ListIRS64.cs" />
+    <Compile Include="CompactDS\Lists\Unsorted\ListIDiffs.cs" />
+    <Compile Include="CompactDS\Lists\Unsorted\ListSDiffCoder.cs" />
+    <Compile Include="CompactDS\Lists\Unsorted\ListSDiff.cs" />
+    <Compile Include="CompactDS\Lists\Unsorted\ListSDiff64.cs" />
+    <Compile Include="CompactDS\Lists\Unsorted\ListSDiffCoderRL.cs" />
+    <Compile Include="CompactDS\Lists\Unsorted\ListSDiffCoder64.cs" />
+    <Compile Include="CompactDS\Lists\Sorted\DividedSortedListRS.cs" />
+    <Compile Include="CompactDS\Lists\Sorted\SortedListDiffSet.cs" />
+    <Compile Include="CompactDS\Lists\Sorted\SortedListRL.cs" />
+    <Compile Include="CompactDS\Lists\Sorted\SortedListRSCache.cs" />
+    <Compile Include="CompactDS\Lists\Sorted\SortedListSArray.cs" />
+    <Compile Include="CompactDS\ListIBuilders.cs" />
+    <Compile Include="CompactDS\Sequences\SeqSinglePerm.cs" />
+    <Compile Include="CompactDS\Lists\Sorted\SortedListRS64Cache.cs" />
+    <Compile Include="CompactDS\Lists\Unsorted\IListI.cs" />
+    <Compile Include="CompactDS\Lists\Unsorted\ContextListI.cs" />
+    <Compile Include="CompactDS\Lists\Unsorted\ListIDiffsRL.cs" />
+    <Compile Include="CompactDS\Lists\Unsorted\ListEqRL.cs" />
+    <Compile Include="CompactDS\Lists\Unsorted\ListIFS8.cs" />
+    <Compile Include="CompactDS\Lists\Unsorted\ListIFS4.cs" />
+    <Compile Include="CompactDS\Sequences\FakeSeq.cs" />
+    <Compile Include="CompactDS\Sequences\WTM.cs" />
+    <Compile Include="CompactDS\Sequences\SeqPlain.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -261,18 +262,19 @@
     <Folder Include="CompactDS\Graphs\" />
     <Folder Include="SortingSearching\Sequences\" />
     <Folder Include="Sets\NumericIntersection\" />
+    <Folder Include="CompactDS\Lists\Sorted\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>
       <Properties>
-        <MonoDevelop.Autotools.MakefileInfo RelativeMakefileName="Makefile.am" SyncReferences="true" IsAutotoolsProject="true" RelativeConfigureInPath="..">
-          <BuildFilesVar Sync="true" Name="FILES" />
+        <MonoDevelop.Autotools.MakefileInfo RelativeMakefileName="Makefile.am" SyncReferences="True" IsAutotoolsProject="True" RelativeConfigureInPath="..">
+          <BuildFilesVar Sync="True" Name="FILES" />
           <DeployFilesVar />
-          <ResourcesVar Sync="true" Name="RESOURCES" />
+          <ResourcesVar Sync="True" Name="RESOURCES" />
           <OthersVar />
-          <GacRefVar Sync="true" Name="REFERENCES" />
-          <AsmRefVar Sync="true" Name="REFERENCES" />
-          <ProjectRefVar Sync="true" Name="REFERENCES" />
+          <GacRefVar Sync="True" Name="REFERENCES" />
+          <AsmRefVar Sync="True" Name="REFERENCES" />
+          <ProjectRefVar Sync="True" Name="REFERENCES" />
         </MonoDevelop.Autotools.MakefileInfo>
       </Properties>
     </MonoDevelop>

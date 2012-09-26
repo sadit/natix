@@ -45,7 +45,7 @@ namespace natix.SimilaritySearch
 			var lists = new IList<int>[ len_qseq];
 			for (int i = 0; i < len_qseq; ++i) {
 				var rs = this.SEQ.Unravel (qseq [i]);
-				lists [i] = new ShiftedSortedListRS (rs, -i + len_qseq);
+				lists [i] = new SortedListRSCache (rs, -i + len_qseq);
 			}
 			// lists [len_qseq] = new ListGen<int> ((int i) => i * knrbound, (int)Math.Ceiling(this.seqindex.Count * 1.0 / knrbound));
 			IList<int> __C_docs;

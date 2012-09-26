@@ -145,7 +145,9 @@ namespace natix
 				d += Math.Pow(Math.Abs(m), p);
 			}
 			if (do_sqrt) {
-				return Math.Pow(d, 1.0/p);
+				var m = Math.Pow(d, 1.0/p);
+				// Console.WriteLine ("p: {0}, pre-d: {1}, final-d: {2}", p, d, m);
+				return m;
 			} else {
 				return d;
 			}

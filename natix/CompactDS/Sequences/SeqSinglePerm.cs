@@ -23,7 +23,7 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public class GolynskiSinglePermSeq : IRankSelectSeq
+	public class SeqSinglePerm : IRankSelectSeq
 	{
 		IPermutation PERM;
 		IRankSelect LENS;
@@ -51,7 +51,7 @@ namespace natix.CompactDS
 			return this.LENS;
 		}
 
-		public GolynskiSinglePermSeq ()
+		public SeqSinglePerm ()
 		{
 		}
 		
@@ -157,7 +157,6 @@ namespace natix.CompactDS
 			return new UnraveledSymbol (this, symbol);
 		}
 		
-		#region LOAD_SAVE
 		public void Load (BinaryReader Input)
 		{
 			this.PERM = PermutationGenericIO.Load (Input);
@@ -169,6 +168,5 @@ namespace natix.CompactDS
 			PermutationGenericIO.Save (Output, this.PERM);
 			RankSelectGenericIO.Save (Output, this.LENS);
 		}
-		#endregion
 	}
 }

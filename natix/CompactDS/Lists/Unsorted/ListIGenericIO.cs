@@ -33,18 +33,20 @@ namespace natix.CompactDS
 			typeof(IList<int>)
 		};
 		static List<Type> Catalog = new List<Type>() {
-			typeof(ListIDiff),
 			typeof(ListIFS),
-			typeof(ListIRRR),
-			typeof(ListIWT),
-			typeof(ListIWT8),
 			typeof(ListRL),
-			typeof(ListRL2),
+			typeof(ListRL),// duplicated because we remove typeof(ListRL2),
 			typeof(ListSDiff),
 			typeof(ListSDiff64),
 			typeof(ListSDiffCoder),
 			typeof(ListSDiffCoder64),
-			typeof(ListSDiffCoderRL)
+			typeof(ListSDiffCoderRL),
+			typeof(ListIRS64),
+			typeof(ListIDiffs),
+			typeof(ListIDiffsRL),
+			typeof(ListEqRL),
+			typeof(ListIFS8),
+			typeof(ListIFS4)
 		};
 	
 		/// <summary>
@@ -94,9 +96,7 @@ namespace natix.CompactDS
 			byte idType = Input.ReadByte ();
 			if (idType == 255) {
 				var len = Input.ReadInt32 ();
-				var array = new int[len];
-				PrimitiveIO<int>.ReadFromFile (Input, len, array);
-				return array;
+				return PrimitiveIO<int>.ReadFromFile (Input, len, null);
 			} else {
 				var type = Catalog [idType];
 				if (type == null) {

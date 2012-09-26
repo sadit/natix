@@ -23,15 +23,15 @@ using System.Collections.Generic;
 namespace natix.CompactDS
 {
 	/// <summary>
-	/// A wavelet node (implementation with pointers/references)
+	/// A wavelet tree (implementation with pointers/references)
 	/// </summary>
 	public class WaveletTree : IRankSelectSeq
 	{
 		// static INumericManager<T> Num = (INumericManager<T>)NumericManager.Get (typeof(T));
 		IIEncoder32 Coder = null;
 		// BitStream32 CoderStream;
-		WaveletInner Root;
-		IList<WaveletLeaf> Alphabet;
+		WT_Inner Root;
+		IList<WT_Leaf> Alphabet;
 		
 		public int Sigma {
 			get {
@@ -56,10 +56,13 @@ namespace natix.CompactDS
 			this.BitmapBuilder = BitmapBuilders.GetGGMN_wt (16);
 		}
 		
-		public void Build (IIEncoder32 coder, int alphabet_size, IList<int> text)
+		public void Build (IList<int> text, int alphabet_size, IIEncoder32 coder = null)
 		{
-			this.Alphabet = new WaveletLeaf[alphabet_size];
-			this.Root = new WaveletInner (null, true);
+			this.Alphabet = new WT_Leaf[alphabet_size];
+			this.Root = new WT_Inner (null, true);
+			if (coder == null) {
+				coder = new BinaryCoding(ListIFS.GetNumBits(alphabet_size-1));
+			}
 			this.Coder = coder;
 			for (int i = 0; i < text.Count; i++) {
 				this.Add (text [i]);
@@ -67,14 +70,14 @@ namespace natix.CompactDS
 			this.FinishBuild (this.Root);
 		}
 
-		void FinishBuild (WaveletInner node)
+		void FinishBuild (WT_Inner node)
 		{
 			if (node == null) {
 				return;
 			}
 			node.B = this.BitmapBuilder(node.B as FakeBitmap);
-			this.FinishBuild (node.Left as WaveletInner);
-			this.FinishBuild (node.Right as WaveletInner);
+			this.FinishBuild (node.Left as WT_Inner);
+			this.FinishBuild (node.Right as WT_Inner);
 		}
 		
 		protected void Add (int symbol)
@@ -92,34 +95,34 @@ namespace natix.CompactDS
 				if (bitcode) {
 					if (numbits == b + 1) {
 						if (node.Right == null) {
-							var leaf = new WaveletLeaf (node, symbol);
+							var leaf = new WT_Leaf (node, symbol);
 							// this.Alphabet.Add (leaf);
 							this.Alphabet [symbol] = leaf;
 							node.Right = leaf;
 						} else {
-							(node.Right as WaveletLeaf).Increment ();
+							(node.Right as WT_Leaf).Increment ();
 						}
 					} else {
 						if (node.Right == null) {
-							node.Right = new WaveletInner (node, true);
+							node.Right = new WT_Inner (node, true);
 						}
-						node = node.Right as WaveletInner;
+						node = node.Right as WT_Inner;
 					}
 				} else {
 					if (numbits == b + 1) {
 						if (node.Left == null) {
-							var leaf = new WaveletLeaf (node, symbol);
+							var leaf = new WT_Leaf (node, symbol);
 							// this.Alphabet.Add (leaf);
 							this.Alphabet [symbol] = leaf;
 							node.Left = leaf;
 						} else {
-							(node.Left as WaveletLeaf).Increment ();
+							(node.Left as WT_Leaf).Increment ();
 						}
 					} else {
 						if (node.Left == null) {
-							node.Left = new WaveletInner (node, true);
+							node.Left = new WT_Inner (node, true);
 						}
-						node = node.Left as WaveletInner;
+						node = node.Left as WT_Inner;
 					}
 				}
 			}
@@ -133,9 +136,9 @@ namespace natix.CompactDS
 			this.SaveNode (Output, this.Root);
 		}
 		
-		void SaveNode (BinaryWriter Output, WaveletNode node)
+		void SaveNode (BinaryWriter Output, WT_Node node)
 		{
-			var asInner = node as WaveletInner;
+			var asInner = node as WT_Inner;
 			if (asInner != null) {
 				// isInner?
 				Output.Write (true);
@@ -156,7 +159,7 @@ namespace natix.CompactDS
 				}
 			} else {
 				Output.Write (false);
-				var asLeaf = node as WaveletLeaf;
+				var asLeaf = node as WT_Leaf;
 				Output.Write ((int)asLeaf.Count);
 				Output.Write ((int)asLeaf.Symbol);
 			}
@@ -165,18 +168,18 @@ namespace natix.CompactDS
 		public void Load (BinaryReader Input)
 		{
 			var size = Input.ReadInt32 ();
-			this.Alphabet = new WaveletLeaf[size];
+			this.Alphabet = new WT_Leaf[size];
 			this.Coder = IEncoder32GenericIO.Load (Input);
 			// Console.WriteLine ("Input.Position: {0}", Input.BaseStream.Position);
-			this.Root = this.LoadNode (Input, null) as WaveletInner;
+			this.Root = this.LoadNode (Input, null) as WT_Inner;
 		}
 		
-		WaveletNode LoadNode (BinaryReader Input, WaveletInner parent)
+		WT_Node LoadNode (BinaryReader Input, WT_Inner parent)
 		{
 			// Console.WriteLine ("xxxxxxxxx LoadNode");
 			var isInner = Input.ReadBoolean ();
 			if (isInner) {
-				var node = new WaveletInner (parent, false);
+				var node = new WT_Inner (parent, false);
 				node.B = RankSelectGenericIO.Load (Input);
 				var hasLeft = Input.ReadBoolean ();
 				if (hasLeft) {
@@ -191,16 +194,16 @@ namespace natix.CompactDS
 				var count = Input.ReadInt32 ();
 				var symbol = Input.ReadInt32 ();
 				// Console.WriteLine ("--leaf> count: {0}, symbol: {1}", count, symbol);
-				var leaf = new WaveletLeaf (parent, symbol, count);
+				var leaf = new WT_Leaf (parent, symbol, count);
 				this.Alphabet[symbol] = leaf;
 				return leaf;
 			}
 		}
 		
-		void Walk (WaveletInner node,
-			Func<WaveletInner, object> preorder,
-			Func<WaveletInner, object> inorder,
-			Func<WaveletInner, object> postorder)
+		void Walk (WT_Inner node,
+			Func<WT_Inner, object> preorder,
+			Func<WT_Inner, object> inorder,
+			Func<WT_Inner, object> postorder)
 		{
 			if (node == null) {
 				return;
@@ -208,11 +211,11 @@ namespace natix.CompactDS
 			if (preorder != null) {
 				preorder (node);
 			}
-			this.Walk (node.Left as WaveletInner, preorder, inorder, postorder);
+			this.Walk (node.Left as WT_Inner, preorder, inorder, postorder);
 			if (inorder != null) {
 				inorder (node);
 			}
-			this.Walk (node.Right as WaveletInner, preorder, inorder, postorder);
+			this.Walk (node.Right as WT_Inner, preorder, inorder, postorder);
 			if (postorder != null) {
 				postorder (node);
 			}
@@ -239,12 +242,12 @@ namespace natix.CompactDS
 				if (b) {
 					position = node.B.Rank1 (position) - 1;
 					if (i + 1 < numbits) {
-						node = node.Right as WaveletInner;
+						node = node.Right as WT_Inner;
 					}
 				} else {
 					position = node.B.Rank0 (position) - 1;
 					if (i + 1 < numbits) {
-						node = node.Left as WaveletInner;
+						node = node.Left as WT_Inner;
 					}
 				}
 				if (node == null) {
@@ -263,7 +266,7 @@ namespace natix.CompactDS
 			if (symnode == null || symnode.Count < rank) {
 				return -1;
 			}
-			WaveletInner node = symnode.Parent as WaveletInner;
+			WT_Inner node = symnode.Parent as WT_Inner;
 			for (--numbits; numbits >= 0; numbits--) {
 				bool b = coderstream [numbits];
 				if (b) {
@@ -271,7 +274,7 @@ namespace natix.CompactDS
 				} else {
 					rank = node.B.Select0 (rank) + 1;
 				}
-				node = node.Parent as WaveletInner;
+				node = node.Parent as WT_Inner;
 			}
 			return rank - 1;
 		}
@@ -279,21 +282,21 @@ namespace natix.CompactDS
 		public int Access (int position)
 		{
 			var node = this.Root;
-			WaveletInner tmp;
+			WT_Inner tmp;
 			for (int i = 0; true; i++) {
 				if (node.B.Access(position)) {
 					position = node.B.Rank1 (position) - 1;
-					tmp = node.Right as WaveletInner;
+					tmp = node.Right as WT_Inner;
 					if (tmp == null) {
-						return (node.Right as WaveletLeaf).Symbol;
+						return (node.Right as WT_Leaf).Symbol;
 					} else {
 						node = tmp;
 					}
 				} else {
 					position = node.B.Rank0 (position) - 1;
-					tmp = node.Left as WaveletInner;
+					tmp = node.Left as WT_Inner;
 					if (tmp == null) {
-						return (node.Left as WaveletLeaf).Symbol;
+						return (node.Left as WT_Leaf).Symbol;
 					} else {
 						node = tmp;
 					}
@@ -305,55 +308,58 @@ namespace natix.CompactDS
 		{
 			return new UnraveledSymbol (this, symbol);
 		}
-	}
-	
-	public class WaveletNode
-	{
-		public WaveletNode Parent;
-		public WaveletNode (WaveletNode parent)
-		{
-			this.Parent = parent;
-		}
-	}
 
-	public class WaveletInner : WaveletNode
-	{
-		public IRankSelect B;
-		public WaveletNode Left;
-		public WaveletNode Right;
 
-		public WaveletInner (WaveletInner parent, bool building) : base(parent)
+		// auxiliar classes
+		public class WT_Node
 		{
-			if (building) {
-				this.B = new FakeBitmap ();
+			public WT_Node Parent;
+			public WT_Node (WT_Node parent)
+			{
+				this.Parent = parent;
 			}
-			this.Left = null;
-			this.Right = null;
-		}
-
-	}
-
-	public class WaveletLeaf : WaveletNode
-	{
-
-		public int Count;
-		public int Symbol;
-
-		public WaveletLeaf (WaveletInner parent, int symbol) : base(parent)
-		{
-			this.Count = 1;
-			this.Symbol = symbol;
 		}
 		
-		public WaveletLeaf (WaveletInner parent, int symbol, int count) : base(parent)
+		public class WT_Inner : WT_Node
 		{
-			this.Count = count;
-			this.Symbol = symbol;
+			public IRankSelect B;
+			public WT_Node Left;
+			public WT_Node Right;
+			
+			public WT_Inner (WT_Inner parent, bool building) : base(parent)
+			{
+				if (building) {
+					this.B = new FakeBitmap ();
+				}
+				this.Left = null;
+				this.Right = null;
+			}
+			
 		}
 		
-		public void Increment ()
+		public class WT_Leaf : WT_Node
 		{
-			this.Count++;
+			
+			public int Count;
+			public int Symbol;
+			
+			public WT_Leaf (WT_Inner parent, int symbol) : base(parent)
+			{
+				this.Count = 1;
+				this.Symbol = symbol;
+			}
+			
+			public WT_Leaf (WT_Inner parent, int symbol, int count) : base(parent)
+			{
+				this.Count = count;
+				this.Symbol = symbol;
+			}
+			
+			public void Increment ()
+			{
+				this.Count++;
+			}
 		}
+
 	}
 }

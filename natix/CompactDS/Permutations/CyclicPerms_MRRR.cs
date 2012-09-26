@@ -38,7 +38,9 @@ namespace natix.CompactDS
 			this.Build (perm, t, null);
 		}
 		
-		public void Build (IList<int> perm, int t, object arg_finish_build = null)
+		public void Build (IList<int> perm, int t,
+		                   ListIBuilder listperm_builder = null,
+		                   ListIBuilder listback_builder = null)
 		{
 			t = Math.Max (t, 2);
 			this.PERM = perm;
@@ -79,14 +81,7 @@ namespace natix.CompactDS
 						// prev_j = j;
 						j = this.PERM [j];
 					}
-				}
-				/*
-				Console.WriteLine ("#backs: {0}", this.BACK.Count);
-				Console.WriteLine ("visited: {0}", visited);
-				for (int x = 0; x < this.BACK.Count; x++) {
-					Console.WriteLine ("back: {0}, current: {1}", this.BACK [x], back_indexes [x]);
-				}
-				Console.WriteLine ();*/				
+				}			
 			}
 			Sorting.Sort<int,int> (back_indexes, this.BACK);
 			visited.Clear ();
@@ -107,22 +102,20 @@ namespace natix.CompactDS
 			Console.WriteLine ("<END>");
 			Console.WriteLine ("HAS_BACK: " + visited.ToString());
 			*/
-			this.FinishBuild (arg_finish_build);
+			if (listperm_builder == null) {
+				listperm_builder = ListIBuilders.GetListIFS ();
+			}
+			if (listback_builder == null) {
+				listback_builder = ListIBuilders.GetListIFS ();
+			}
+			this.PERM = listperm_builder(this.PERM, this.PERM.Count-1);
+			this.BACK = listback_builder(this.BACK, this.PERM.Count-1);
 		}
 	
-		protected virtual void FinishBuild (object arg)
-		{
-			// To be used by derived classes
-		}
-
 		public virtual void Save (BinaryWriter Output)
 		{
 			ListIGenericIO.Save (Output, this.PERM);
 			ListIGenericIO.Save (Output, this.BACK);
-			/*Output.Write ((int)this.PERM.Count);
-			PrimitiveIO<int>.WriteVector (Output, this.PERM);
-			Output.Write ((int)this.BACK.Count);
-			PrimitiveIO<int>.WriteVector (Output, this.BACK);*/
 			RankSelectGenericIO.Save (Output, this.has_back);
 		}
 		
@@ -130,12 +123,6 @@ namespace natix.CompactDS
 		{
 			this.PERM = ListIGenericIO.Load (Input);
 			this.BACK = ListIGenericIO.Load (Input);
-			/*var n = Input.ReadInt32 ();
-			this.PERM = new int[n];
-			PrimitiveIO<int>.ReadFromFile (Input, n, this.PERM);
-			var b = Input.ReadInt32 ();
-			this.BACK = new int[b];
-			PrimitiveIO<int>.ReadFromFile (Input, b, this.BACK);*/
 			this.has_back = RankSelectGenericIO.Load (Input);
 		}
 		

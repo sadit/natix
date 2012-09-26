@@ -30,67 +30,64 @@ namespace natix.CompactDS
 		{
 		}
 
-		public static SequenceBuilder GetGolynskiSinglePerm (short t)
+		public static SequenceBuilder GetSeqSinglePermListIDiffs (short t, short bsize = 16, BitmapFromBitStream bitmap_builder = null, IIEncoder32 encoder = null)
 		{
-			return delegate (IList<int> seq, int sigma) {
-				var S = new GolynskiSinglePermSeq ();
-				S.PermBuilder = PermutationBuilders.GetSuccRL2CyclicPerms (t);
-				S.Build (seq, sigma);
-				return S;
-			};
+			var pbuilder = PermutationBuilders.GetCyclicPermsListIDiffs(t, bsize, bitmap_builder, encoder);
+			return GetSeqSinglePerm(pbuilder, null);
 		}
-		
-		public static SequenceBuilder GetGolynskiSinglePerm (PermutationBuilder pbuilder)
+
+		public static SequenceBuilder GetSeqSinglePerm (PermutationBuilder perm_builder = null, BitmapFromBitStream bitmap_builder = null)
 		{
+			if (perm_builder == null) {
+				perm_builder = PermutationBuilders.GetCyclicPermsListIDiffs (16, 63);
+			}
+			if (bitmap_builder == null) {
+				bitmap_builder = BitmapBuilders.GetGGMN_wt(16);
+			}
 			return delegate (IList<int> seq, int sigma) {
-				var S = new GolynskiSinglePermSeq ();
-				S.PermBuilder = pbuilder;
-				S.Build (seq, sigma);
-				return S;
-			};
-		}
-				
-		public static SequenceBuilder GetGolynskiListRL2 (short t = 16, short block_size = 127, IIEncoder32 coder = null)
-		{
-			return delegate (IList<int> seq, int sigma) {
-				var S = new GolynskiListRL2Seq ();
-				//S.PermCodingBuildParams = new SuccRL2CyclicPerms_MRRR.BuildParams (coder, block_size);
-				if (coder == null) {
-					coder = new EliasDelta ();
-				}
-				S.Build (seq, sigma, t, coder, block_size);
+				var S = new SeqSinglePerm ();
+				S.Build (seq, sigma,perm_builder, bitmap_builder);
 				return S;
 			};
 		}
 
-		public static SequenceBuilder GetGolynskiSucc (short t = 16)
+//		public static SequenceBuilder GetGolynskiListRL2 (short t = 16, short block_size = 127, IIEncoder32 coder = null)
+//		{
+//			return delegate (IList<int> seq, int sigma) {
+//				var S = new GolynskiListRL2Seq ();
+//				//S.PermCodingBuildParams = new SuccRL2CyclicPerms_MRRR.BuildParams (coder, block_size);
+//				if (coder == null) {
+//					coder = new EliasDelta ();
+//				}
+//				S.Build (seq, sigma, t, coder, block_size);
+//				return S;
+//			};
+//		}
+
+		public static SequenceBuilder GetGolynski (PermutationBuilder perm_builder = null,
+		                                           BitmapFromBitStream bitmap_builder = null)
 		{
+			if (perm_builder == null) {
+				perm_builder = PermutationBuilders.GetCyclicPermsListIFS(16);
+			}
+			if (bitmap_builder == null) {
+				bitmap_builder = BitmapBuilders.GetGGMN_wt(16);
+			}
 			return delegate (IList<int> seq, int sigma) {
 				var S = new GolynskiMunroRaoSeq ();
-				S.PermBuilder = PermutationBuilders.GetSuccCyclicPerms (t);
-				S.Build (seq, sigma);
-				return S;
-			};
-		}
-		
-		public static SequenceBuilder GetGolynski (short t = 16)
-		{
-			return delegate (IList<int> seq, int sigma) {
-				var S = new GolynskiMunroRaoSeq ();
-				S.PermBuilder = PermutationBuilders.GetCyclicPerms (t);
-				S.Build (seq, sigma);
+				S.Build (seq, sigma, perm_builder, bitmap_builder);
 				return S;
 			};
 		}
 		
 		public static SequenceBuilder GetGolynskiRL (short t = 16)
 		{
-			return delegate (IList<int> seq, int sigma) {
-				var S = new GolynskiMunroRaoSeq ();
-				S.PermBuilder = PermutationBuilders.GetSuccRLCyclicPerms (t);
-				S.Build (seq, sigma);
-				return S;
-			};
+			return GetGolynski(PermutationBuilders.GetCyclicPermsListRL(t));
+		}
+
+		public static SequenceBuilder GetGolynskiSucc (short t = 16, BitmapFromBitStream bitmap_builder = null)
+		{
+			return GetGolynski(PermutationBuilders.GetCyclicPermsListIFS(t), bitmap_builder);
 		}
 
 		public static SequenceBuilder GetWT_GGMN_BinaryCoding (short b)
@@ -100,7 +97,7 @@ namespace natix.CompactDS
 				wt.BitmapBuilder = BitmapBuilders.GetGGMN_wt (b);
 				int numbits = (int)Math.Ceiling (Math.Log (sigma, 2));
 				var enc = new BinaryCoding (numbits);
-				wt.Build (enc, sigma, seq);
+				wt.Build (seq, sigma, enc);
 				return wt;
 
 			};
@@ -114,7 +111,7 @@ namespace natix.CompactDS
 				wt.BitmapBuilder = bitmap_builder;
 				int numbits = (int)Math.Ceiling (Math.Log (sigma, 2));
 				var enc = new BinaryCoding (numbits);
-				wt.Build (enc, sigma, seq);
+				wt.Build (seq, sigma, enc);
 				return wt;
 			};
 		}
@@ -129,12 +126,24 @@ namespace natix.CompactDS
 				wt.BitmapBuilder = bitmap_builder;
 				var enc = get_coder (sigma);
 				// var enc = new BinaryCoding (numbits);
-				wt.Build (enc, sigma, seq);
+				wt.Build (seq, sigma, enc);
 				return wt;
-
 			};
 		}
-		
+
+		public static SequenceBuilder GetWTM (
+			short bits_per_symbol,
+			IIEncoder32 encoder = null,
+			SequenceBuilder seq_builder = null
+			)
+		{
+			return delegate (IList<int> seq, int sigma) {
+				var wt = new WTM();
+				wt.Build(seq, sigma, bits_per_symbol, encoder, seq_builder);
+				return wt;
+			};
+		}
+
 		public static SequenceBuilder GetIISketches_SArray (int sketch_blocksize)
 		{
 			return delegate (IList<int> seq, int sigma) {
@@ -222,13 +231,22 @@ namespace natix.CompactDS
 			}
 			return GetSeqXLB (t, BitmapBuilders.GetDiffSetRL2_64 (b, coder));
 		}
-		
+
 		public static SequenceBuilder GetSeqXLB (short t, BitmapFromList64 bitmap_builder)
 		{
 			return delegate (IList<int> seq, int sigma) {
 				var seqxl = new SeqXLB ();
 				seqxl.Build (seq, sigma, t, bitmap_builder);
 				return seqxl;
+			};
+		}
+
+		public static SequenceBuilder GetSeqPlain(short B = 0, ListIBuilder list_builder = null, BitmapFromBitStream bitmap_builder = null)
+		{
+			return delegate (IList<int> seq, int sigma) {
+				var s = new SeqPlain();
+				s.Build(seq, sigma, B, list_builder, bitmap_builder);
+				return s;
 			};
 		}
 	}

@@ -32,10 +32,12 @@ namespace natix.CompactDS
 			typeof(InvIndexSketches),
 			typeof(InvIndexSeq),
 			typeof(GolynskiMunroRaoSeq),
-			typeof(GolynskiSinglePermSeq),
-			typeof(GolynskiListRL2Seq),
+			typeof(SeqSinglePerm),
+			typeof(SeqSinglePerm),//duplicated because we remove	typeof(GolynskiListRL2Seq),
 			typeof(SeqXLB),
-			typeof(InvIndexXLBSeq)
+			typeof(InvIndexXLBSeq),
+			typeof(SeqPlain),
+			typeof(WTM)
 		};
 		
 		/// <summary>

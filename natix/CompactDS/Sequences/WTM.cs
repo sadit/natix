@@ -21,9 +21,9 @@ using System.Collections.Generic;
 namespace natix.CompactDS
 {
 	/// <summary>
-	/// A wavelet node (implementation with pointers/references)
+	/// A multiary wavelet tree (implementation with pointers/references)
 	/// </summary>
-	public class WT_M : IRankSelectSeq
+	public class WTM : IRankSelectSeq
 	{
 		// static INumericManager<T> Num = (INumericManager<T>)NumericManager.Get (typeof(T));
 		IIEncoder32 Coder = null;
@@ -44,16 +44,21 @@ namespace natix.CompactDS
 			}
 		}
 	
-		public WT_M ()
+		public WTM ()
 		{
 		}
 		
-		public void Build (IIEncoder32 coder, int alphabet_size, short bits_per_symbol, IList<int> text, SequenceBuilder seq_builder = null)
+		public void Build (IList<int> text, int alphabet_size, short bits_per_symbol, IIEncoder32 coder = null, SequenceBuilder seq_builder = null)
 		{
 			this.bits_per_symbol = bits_per_symbol;
 			short arity = (short)(1 << bits_per_symbol);
 			this.Alphabet = new WTM_Leaf[alphabet_size];
 			this.Root = new WTM_Inner (arity, null, true);
+			if (coder == null) {
+				var numbits = ListIFS.GetNumBits(alphabet_size-1);
+				numbits = (int)Math.Ceiling(numbits * 1.0 / this.bits_per_symbol) * this.bits_per_symbol;
+				coder = new BinaryCoding(numbits);
+			}
 			this.Coder = coder;
 			for (int i = 0; i < text.Count; i++) {
 				this.Add (text [i]);
@@ -77,34 +82,27 @@ namespace natix.CompactDS
 		
 		protected void Add (int symbol)
 		{
-			var coderstream = new BitStream32 ();
-			coderstream.Clear ();
-			this.Coder.Encode(coderstream, symbol);
-			var ctx = new BitStreamCtx (0);
-			// this.CoderStream.Seek (0);
-			int numbits = (int)coderstream.CountBits;
+			var ministring = this.GetMiniString (symbol);
 			var node = this.Root;
-			for (int b = 0; b < numbits; b+=this.bits_per_symbol) {
-				//var bitcode = coderstream.Read (ctx);
-				int code = (int)coderstream.Read (this.bits_per_symbol, ctx);
+			var plen = ministring.Count;
+			for (int i = 0; i < plen; ++i) {
+				var code = ministring[i];
 				(node.SEQ as FakeSeq).Add (code);
-				if (numbits == b + this.bits_per_symbol) {
+				if (i+1 == plen) {
 					var leaf = node.CHILDREN[code] as WTM_Leaf;
 					if (leaf == null) {
 						leaf = new WTM_Leaf(node, symbol);
-						this.Alphabet [symbol] = leaf;
+						this.Alphabet[symbol] = leaf;
 					} else {
 						leaf.Increment();
 					}
 					node.CHILDREN[code] = leaf;
-					break;
 				} else {
 					var inner = node.CHILDREN[code] as WTM_Inner;
 					if (inner == null) {
 						inner = new WTM_Inner((short)node.CHILDREN.Length, node, true);
-					} else {
-						node.CHILDREN[code] = inner;
 					}
+					node.CHILDREN[code] = inner;
 					node = inner;
 				}
 			}
@@ -221,6 +219,7 @@ namespace natix.CompactDS
 			for (int i = 0; i < numbits; i+= this.bits_per_symbol) {
 				int code = (int)coderstream.Read (this.bits_per_symbol, ctx);
 				ministring.Add(code);
+				// Console.WriteLine("get-mini symbol: {0}, numbits: {1}, i: {2}, code: {3}", symbol, numbits, i, code);
 			}
 			return ministring;
 		}
@@ -263,14 +262,19 @@ namespace natix.CompactDS
 
 		public int Access (int position)
 		{
+			// Console.WriteLine("=== Access position: {0}", position);
 			var node = this.Root;
 			WTM_Inner tmp;
 			for (int i = 0; true; i++) {
 				var code = node.SEQ.Access(position);
+				// Console.WriteLine("   A position: {0}, i: {1}, code: {2}", position, i, code);
 				position = node.SEQ.Rank (code, position) - 1;
+				// Console.WriteLine("   B position: {0}, i: {1}, code: {2}", position, i, code);
 				tmp = node.CHILDREN[code] as WTM_Inner;
 				if (tmp == null) {
-					return (node.CHILDREN[code] as WTM_Leaf).Symbol;
+					var sym = (node.CHILDREN[code] as WTM_Leaf).Symbol;
+					// Console.WriteLine ("   symbol: {0}", sym);
+					return sym;
 				} else {
 					node = tmp;
 				}

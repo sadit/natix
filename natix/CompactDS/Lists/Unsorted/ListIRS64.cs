@@ -26,12 +26,12 @@ namespace natix.CompactDS
 	/// Encodes an array or permutation using a compact representation. Specially useful for lists that
 	/// exhibit large runs. It does not support neither consecutive equal items nor negative items.
 	/// </summary>
-	public class ListIBitmap64 : ListGenerator<int>, ILoadSave
+	public class ListIRS64 : ListGenerator<int>, ILoadSave
 	{
 		public IRankSelect64 XLB;
 		public int MAXVALUE;
 
-		public ListIBitmap64()
+		public ListIRS64()
 		{
 		}
 

@@ -26,60 +26,101 @@ namespace natix.CompactDS
 	
 	public class PermutationBuilders
 	{
-
-		public static PermutationBuilder GetCyclicPerms (int t)
+		public static PermutationBuilder GetCyclicPerms (int t, ListIBuilder listperm_builder = null,
+		                                                 ListIBuilder listback_builder = null)
 		{
 			return delegate (IList<int> perm) {
 				var P = new CyclicPerms_MRRR ();
-				P.Build (perm, t);
-				return P;
-			};
-		}
-		
-		public static PermutationBuilder GetSuccCyclicPerms (int t)
-		{
-			return delegate (IList<int> perm) {
-				var P = new SuccCyclicPerms_MRRR ();
-				P.Build (perm, t);
-				return P;
-			};
-		}
-		
-		public static PermutationBuilder GetRLCyclicPerms (int t)
-		{
-			return delegate (IList<int> perm) {
-				var P = new RLCyclicPerms_MRRR ();
-				P.Build (perm, t);
-				return P;
-			};
-		}
-		
-		public static PermutationBuilder GetSuccRLCyclicPerms (int t)
-		{
-			return delegate (IList<int> perm) {
-				var P = new SuccRLCyclicPerms_MRRR ();
-				P.Build (perm, t);
+				P.Build (perm, t, listperm_builder, listback_builder);
 				return P;
 			};
 		}
 
-		public static PermutationBuilder GetSuccRL2CyclicPerms (int t)
+		public static PermutationBuilder GetCyclicPermsListIFS (int t)
 		{
 			return delegate (IList<int> perm) {
-				var P = new SuccRL2CyclicPerms_MRRR ();
-				P.Build (perm, t, new SuccRL2CyclicPerms_MRRR.BuildParams ());
+				var P = new CyclicPerms_MRRR ();
+				var builder = ListIBuilders.GetListIFS();
+				P.Build (perm, t, builder, builder);
 				return P;
 			};
 		}
-		
-		public static PermutationBuilder GetSuccRL2CyclicPerms (int t, IIEncoder32 coder, short block_size)
+
+		public static PermutationBuilder GetCyclicPermsListRL (int t)
 		{
 			return delegate (IList<int> perm) {
-				var P = new SuccRL2CyclicPerms_MRRR ();
-				P.Build (perm, t, new SuccRL2CyclicPerms_MRRR.BuildParams (coder, block_size));
+				var P = new CyclicPerms_MRRR ();
+				P.Build (perm, t, ListIBuilders.GetListRL(), ListIBuilders.GetListIFS());
 				return P;
 			};
 		}
+
+		public static PermutationBuilder GetCyclicPermsListIRS64 (int t, BitmapFromList64 bb = null)
+		{
+			return delegate (IList<int> perm) {
+				var P = new CyclicPerms_MRRR ();
+				P.Build (perm, t, ListIBuilders.GetListIRS64(bb), ListIBuilders.GetListIFS());
+				return P;
+			};
+		}
+
+		public static PermutationBuilder GetCyclicPermsListIDiffs (int t, short bsize,
+		                                                           BitmapFromBitStream marks_builder = null,
+		                                                           IIEncoder32 encoder = null)
+		{
+			return delegate (IList<int> perm) {
+				var P = new CyclicPerms_MRRR ();
+				var permbuilder = ListIBuilders.GetListIDiffs(bsize, marks_builder, encoder);
+				var backbuilder = ListIBuilders.GetListIFS();
+				P.Build (perm, t, permbuilder, backbuilder);
+				return P;
+			};
+		}
+
+//		public static PermutationBuilder GetSuccCyclicPerms (int t)
+//		{
+//			return delegate (IList<int> perm) {
+//				var P = new SuccCyclicPerms_MRRR ();
+//				P.Build (perm, t);
+//				return P;
+//			};
+//		}
+//		
+//		public static PermutationBuilder GetRLCyclicPerms (int t)
+//		{
+//			return delegate (IList<int> perm) {
+//				var P = new RLCyclicPerms_MRRR ();
+//				P.Build (perm, t);
+//				return P;
+//			};
+//		}
+//		
+//		public static PermutationBuilder GetSuccRLCyclicPerms (int t)
+//		{
+//			return delegate (IList<int> perm) {
+//				var P = new SuccRLCyclicPerms_MRRR ();
+//				P.Build (perm, t);
+//				return P;
+//			};
+//		}
+//
+//		public static PermutationBuilder GetSuccRL2CyclicPerms (int t)
+//		{
+//			return delegate (IList<int> perm) {
+//				var P = new SuccRL2CyclicPerms_MRRR ();
+//				P.Build (perm, t, new SuccRL2CyclicPerms_MRRR.BuildParams ());
+//				return P;
+//			};
+//		}
+//		
+//		public static PermutationBuilder GetSuccRL2CyclicPerms (int t, IIEncoder32 coder, short block_size)
+//		{
+//			return delegate (IList<int> perm) {
+//				var P = new SuccRL2CyclicPerms_MRRR ();
+//				P.Build (perm, t, new SuccRL2CyclicPerms_MRRR.BuildParams (coder, block_size));
+//				return P;
+//			};
+//		}
 
 		public static PermutationBuilder GetPlainPerms ()
 		{

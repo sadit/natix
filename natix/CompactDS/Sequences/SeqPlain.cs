@@ -46,28 +46,36 @@ namespace natix.CompactDS
 			this.B = B;
 			var S = new BitStream32[sigma];
 			int n = seq.Count;
-			int s = 0;
+//			Console.WriteLine ("===== building");
+//			bool show_more = false;
 			for (int i = 0; i < n; ++i) {
 				if (i % this.B == 0) {
 					for (int c = 0; c < sigma; ++c) {
 						if (i == 0) {
-							S[c] = new BitStream32();
+							S [c] = new BitStream32 ();
 						}
-						S[c].Write(true);
+						S [c].Write (true);
 					}
-					s++;
 				}
-				S[seq[i]].Write (false);
+				var sym = seq [i];
+//				if (i < 128 && sym == 14) {
+//					Console.WriteLine ("i: {0}, sym: {1}", i, sym);
+//					show_more = true;
+//				}
+				S [sym].Write (false);
 			}
-			var ostream = S[0];
+			var ostream = S [0];
 			for (int c = 1; c < sigma; ++c) {
-				var istream = S[c];
+				var istream = S [c];
 				for (int i = 0; i < istream.CountBits; ++i) {
-					ostream.Write(istream[i]);
+					ostream.Write (istream [i]);
 				}
 			}
-			// Console.WriteLine ("OSTREAM: {0}", ostream);
-			this.X = bitmap_builder(new FakeBitmap(ostream));
+			this.X = bitmap_builder (new FakeBitmap (ostream));
+//			if (show_more) {
+//				Console.WriteLine ("=== STREAM: {0}", S [14]);
+//				Console.WriteLine ("=== BUILD n: {0}, X.Count: {1}, X.Count1: {2}", n, this.X.Count, this.X.Count1);
+//			}
 			this.SEQ = list_builder(seq, sigma);
 		}
 
@@ -145,21 +153,32 @@ namespace natix.CompactDS
 			if (pos < 0) {
 				return 0;
 			}
-			//Console.WriteLine ("XXX symbol: {0}, pos: {1}, pos/sigma: {2}", symbol, pos, pos / this.B);
-			int m = this.Count / this.B;
+			//int m = this.Count / this.B;
+			//var a_rank1 = m * symbol + pos / this.B + 1;
+			int m = (int)Math.Ceiling(this.Count * 1.0 / this.B);
 			var a_rank1 = m * symbol + pos / this.B + 1;
 			var a_pos = this.X.Select1(a_rank1);
 			var a_rank0 = a_pos + 1 - a_rank1;
-			//Console.WriteLine ("m: {0}, a_rank0: {1}, a_rank1: {2}, a_pos: {3}", m, a_rank0, a_rank1, a_pos);
 			// apos + 1 = arank1 + arank0
 			var b_rank1 = m * symbol + 1;
 			var b_pos = this.X.Select1(b_rank1);
 			var b_rank0 = b_pos + 1 - b_rank1;
-			//Console.WriteLine ("m: {0}, b_rank0: {1}, b_rank1: {2}, b_pos: {3}", m, b_rank0, b_rank1, b_pos);
 			var rem = pos % this.B;
 			var pc = this.PopCount(symbol, pos - rem,  pos);
 			var r = a_rank0 - b_rank0 + pc;
-			//Console.WriteLine ("symbol: {0}, pos: {1}, r: {2}, pc: {3}", symbol, pos, r, pc);
+//			if (symbol == 14) {
+//				Console.WriteLine ("XXX symbol: {0}, pos: {1}, pos/B: {2}, B: {3}, n: {4}, sigma: {5}",
+//				                   symbol, pos, pos / this.B, this.B, this.Count, this.Sigma);
+//				StringWriter w = new StringWriter();
+//				for (int i = 0; i < 32; ++i) {
+//					w.Write("{0}, ", this.SEQ[i]);
+//				}
+//				Console.WriteLine(w.ToString());
+//				Console.WriteLine("count: {0}, count1: {1}", this.X.Count, this.X.Count1);
+//				Console.WriteLine ("m: {0}, a_rank0: {1}, a_rank1: {2}, a_pos: {3}", m, a_rank0, a_rank1, a_pos);
+//				Console.WriteLine ("m: {0}, b_rank0: {1}, b_rank1: {2}, b_pos: {3}", m, b_rank0, b_rank1, b_pos);
+//				Console.WriteLine ("symbol: {0}, pos: {1}, r: {2}, pc: {3}", symbol, pos, r, pc);
+//			}
 			return r;
 		}
 
@@ -169,8 +188,9 @@ namespace natix.CompactDS
 				return -1;
 			}
 			// locating the position on X of symbol
-			var n = this.Count;
-			int m = n / this.B;
+			// var n = this.Count;
+			// int m = n / this.B;
+			int m = (int)Math.Ceiling(this.Count * 1.0 / this.B);
 			var a_rank1 = m * symbol + 1;
 			var a_pos = this.X.Select1 (a_rank1);
 			var a_rank0 = a_pos + 1 - a_rank1;
@@ -181,8 +201,10 @@ namespace natix.CompactDS
 			var b_rank1 = b_pos + 1 - b_rank0;
 
 			// determining the block Id containing the result
-			var blockId = (b_rank1 - 1) % m;
-
+			int blockId = 0;
+			if (m > 0) {
+				blockId = (b_rank1 - 1) % m;
+			}
 			// determining the remainder rank' on the block
 			var c_rank1 = b_rank1;
 			var c_pos = this.X.Select1 (c_rank1);

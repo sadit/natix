@@ -96,6 +96,11 @@ namespace natix.CompactDS
 		{
 			return this.Coder.ArrayGet (this.Stream, index);
 		}
+
+		public int GetItem (int index, ContextListI ctx)
+		{
+			return this.GetItem(index);
+		}
 		
 		public override void SetItem (int index, int u)
 		{

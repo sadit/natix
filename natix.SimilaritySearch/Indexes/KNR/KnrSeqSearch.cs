@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using natix.CompactDS;
 using natix.Sets;
 using natix.SortingSearching;
+using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
@@ -42,7 +43,7 @@ namespace natix.SimilaritySearch
 			Sorting.Sort<IList<int>,int> (seqs, perm, (x,y) => StringSpace<int>.LexicographicCompare (x, y));
 			var S = new ListGen<int> ((int i) => seqs [i / this.K] [i % this.K], n * this.K);
 			if (perm_builder == null) {
-				perm_builder = PermutationBuilders.GetSuccCyclicPerms (24);
+				perm_builder = PermutationBuilders.GetCyclicPermsListIFS(24);
 			}
 			if (seq_builder == null) {
 				seq_builder = SequenceBuilders.GetSeqXLB_DiffSet64(24, 63);
@@ -95,6 +96,18 @@ namespace natix.SimilaritySearch
 			this.K = K;
 			this.MAXCAND = maxcand;
 			int[] G = new int[n * this.K];
+			Action<int> compute = delegate (int i) {
+				if (i % 1000 == 0) {
+					Console.WriteLine ("computing knr {0}/{1} (adv. {2:0.00}%, curr. time: {3})", i, n, i*100.0/n, DateTime.Now);
+				}
+				var u = this.DB[i];
+				var useq = this.GetKnr(u);
+				for (int j = 0; j < this.K; ++j) {
+					G[i*this.K+j] = useq[j];
+				}
+			};
+			Parallel.For(0, n, compute);
+			/*
 			for (int i = 0; i < n; ++i) {
 				if (i % 1000 == 0) {
 					Console.WriteLine ("computing knr {0}/{1} (adv. {2:0.00}%, curr. time: {3})", i, n, i*100.0/n, DateTime.Now);
@@ -104,7 +117,7 @@ namespace natix.SimilaritySearch
 				for (int j = 0; j < this.K; ++j) {
 					G[i*this.K+j] = useq[j];
 				}
-			}
+			}*/
 			if (seq_builder == null) {
 				seq_builder = SequenceBuilders.GetSeqXLB_SArray64 (16);
 			}
@@ -171,11 +184,11 @@ namespace natix.SimilaritySearch
 			}
 			var len_qseq = qseq.Count;
 			var ialg = new BaezaYatesIntersection<int> (new DoublingSearch<int> ());
-			IList<int> C = new SortedListRS (this.SEQ.Unravel (qseq [0]));
+			IList<int> C = new SortedListRSCache (this.SEQ.Unravel (qseq [0]));
 			int i = 1;
 			while (i < len_qseq && C.Count > maxcand) {
 				var rs = this.SEQ.Unravel (qseq [i]);
-				var I = new ShiftedSortedListRS (rs, -i);
+				var I = new SortedListRSCache (rs, -i);
 				var L = new List<IList<int>> () {C, I};
 				var tmp = ialg.Intersection (L);
 				++i;

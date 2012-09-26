@@ -21,18 +21,18 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public class SeqCSA : ITextIndex
+	public class CSA : ITextIndex
 	{
 		public int[] charT;
 		public IRankSelect newF;
-		public IRankSelectSeq SeqPsi;
+		public IList<int> Psi;
 		public IRankSelect SA_marked;
 		public ListIFS SA_samples;
 		public ListIFS SA_invsamples;
 		public short SA_sample_step;
 
 		
-		public SeqCSA ()
+		public CSA ()
 		{
 		}
 
@@ -54,11 +54,8 @@ namespace natix.CompactDS
 			}
 		}
 		
-		public void Build (string sa_name, SequenceBuilder seq_builder = null)
+		public void Build (string sa_name, ListIBuilder list_builder = null)
 		{
-			if (seq_builder == null) {
-				seq_builder = SequenceBuilders.GetSeqXLB_DiffSetRL2_64(16, 63);
-			}
 			using (var Input = new BinaryReader (File.OpenRead (sa_name + ".structs"))) {
 				this.newF = RankSelectGenericIO.Load (Input);
 				int len = this.newF.Count1;
@@ -67,35 +64,12 @@ namespace natix.CompactDS
 				PrimitiveIO<int>.ReadFromFile (Input, len, this.charT);
 			}
 			using (var Input = new BinaryReader (File.OpenRead (sa_name + ".psi"))) {
-				int seqlen = this.newF.Count;
-				var seq = new int[seqlen];
-				var L = new List<int>(this.N/this.Sigma + 1);
-				int curr = 0;
-				for (int i = 1; i <= this.AlphabetSize; i++) {
-					int next;
-					if (i == this.AlphabetSize) {
-						next = this.newF.Count;
-					} else {
-						next = this.newF.Select1 (i + 1);
-					}
-					int len = next - curr;
-					L.Clear();
-					PrimitiveIO<int>.ReadFromFile (Input, len, L);
-					for (int j = 0; j < len; ++j) {
-						var x = L[j];
-						try {
-							seq[ x ] = i - 1;
-						} catch (Exception e) {
-							Console.WriteLine ("== i: {0}, j: {1}, x: {2}, seq-count: {3}, len: {4}",
-							                   i, j, x, seq.Length, len);
-							throw e;
-						}
-					}
-					curr = next;
+				var seq = PrimitiveIO<int>.ReadFromFile(Input, this.N+1, null);
+				if (list_builder == null) {
+					list_builder = ListIBuilders.GetListIDiffs(63);
 				}
-				this.SeqPsi = seq_builder(seq, this.AlphabetSize);
+				this.Psi = list_builder(seq, seq.Count-1);
 			}
-
 			using (var Input = new BinaryReader (File.OpenRead (sa_name + ".samples"))) {
 				this.SA_sample_step = Input.ReadInt16 ();
 				this.SA_marked = RankSelectGenericIO.Load (Input);
@@ -115,7 +89,7 @@ namespace natix.CompactDS
 				PrimitiveIO<int>.WriteVector (Output, this.charT);
 			}
 			using (var Output = new BinaryWriter (File.Create (basename + ".psi"))) {
-				RankSelectSeqGenericIO.Save(Output, this.SeqPsi);
+				ListIGenericIO.Save(Output, this.Psi);
 			}
 			using (var Output = new BinaryWriter (File.Create (basename + ".samples"))) {
 				Output.Write ((short)this.SA_sample_step);
@@ -133,7 +107,7 @@ namespace natix.CompactDS
 				PrimitiveIO<int>.ReadFromFile (Input, this.charT.Length, this.charT);
 			}
 			using (var Input = new BinaryReader (File.OpenRead (basename + ".psi"))) {
-				this.SeqPsi = RankSelectSeqGenericIO.Load (Input);
+				this.Psi = ListIGenericIO.Load(Input);
 			}
 			using (var Input = new BinaryReader (File.OpenRead (basename + ".samples"))) {
 				this.SA_sample_step = Input.ReadInt16 ();
@@ -149,7 +123,7 @@ namespace natix.CompactDS
 
 		public IList<int> GetText (IList<int> Output)
 		{
-			int next = this.SeqPsi.Select(0,1);
+			int next = this.Psi[0];
 			this.GetSuffix (Output, next, this.newF.Count - 1);
 			return Output;
 		}
@@ -161,7 +135,13 @@ namespace natix.CompactDS
 				int num_char = this.newF.Rank1 (next);
 				// Console.WriteLine ("i: {0}, num_char: {1}, next: {2}, sigma: {3}", i, num_char, next, this.charT.Length);
 				Output.Add (this.charT[num_char - 1]);
-				next = this.SeqPsi.Select(num_char - 1, next - this.newF.Select1 (num_char) + 1);
+				try {
+					next = this.Psi[next];
+				} catch (Exception e) {
+					Console.WriteLine("=== next: {0}, len: {1}, num_char: {2}, psi-count: {3}", next, len, num_char, this.Psi.Count);
+					Console.WriteLine("suffix_index: {0}", suffix_index);
+					throw e;
+				}
 			}
 			return Output;
 		}
@@ -172,7 +152,7 @@ namespace natix.CompactDS
 			for (int i = 0; i < len && next > 0; i++) {
 				int num_char = this.newF.Rank1 (next);
 				yield return this.charT[num_char - 1];
-				next = this.SeqPsi.Select(num_char - 1, next - this.newF.Select1 (num_char) + 1);
+				next = this.Psi[next];
 			}
 		}
 		
@@ -233,28 +213,24 @@ namespace natix.CompactDS
 				return false;
 			}
 			int sp = this.newF.Select1 (c + 1);
-			int ep = sp + this.SeqPsi.Rank(c, this.SeqPsi.Count - 1) - 1;
+			int ep = sp + this.newF.Select1(c+2) - this.newF.Select1(c+1);
 			for (--m; m >= 0; --m) {
 				c = this.GetCharId (query [m]);
 				if (c < 0) {
 					return false;
 				}
-				var L = this.SeqPsi.Unravel(c);
-				int abs_pos = this.newF.Select1 (c + 1);
-				if (L.Count <= sp) {
-					sp = L.Count - 1;
-				}
-				if (L.Count <= ep) {
-					ep = L.Count - 1;
-				}
-				sp = abs_pos + L.Rank1 (sp - 1);
-				ep = abs_pos + L.Rank1 (ep) - 1;
+				int c_sp = this.newF.Select1(c + 1);
+				int c_ep = this.newF.Select1(c + 2);
+				var L = new ListGen<int>((int i) => this.Psi[i+c_sp], c_ep - c_sp);
+				int abs_pos = c_sp - 1;
+				sp = abs_pos + GenericSearch.FindFirst<int>(sp, L);
+				ep = abs_pos + GenericSearch.FindLast<int>(ep, L);
 			}
 			start_pos = sp;
 			end_pos = ep;
 			return true;
 		}
-		
+
 //		public bool ForwardSearch (IList<int> query, out int start_pos, out int end_pos)
 //		{
 //			// WARNING: there is a possible bug in _lex_cmp, the result is wrong when some suffix is smaller than the query
@@ -277,13 +253,7 @@ namespace natix.CompactDS
 				return 0;
 			}
 		}
-		
-		public int GetPsi (int pos)
-		{
-			int num_char = this.newF.Rank1 (pos);
-			return this.SeqPsi.Select(num_char - 1, pos - this.newF.Select1 (num_char) + 1);
-		}
-		
+
 		public IList<int> Locate (IList<int> query)
 		{
 			int start_pos;
@@ -310,7 +280,12 @@ namespace natix.CompactDS
 					break;
 				}
 				++power;
-				suffix = this.GetPsi (suffix);
+				try {
+					suffix = this.Psi[suffix];
+				} catch (Exception e) {
+					Console.WriteLine("=== power: {0}, suffix: {1}, psi.count: {2}", power, suffix, Psi.Count);
+					throw e;
+				}
 			}
 			int sample = (int)this.SA_samples[this.SA_marked.Rank1 (suffix) - 1];
 			return sample - power;
@@ -321,12 +296,12 @@ namespace natix.CompactDS
 			var Output = new List<int> ();
 			int psi_start = (int)this.SA_invsamples [start_pos / this.SA_sample_step];
 			for (int i = start_pos % this.SA_sample_step; i > 0; i--) {
-				psi_start = this.GetPsi (psi_start);
+				psi_start = this.Psi[psi_start];
 			}
 			for (int i = 0; i < len; i++) {
 				int num_char = this.newF.Rank1 (psi_start);
 				Output.Add (this.charT [num_char - 1]);
-				psi_start = this.SeqPsi.Select(num_char - 1, psi_start - this.newF.Select1 (num_char) + 1);
+				psi_start = this.Psi[psi_start];
 				if (psi_start == 0) {
 					break;
 				}

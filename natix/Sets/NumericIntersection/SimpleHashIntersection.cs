@@ -27,21 +27,21 @@ namespace natix.Sets
 		{
 		}
 
-		public virtual ICollection<int> Intersection (IList<IRankSelect> lists)
+		public virtual ICollection<int> Intersection (IList<IList<int>> lists)
 		{
 			HashSet<int> A = new HashSet<int> ();
 			HashSet<int> B = new HashSet<int> ();
 
-			var rs = lists[0];
-			var count1 = rs.Count1;
-			for (int i = 1; i <= count1; ++i) {
-				A.Add( rs.Select1(i) );
+			var L = lists[0];
+			var count1 = L.Count;
+			for (int i = 0; i < count1; ++i) {
+				A.Add( L[i] );
 			}
 			for(int s = 1; s < lists.Count; ++s) {
-				rs = lists[s];
-				count1 = rs.Count1;
-				for (int i = 1; i <= count1; ++i) {
-					var pos = rs.Select1 (i);
+				L = lists[s];
+				count1 = L.Count;
+				for (int i = 0; i < count1; ++i) {
+					var pos = L[i];
 					if (A.Contains (pos)) {
 						B.Add (pos);
 					}
@@ -55,4 +55,3 @@ namespace natix.Sets
 		}
 	}
 }
-

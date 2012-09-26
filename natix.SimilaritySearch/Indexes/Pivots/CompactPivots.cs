@@ -16,7 +16,6 @@ using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-
 using natix.CompactDS;
 using natix.SortingSearching;
 
@@ -114,6 +113,7 @@ namespace natix.SimilaritySearch
 				for (int j = 0; j < n; ++j) {
 					var d = this.DB.Dist (this.PIVS[i], this.DB [j]);
 					seq[j]  = (float)d;
+					// Console.WriteLine ("=======> d {0}", d);
 				}
 				int sigma = 0;
 				this.ComputeStats(seq, i);
@@ -128,6 +128,17 @@ namespace natix.SimilaritySearch
 				}
 			}
 		}
+
+		/*
+		public virtual double GetLowerDist (int sym, float stddev)
+		{
+			return (sym) * stddev;
+		}
+
+		public virtual double GetUpperDist (int sym, float stddev)
+		{
+			return (sym + 1) * stddev;
+		}*/
 
 		public virtual int Discretize (double d, float stddev)
 		{
@@ -164,13 +175,13 @@ namespace natix.SimilaritySearch
 			var m = this.PIVS.Count;
 			var max = Math.Min (this.SEARCHPIVS, m);
 			var P = new TopK<Tuple<double, float, IRankSelectSeq>> (max);
-			var A = new byte[this.DB.Count];
+			var A = new ushort[this.DB.Count];
 			var _PIVS = (this.PIVS as SampleSpace).SAMPLE;
 			for (int piv_id = 0; piv_id < m; ++piv_id) {
 				var stddev = this.STDDEV [piv_id];
 				var dqp = this.DB.Dist (q, this.PIVS [piv_id]);
 				var seq = this.SEQ [piv_id];
-				A[_PIVS[piv_id]] = (byte)max;
+				A[_PIVS[piv_id]] = (ushort)max;
 				res.Push(_PIVS[piv_id], dqp);
 				var start_sym = Math.Max (this.Discretize (dqp, stddev), 0);
 				var end_sym = this.Discretize (dqp, stddev);
@@ -185,19 +196,21 @@ namespace natix.SimilaritySearch
 					queue.Enqueue(it);
 				}
 			}
+			int Isize = 0;
 			while (queue.Count > 0) {
 				var L = queue.Dequeue();
 				var rs = L.Current;
 				var count1 = rs.Count1;
-				// Console.WriteLine ("queue-count: {0}", queue.Count);
 				for (int i = 1; i <= count1; ++i) {
 					var item = rs.Select1 (i);
 					A [item]++;
 					if (A [item] == max) {
 						var dist = this.DB.Dist (q, this.DB [item]);
 						res.Push (item, dist);
+						++Isize;
 					}
 				}
+			//	Console.WriteLine ("*** queue-count: {0}, count1: {1}, max: {2}, Isize: {3}", queue.Count, count1, max, Isize);
 				if (L.MoveNext ()) {
 					queue.Enqueue (L);
 				}

@@ -30,10 +30,6 @@ namespace natix.CompactDS
 		static List<Type> Catalog = new List<Type>() {
 			typeof(PlainPerms),
 			typeof(CyclicPerms_MRRR),
-			typeof(SuccCyclicPerms_MRRR),
-			typeof(RLCyclicPerms_MRRR),
-			typeof(SuccRLCyclicPerms_MRRR),
-			typeof(SuccRL2CyclicPerms_MRRR),
 			typeof(ListGen_MRRR)
 		};
 		

@@ -28,9 +28,9 @@ namespace natix.Sets
 		{
 		}
 
-		public override ICollection<int> Intersection (IList<IRankSelect> lists)
+		public override ICollection<int> Intersection (IList<IList<int>> lists)
 		{
-			Sorting.Sort<IRankSelect>(lists, (x, y) => x.Count1.CompareTo(y.Count1));
+			Sorting.Sort<IList<int>>(lists, (x, y) => x.Count.CompareTo(y.Count));
 			return base.Intersection(lists);
 		}
 	}
