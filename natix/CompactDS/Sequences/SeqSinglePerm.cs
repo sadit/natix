@@ -13,7 +13,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
-//   Original filename: natix/CompactDS/Sequences/GolynskiListRL2Seq.cs
+//   Original filename: natix/CompactDS/Sequences/GolynskiSinglePermSeq.cs
 // 
 using System;
 using System.IO;
@@ -23,19 +23,25 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public class GolynskiListRL2Seq : IRankSelectSeq
+	public class GolynskiSinglePermSeq : IRankSelectSeq
 	{
-		SuccRL2CyclicPerms_MRRR PERM;
+		IPermutation PERM;
 		IRankSelect LENS;
 		
-#region PROPERTIES
 		public int Count {
 			get {
 				return this.PERM.Count;
 			}
 		}
-		
-		public SuccRL2CyclicPerms_MRRR GetPERM()
+
+		public int Sigma {
+			get {
+				// we write an additional 1 to the end
+				return this.LENS.Count1 - 1;
+			}
+		}
+
+		public IPermutation GetPERM ()
 		{
 			return this.PERM;
 		}
@@ -45,39 +51,11 @@ namespace natix.CompactDS
 			return this.LENS;
 		}
 
-		public int Sigma {
-			get {
-				// we write an additional 1 to the end
-				return this.LENS.Count1 - 1;
-			}
-		}
-		
-		/*public Func<IList<int>, IPerms> PermBuilder {
-			get;
-			set;
-		}*/
-		
-		public static BitmapFromBitStream BitmapBuilder {
-			get;
-			set;
-		}
-		
-#endregion
-		
-		static GolynskiListRL2Seq ()
-		{
-			BitmapBuilder = BitmapBuilders.GetGGMN_wt (16);
-		}
-		
-		public GolynskiListRL2Seq ()
+		public GolynskiSinglePermSeq ()
 		{
 		}
 		
-#region BUILD
-		/// <summary>
-		/// Build the specified seq, sigma and t.
-		/// </summary>
-		public void Build (IList<int> seq, int sigma, short t = 16, IIEncoder32 rl2_coder = null, short rl2_block_size = 127)
+		public void Build (IList<int> seq, int sigma, PermutationBuilder perm_builder, BitmapFromBitStream bitmap_builder)
 		{
 			// A counting sort construction of the permutation
 			var counters = new int[sigma];
@@ -108,16 +86,12 @@ namespace natix.CompactDS
 			}
 			// an additional 1 to the end, to simplify source code
 			lens.Write (true);
-			var bb_lens = new FakeBitmap (lens);
-			this.LENS = BitmapBuilder (bb_lens);
-			this.PERM = new SuccRL2CyclicPerms_MRRR ();
-			if (rl2_coder == null) {
-				rl2_coder = new EliasGamma32 ();
-			}
-			var build_params = new SuccRL2CyclicPerms_MRRR.BuildParams (rl2_coder, rl2_block_size);
-			this.PERM.Build (P, t, build_params);
-		}
 
+			var bb_lens = new FakeBitmap (lens);
+			this.LENS = bitmap_builder(bb_lens);
+			this.PERM = perm_builder(P);
+		}
+		
 		void PrintArray (string msg, IList<int> P)
 		{
 			Console.WriteLine (msg);
@@ -127,7 +101,7 @@ namespace natix.CompactDS
 			Console.WriteLine ("<end>");
 
 		}
-#endregion
+
 		public int Access (int pos)
 		{
 			
@@ -148,17 +122,6 @@ namespace natix.CompactDS
 			return this.PERM [abs_rank + rank0 - 1];
 		}
 		
-		public int SelectRL (int symbol, int abs_rank, BitStreamCtx ctx, ref int run_len)
-		{
-			if (abs_rank < 1) {
-				return -1;
-			}
-			symbol++;
-			var pos = this.LENS.Select1 (symbol);
-			var rank0 = pos + 1 - symbol;
-			return this.PERM.GetListRL2 ().GetItem (abs_rank + rank0 - 1, ctx, ref run_len);
-		}
-		
 		public int Rank (int symbol, int pos)
 		{
 			if (pos < 0) {
@@ -168,38 +131,44 @@ namespace natix.CompactDS
 			var pos_start = this.LENS.Select1 (symbol);
 			var rank0_start = pos_start + 1 - symbol;
 			var pos_end = this.LENS.Select1 (symbol + 1);
-			var rank0_end = pos_end - symbol;
+			var rank0_end = pos_end - symbol;			
 			var count = rank0_end - rank0_start;
-			// if (count > 0) {
-			//
-			if (count > 0) {
+			// TODO: replace both methods by RL2 primitives to produce a faster rank
+			if (count < 32) {
+				// fast sequential access for small ranges
+				for (int i = 0; i < count; i++) {
+					var u = this.PERM [rank0_start + i];
+					if (u > pos) {
+						return i;
+					}
+					if (u == pos) {
+						return i+1;
+					}
+				}
+				return count;
+			} else {
 				var list = new ListShiftIndex<int> (this.PERM, rank0_start, count);
 				return 1 + GenericSearch.FindFirst<int> (pos, list);
-				// return this.PERM.GetListRL2 ().FindSumInSortedRange (pos, rank0_start, rank0_end);
-			} else {
-				return 0;
 			}
 		}
-
+		
 		public IRankSelect Unravel (int symbol)
 		{
-			return new UnraveledSymbolGolynskiRL (this, symbol);			
+			return new UnraveledSymbol (this, symbol);
 		}
 		
 		#region LOAD_SAVE
 		public void Load (BinaryReader Input)
 		{
-			this.PERM = new SuccRL2CyclicPerms_MRRR ();
-			this.PERM.Load (Input);
+			this.PERM = PermutationGenericIO.Load (Input);
 			this.LENS = RankSelectGenericIO.Load (Input);
 		}
 		
 		public void Save (BinaryWriter Output)
 		{
-			this.PERM.Save (Output);
+			PermutationGenericIO.Save (Output, this.PERM);
 			RankSelectGenericIO.Save (Output, this.LENS);
 		}
 		#endregion
-		
 	}
 }

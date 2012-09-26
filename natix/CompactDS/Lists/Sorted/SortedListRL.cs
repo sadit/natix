@@ -13,7 +13,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
-//   Original filename: natix/CompactDS/Lists/Unsorted/ListIDiff.cs
+//   Original filename: natix/CompactDS/Lists/SortedListRL.cs
 // 
 using System;
 using System.Collections;
@@ -22,33 +22,21 @@ using System.IO;
 
 namespace natix.CompactDS
 {
-	/// <summary>
-	/// List integers using differences (DiffSet bitmap)
-	/// </summary>
-	/// <exception cref='NotSupportedException'>
-	/// Is thrown when an object cannot perform an operation.
-	/// </exception>
-	public class ListIDiff : ListGenerator<int>, ILoadSave
+	public class SortedListRL : ListGenerator<int>
 	{
-		public DiffSet dset;
+		public DiffSetRL dset;
 		int last_value = -1;
-	
-		public ListIDiff (DiffSet d)
+		
+		public SortedListRL (DiffSetRL d)
 		{
 			this.dset = d;
 			this.last_value = this.dset.Select1(this.dset.Count1);
 		}
 		
-		public ListIDiff (short B)
+		public SortedListRL ()
 		{
-			this.dset = new DiffSet (B);
+			this.dset = new DiffSetRL ();
 			this.last_value = -1;
-		}
-		
-		public ListIDiff ()
-		{
-			this.dset = new DiffSet ();
-			this.last_value = -1;			
 		}
 
 		public override int Count {
@@ -59,11 +47,7 @@ namespace natix.CompactDS
 		
 		public override int GetItem (int index)
 		{
-			if (index == 0) {
-				return this.dset.Select1Difference (index + 1);
-			} else {
-				return this.dset.Select1Difference (index + 1) - 1;
-			}
+			return this.dset.Select1 (index + 1);
 		}
 		
 		public override void SetItem (int index, int u)
@@ -73,23 +57,18 @@ namespace natix.CompactDS
 		
 		public override void Add (int item)
 		{
-			// + 1 because the backend coder and meaning of the skip in bits
-			int current = item + 1 + this.last_value;
-			this.dset.Add (current, this.last_value);
-			this.last_value = current;
+			this.dset.Add (item, this.last_value);
 		}
 		
 		public void Save (BinaryWriter Output)
 		{
 			this.dset.Save (Output);
-			Console.WriteLine ("===SAVE NumEnabledBits: {0}, count: {1}", this.dset.Count1, this.dset.Count);
 		}
 		
 		public void Load (BinaryReader Input)
 		{
-			this.dset = new DiffSet ();
+			this.dset = new DiffSetRL ();
 			this.dset.Load (Input);
-			Console.WriteLine ("===LOAD NumEnabledBits: {0}, count: {1}", this.dset.Count1, this.dset.Count);
 			this.last_value = this.dset.Select1 (this.dset.Count1);
 		}
 	}

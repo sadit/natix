@@ -13,40 +13,50 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
-//   Original filename: natix/CompactDS/Permutations/SuccCyclicPerms_MRRR.cs
+//   Original filename: natix/CompactDS/Lists/SortedListRSCache.cs
 // 
 using System;
-using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 
 namespace natix.CompactDS
 {
-	public class SuccCyclicPerms_MRRR : CyclicPerms_MRRR
+	public class SortedListRSCache : ListGenerator<int>
 	{
-		public SuccCyclicPerms_MRRR () : base()
+		public IRankSelect B;
+		int prev_index = -1;
+		int prev_value = -1;
+		int count = -1;
+
+		public SortedListRSCache (IRankSelect rsbitmap)
 		{
+			this.B = rsbitmap;
 		}
 		
-		public SuccCyclicPerms_MRRR (IList<int> perm, int t) : base (perm, t)
-		{
-		}
-		
-		protected override void FinishBuild (object arg)
-		{
-			int maxvalue = this.PERM.Count - 1;
-			this.PERM = this.BuildSuccList (this.PERM, maxvalue);
-			this.BACK = this.BuildSuccList (this.BACK, maxvalue);
-		}
-		
-		protected virtual IList<int> BuildSuccList (IList<int> list, int maxvalue)
-		{
-			var L = new ListIFS ((int)Math.Ceiling (Math.Log (maxvalue + 1, 2)));
-			foreach (var u in list) {
-				L.Add (u);
+		public override int Count {
+			get {
+				if (this.count == -1) {
+					this.count = this.B.Count1;
+				}
+				return this.count;
 			}
-			return L;
 		}
+		
+		public override int GetItem (int index)
+		{
+			if (index == this.prev_index) {
+				return this.prev_value;
+			}
+			this.prev_index = index;
+			this.prev_value = this.B.Select1 (index + 1);
+			return this.prev_value;
+		}
+		
+		public override void SetItem (int index, int u)
+		{
+			throw new NotSupportedException ();
+		}
+		
 	}
 }
-

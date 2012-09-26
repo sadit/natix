@@ -13,38 +13,39 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
-//   Original filename: natix/CompactDS/Permutations/SuccRLCyclicPerms_MRRR.cs
+//   Original filename: natix/CompactDS/Lists/SortedListSArray.cs
 // 
 using System;
-using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 
 namespace natix.CompactDS
 {
-	public class SuccRLCyclicPerms_MRRR : SuccCyclicPerms_MRRR 
-	{
-		public SuccRLCyclicPerms_MRRR () : base()
+	public class SortedListSArray : ListGenerator<int>
+	{ 
+		public SArray sarray;
+
+		public SortedListSArray (SArray sarray)
 		{
+			this.sarray = sarray;
+		}
+				
+		public override int Count {
+			get {
+				return this.sarray.Count1;
+			}
 		}
 		
-		public SuccRLCyclicPerms_MRRR (IList<int> perm, int t) : base(perm, t)
+		public override int GetItem (int index)
 		{
+			return this.sarray.Select1 (index + 1);
 		}
 		
-		protected override void FinishBuild (object arg)
+		public override void SetItem (int index, int u)
 		{
-			int maxvalue = this.PERM.Count - 1;
-			this.PERM = this.BuildListRL (this.PERM, maxvalue);
-			this.BACK = this.BuildSuccList (this.BACK, maxvalue);
+			throw new NotSupportedException ();
 		}
 		
-		public IList<int> BuildListRL (IList<int> list, int maxvalue)
-		{
-			var L = new ListRL ();
-			L.Build (list, maxvalue);
-			return L;
-		}
 	}
 }
-

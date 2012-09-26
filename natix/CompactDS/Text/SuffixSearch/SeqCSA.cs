@@ -13,6 +13,8 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
+//   Original filename: natix/CompactDS/Text/SuffixSearch/CSA.cs
+// 
 using System;
 using System.IO;
 using System.Collections;
@@ -21,7 +23,7 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public class SeqCSA : ITextIndex
+	public class CSA : ITextIndex
 	{
 		public int[] charT;
 		public IRankSelect newF;
@@ -32,7 +34,7 @@ namespace natix.CompactDS
 		public short SA_sample_step;
 
 		
-		public SeqCSA ()
+		public CSA ()
 		{
 		}
 

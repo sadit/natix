@@ -13,31 +13,42 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
-//   Original filename: natix/CompactDS/Permutations/RLCyclicPerms_MRRR.cs
+//   Original filename: natix/CompactDS/Lists/DividedSortedListRS.cs
 // 
 using System;
-using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 
 namespace natix.CompactDS
 {
-	public class RLCyclicPerms_MRRR : SuccCyclicPerms_MRRR 
+	public class DividedSortedListRS : ListGenerator<int>
 	{
-		public RLCyclicPerms_MRRR () : base()
+		public IRankSelect B;
+		public int divisor;
+		
+		public DividedSortedListRS (IRankSelect rsbitmap, int div)
 		{
+			this.B = rsbitmap;
+			this.divisor = div;
 		}
 		
-		public RLCyclicPerms_MRRR (IList<int> perm, int t) : base(perm, t)
-		{
+		public override int Count {
+			get {
+				// return this.B.Rank1 (this.B.Count - 1);
+				return this.B.Count1 ;
+			}
 		}
 		
-		protected override void FinishBuild (object arg)
+		public override int GetItem (int index)
 		{
-			var L = new ListRL ();
-			L.Build (this.PERM, this.PERM.Count - 1);
-			this.PERM = L;			
+			return this.B.Select1 (index + 1) / this.divisor;
 		}
+		
+		public override void SetItem (int index, int u)
+		{
+			throw new NotSupportedException ();
+		}
+		
 	}
 }
-
