@@ -16,9 +16,9 @@ using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-
 using natix.CompactDS;
 using natix.SortingSearching;
+using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
@@ -27,6 +27,12 @@ namespace natix.SimilaritySearch
 		public IList<int>[] SEQ;
 		public MetricDB PIVS;
 		public IList<float> STDDEV;
+		/// <summary>
+		/// The alpha_stddev. A positive value used to multiply the stddev in order to manipulate
+		/// the number of rings
+		/// </summary>
+		public double alpha_stddev; 
+		public int MAX_SYMBOL = 7;
 
 		public CompactPivotsLRANS () : base()
 		{
@@ -45,9 +51,10 @@ namespace natix.SimilaritySearch
 				this.SEQ[i] = ListIGenericIO.Load(Input);
 			}
 			// this.MEAN = new float[this.PIVS.Count];
-			this.STDDEV = new float[this.PIVS.Count];
+			this.MAX_SYMBOL = Input.ReadInt32 ();
+			this.alpha_stddev = Input.ReadSingle();
 			//PrimitiveIO<float>.ReadFromFile(Input, this.MEAN.Count, this.MEAN);
-			PrimitiveIO<float>.ReadFromFile(Input, this.STDDEV.Count, this.STDDEV);
+			this.STDDEV = PrimitiveIO<float>.ReadFromFile(Input, this.PIVS.Count, null);
 		}
 		
 		public override void Save (BinaryWriter Output)
@@ -58,45 +65,86 @@ namespace natix.SimilaritySearch
 				ListIGenericIO.Save(Output, this.SEQ[i]);
 			}
 			// PrimitiveIO<float>.WriteVector(Output, this.MEAN);
+			Output.Write((int) this.MAX_SYMBOL);
+			Output.Write((float) this.alpha_stddev);
 			PrimitiveIO<float>.WriteVector(Output, this.STDDEV);
 		}
 
-		public void Build (LAESA idx, int num_pivs)
+		public void Build (LAESA idx, int num_pivs, int num_rings, ListIBuilder list_builder = null)
 		{
+			// setting up MAX_SYMBOL and alpha_stddev values
+			{
+				num_rings = Math.Max (8, num_rings);
+				num_rings = 1 << ((int)Math.Ceiling (Math.Log (num_rings, 2)));
+				this.MAX_SYMBOL = num_rings - 1;
+				this.alpha_stddev = 8 / num_rings;
+			}
 			this.DB = idx.DB;
 			var P = (idx.PIVS as SampleSpace);
 			var S = new int[num_pivs];
 			int n = this.DB.Count;
 			this.STDDEV = new float[num_pivs];
 			this.SEQ = new IList<int>[num_pivs];
-			for (int p = 0; p < num_pivs; ++p) {
+			int I = 0;
+			Action<int> build_one_pivot = delegate(int p) {
 				S [p] = P.SAMPLE [p];
-				var D = idx.DIST[p];
+				var D = new List<float>(idx.DIST[p]);
 				this.ComputeStats(D, p);
 				var stddev = this.STDDEV[p];
-				var L = new ListIFS(ListIFS.GetNumBits(MAX_SYMBOL));
+				var L = new ListIFS(ListIFS.GetNumBits(this.MAX_SYMBOL));
 				for (int i = 0; i < n; ++i) {
 					var d = D[i];
 					var sym = this.Discretize(d, stddev);
 					L.Add (sym);
 				}
-				/*var _L = new ListEqRL();
-				_L.Build(L, MAX_SYMBOL);
-				this.SEQ[p] = _L;*/
-				this.SEQ[p] = L;
-			}
+				if (list_builder == null) {
+					this.SEQ[p] = L;
+				} else {
+					this.SEQ[p] = list_builder(L, this.MAX_SYMBOL);
+				}
+				if (I % 10 == 0 ) {
+					Console.Write ("== advance: {0}/{1}, ", I, num_pivs);
+					if (I % 50 == 0) {
+						Console.WriteLine ();
+					}
+				}
+				I++;
+			};
+			Parallel.For(0, num_pivs, build_one_pivot);
+			/*for (int p = 0; p < num_pivs; ++p) {
+				S [p] = P.SAMPLE [p];
+				var D = new List<float>(idx.DIST[p]);
+				this.ComputeStats(D, p);
+				var stddev = this.STDDEV[p];
+				var L = new ListIFS(ListIFS.GetNumBits(this.MAX_SYMBOL));
+				for (int i = 0; i < n; ++i) {
+					var d = D[i];
+					var sym = this.Discretize(d, stddev);
+					L.Add (sym);
+				}
+				if (list_builder == null) {
+					this.SEQ[p] = L;
+				} else {
+					this.SEQ[p] = list_builder(L, this.MAX_SYMBOL);
+				}
+				if (p % 10 == 0 || p + 1 == num_pivs) {
+					Console.Write ("== advance: {0}/{1}, ", p, num_pivs);
+					if (p % 100 == 0 || p + 1 == num_pivs) {
+						Console.WriteLine ();
+					}
+				}
+			}*/
 			this.PIVS = new SampleSpace ("", P.DB, S);
 		}
 
-		static int MAX_SYMBOL = 7;
 		public virtual int Discretize (double d, float stddev)
 		{
-			var sym = d / stddev;
+			var sym = d / (stddev * this.alpha_stddev);
 			if (sym < 0) {
 				return 0;
 			}
-			if (sym > MAX_SYMBOL) {
-				return MAX_SYMBOL;
+			if (sym > this.MAX_SYMBOL) {
+				return this.MAX_SYMBOL;
 			}
 			return (int)sym;
 		}

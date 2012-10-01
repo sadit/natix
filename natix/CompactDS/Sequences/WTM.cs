@@ -26,12 +26,11 @@ namespace natix.CompactDS
 	public class WTM : IRankSelectSeq
 	{
 		// static INumericManager<T> Num = (INumericManager<T>)NumericManager.Get (typeof(T));
-		IIEncoder32 Coder = null;
+		ISymbolCoder SymbolCoder;
 		// BitStream32 CoderStream;
 		WTM_Inner Root;
 		IList<WTM_Leaf> Alphabet;
-		short bits_per_symbol;
-
+		
 		public int Sigma {
 			get {
 				return this.Alphabet.Count;
@@ -43,66 +42,68 @@ namespace natix.CompactDS
 				return this.Root.SEQ.Count;
 			}
 		}
-	
+		
 		public WTM ()
 		{
 		}
-		
-		public void Build (IList<int> text, int alphabet_size, short bits_per_symbol, IIEncoder32 coder = null, SequenceBuilder seq_builder = null)
+
+		public void Build (IList<int> text, int alphabet_size, ISymbolCoder symbol_split = null, SequenceBuilder seq_builder = null)
 		{
-			this.bits_per_symbol = bits_per_symbol;
-			short arity = (short)(1 << bits_per_symbol);
+			if (symbol_split == null) {
+				symbol_split = new EqualSizeCoder(4, alphabet_size-1);
+			}
+			this.SymbolCoder = symbol_split;
+			var list = this.SymbolCoder.Encode(0, null);
+			var numbits = list[0].numbits;
+			var arity = (short)(1 << numbits);
 			this.Alphabet = new WTM_Leaf[alphabet_size];
 			this.Root = new WTM_Inner (arity, null, true);
-			if (coder == null) {
-				var numbits = ListIFS.GetNumBits(alphabet_size-1);
-				numbits = (int)Math.Ceiling(numbits * 1.0 / this.bits_per_symbol) * this.bits_per_symbol;
-				coder = new BinaryCoding(numbits);
-			}
-			this.Coder = coder;
 			for (int i = 0; i < text.Count; i++) {
-				this.Add (text [i]);
+				this.Add (text [i], list);
 			}
 			if (seq_builder == null) {
 				seq_builder = SequenceBuilders.GetSeqPlain(arity);
 			}
 			this.FinishBuild (this.Root, seq_builder, arity);
 		}
-
+		
 		void FinishBuild (WTM_Inner node, SequenceBuilder seq_builder, int sigma)
 		{
 			if (node == null) {
 				return;
 			}
-			node.SEQ = seq_builder ((node.SEQ as FakeSeq).SEQ, sigma);
+			var s = node.SEQ as FakeSeq;
+			node.SEQ = seq_builder (s.SEQ, s.Sigma);
 			foreach (var child in node.CHILDREN) {
 				this.FinishBuild(child as WTM_Inner, seq_builder, sigma);
 			}
 		}
 		
-		protected void Add (int symbol)
+		protected void Add (int symbol, List<WTM_Symbol> list)
 		{
-			var ministring = this.GetMiniString (symbol);
+			list.Clear();
+			list = this.SymbolCoder.Encode (symbol, list);
 			var node = this.Root;
-			var plen = ministring.Count;
+			var plen = list.Count;
 			for (int i = 0; i < plen; ++i) {
-				var code = ministring[i];
-				(node.SEQ as FakeSeq).Add (code);
+				var code = list[i];
+				(node.SEQ as FakeSeq).Add (code.symbol);
 				if (i+1 == plen) {
-					var leaf = node.CHILDREN[code] as WTM_Leaf;
+					var leaf = node.CHILDREN[code.symbol] as WTM_Leaf;
 					if (leaf == null) {
 						leaf = new WTM_Leaf(node, symbol);
 						this.Alphabet[symbol] = leaf;
-					} else {
-						leaf.Increment();
+//					} else {
+//						leaf.Increment();
 					}
-					node.CHILDREN[code] = leaf;
+					node.CHILDREN[code.symbol] = leaf;
 				} else {
-					var inner = node.CHILDREN[code] as WTM_Inner;
+					var inner = node.CHILDREN[code.symbol] as WTM_Inner;
 					if (inner == null) {
-						inner = new WTM_Inner((short)node.CHILDREN.Length, node, true);
+						//inner = new WTM_Inner((short)node.CHILDREN.Length, node, true);
+						inner = new WTM_Inner(1 << code.numbits, node, true);
 					}
-					node.CHILDREN[code] = inner;
+					node.CHILDREN[code.symbol] = inner;
 					node = inner;
 				}
 			}
@@ -111,22 +112,19 @@ namespace natix.CompactDS
 		public void Save (BinaryWriter Output)
 		{
 			Output.Write ((int)this.Alphabet.Count);
-			Output.Write ((short)this.bits_per_symbol);
-			IEncoder32GenericIO.Save (Output, this.Coder);
+			SymbolCoderGenericIO.Save(Output, this.SymbolCoder);
 			// Console.WriteLine ("Output.Position: {0}", Output.BaseStream.Position);
 			this.SaveNode (Output, this.Root);
 		}
-
+		
 		public void Load (BinaryReader Input)
 		{
 			var size = Input.ReadInt32 ();
-			this.bits_per_symbol = Input.ReadInt16();
+			this.SymbolCoder = SymbolCoderGenericIO.Load (Input);
 			this.Alphabet = new WTM_Leaf[size];
-			this.Coder = IEncoder32GenericIO.Load (Input);
-			// Console.WriteLine ("Input.Position: {0}", Input.BaseStream.Position);
 			this.Root = this.LoadNode (Input, null) as WTM_Inner;
 		}
-
+		
 		void SaveNode (BinaryWriter Output, WTM_Node node)
 		{
 			var asInner = node as WTM_Inner;
@@ -148,11 +146,11 @@ namespace natix.CompactDS
 			} else {
 				Output.Write (false);
 				var asLeaf = node as WTM_Leaf;
-				Output.Write ((int)asLeaf.Count);
+				// Output.Write ((int)asLeaf.Count);
 				Output.Write ((int)asLeaf.Symbol);
 			}
 		}
-
+		
 		WTM_Node LoadNode (BinaryReader Input, WTM_Inner parent)
 		{
 			// Console.WriteLine ("xxxxxxxxx LoadNode");
@@ -169,19 +167,20 @@ namespace natix.CompactDS
 				}
 				return node;
 			} else {
-				var count = Input.ReadInt32 ();
+				// var count = Input.ReadInt32 ();
 				var symbol = Input.ReadInt32 ();
 				// Console.WriteLine ("--leaf> count: {0}, symbol: {1}", count, symbol);
-				var leaf = new WTM_Leaf (parent, symbol, count);
+				//var leaf = new WTM_Leaf (parent, symbol, count);
+				var leaf = new WTM_Leaf (parent, symbol);
 				this.Alphabet[symbol] = leaf;
 				return leaf;
 			}
 		}
 		
 		void Walk (WTM_Inner node,
-			Func<WTM_Inner, object> preorder,
-		    //Func<WInner, object> inorder,
-			Func<WTM_Inner, object> postorder)
+		           Func<WTM_Inner, object> preorder,
+		           //Func<WInner, object> inorder,
+		           Func<WTM_Inner, object> postorder)
 		{
 			if (node == null) {
 				return;
@@ -195,7 +194,7 @@ namespace natix.CompactDS
 			/*if (inorder != null) {
 				inorder (node);
 			}*/
-
+			
 			if (postorder != null) {
 				postorder (node);
 			}
@@ -204,36 +203,29 @@ namespace natix.CompactDS
 		public int Count {
 			get { return (int)this.Root.SEQ.Count; }
 		}
-
+		
 		public int this[int index] {
 			get { return this.Access (index); }
 		}
-
-		public List<int> GetMiniString (int symbol)
-		{
-			var coderstream = new BitStream32 ();
-			this.Coder.Encode (coderstream, symbol);
-			int numbits = (int) coderstream.CountBits;
-			var ctx = new BitStreamCtx (0);
-			var ministring = new List<int>();
-			for (int i = 0; i < numbits; i+= this.bits_per_symbol) {
-				int code = (int)coderstream.Read (this.bits_per_symbol, ctx);
-				ministring.Add(code);
-				// Console.WriteLine("get-mini symbol: {0}, numbits: {1}, i: {2}, code: {3}", symbol, numbits, i, code);
-			}
-			return ministring;
-		}
-
+		
 		public int Rank (int symbol, int position)
 		{
-			var ministring = this.GetMiniString(symbol);
+			if (position < 0) {
+				return 0;
+			}
+			var ministring = this.SymbolCoder.Encode(symbol, null);
 			var node = this.Root;
 			var mlen = ministring.Count;
 			for (int i = 0; i < mlen; ++i) {
 				var code = ministring[i];
-				position = node.SEQ.Rank (code, position) - 1;
+				try {
+					position = node.SEQ.Rank (code.symbol, position) - 1;
+				} catch (Exception e) {
+					Console.WriteLine("i: {0}, position: {1}, code: {2}, mlen: {3}, sigma: {4}",i, position, code, mlen, node.SEQ.Sigma);
+					throw e;
+				}
 				if (i+1 < mlen) {
-					node = node.CHILDREN[code] as WTM_Inner;
+					node = node.CHILDREN[code.symbol] as WTM_Inner;
 				}
 				if (node == null) {
 					return 0;
@@ -241,40 +233,46 @@ namespace natix.CompactDS
 			}
 			return position + 1;
 		}
-
+		
 		public int Select (int symbol, int rank)
 		{
 			var symnode = this.Alphabet [symbol];
-			if (symnode == null || symnode.Count < rank) {
+			//if (symnode == null || symnode.Count < rank) {
+			if (symnode == null || rank == 0) {
 				return -1;
 			}
 			WTM_Inner node = symnode.Parent as WTM_Inner;
-			var ministring = this.GetMiniString (symbol);
+			var ministring = this.SymbolCoder.Encode (symbol, null);
 			ministring.Reverse();
 			var mlen = ministring.Count;
 			for (int i = 0; i < mlen; i++) {
 				var code = ministring[i];
-				rank = node.SEQ.Select(code, rank) + 1;
+				rank = node.SEQ.Select(code.symbol, rank) + 1;
 				node = node.Parent as WTM_Inner;
 			}
 			return rank - 1;
 		}
-
+		
 		public int Access (int position)
 		{
 			// Console.WriteLine("=== Access position: {0}", position);
 			var node = this.Root;
 			WTM_Inner tmp;
+			var codes = new List<int>();
 			for (int i = 0; true; i++) {
 				var code = node.SEQ.Access(position);
-				// Console.WriteLine("   A position: {0}, i: {1}, code: {2}", position, i, code);
+				codes.Add(code);
 				position = node.SEQ.Rank (code, position) - 1;
-				// Console.WriteLine("   B position: {0}, i: {1}, code: {2}", position, i, code);
 				tmp = node.CHILDREN[code] as WTM_Inner;
 				if (tmp == null) {
-					var sym = (node.CHILDREN[code] as WTM_Leaf).Symbol;
+					var symcode = this.SymbolCoder.Decode(codes);
+					// var sym = (node.CHILDREN[code] as WTM_Leaf).Symbol;
 					// Console.WriteLine ("   symbol: {0}", sym);
-					return sym;
+					// return sym;
+					// if (sym != symcode) {
+					//	throw new Exception("symcode and sym are not equal");
+					// }
+					return symcode;
 				} else {
 					node = tmp;
 				}
@@ -285,7 +283,7 @@ namespace natix.CompactDS
 		{
 			return new UnraveledSymbol (this, symbol);
 		}
-
+		
 		//  Helping classes
 		public class WTM_Node
 		{
@@ -295,16 +293,16 @@ namespace natix.CompactDS
 				this.Parent = parent;
 			}
 		}
-
+		
 		public class WTM_Inner : WTM_Node
 		{
 			public IRankSelectSeq SEQ;
 			public WTM_Node[] CHILDREN;
-
-			public WTM_Inner (short arity, WTM_Inner parent, bool building) : base(parent)
+			
+			public WTM_Inner (int arity, WTM_Inner parent, bool building) : base(parent)
 			{
 				if (building) {
-					this.SEQ = new FakeSeq();
+					this.SEQ = new FakeSeq(arity);
 				}
 				this.CHILDREN = new WTM_Node[ arity ];
 			}			
@@ -312,26 +310,25 @@ namespace natix.CompactDS
 		
 		public class WTM_Leaf : WTM_Node
 		{
-			public int Count;
+			// public int Count;
 			public int Symbol;
 			
 			public WTM_Leaf (WTM_Inner parent, int symbol) : base(parent)
 			{
-				this.Count = 1;
+				// this.Count = 1;
 				this.Symbol = symbol;
 			}
 			
-			public WTM_Leaf (WTM_Inner parent, int symbol, int count) : base(parent)
+			/*public WTM_Leaf (WTM_Inner parent, int symbol, int count) : base(parent)
 			{
-				this.Count = count;
+				// this.Count = count;
 				this.Symbol = symbol;
-			}
-			
-			public void Increment ()
-			{
-				this.Count++;
-			}
+			}*/
+//			
+//			public void Increment ()
+//			{
+//				// this.Count++;
+//			}
 		}
-	}
-
+	}	
 }

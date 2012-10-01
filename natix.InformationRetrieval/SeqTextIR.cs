@@ -135,7 +135,7 @@ namespace natix.InformationRetrieval
 			}
 			return _s;
 		}
-				
+	
 		protected virtual IList<IList<int>> GetPostingLists (QueryParser qparser)
 		{
 			var posting_lists = new List<IList<int>> ();

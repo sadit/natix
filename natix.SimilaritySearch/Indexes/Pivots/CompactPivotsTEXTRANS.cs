@@ -56,7 +56,7 @@ namespace natix.SimilaritySearch
 			PrimitiveIO<float>.WriteVector(Output, this.STDDEV);
 		}
 		
-		public void Build (LAESA idx, int num_pivs)
+		public void Build (LAESA idx, int num_pivs,  ListIBuilder list_builder = null)
 		{
 			this.DB = idx.DB;
 			var P = (idx.PIVS as SampleSpace);
@@ -67,18 +67,27 @@ namespace natix.SimilaritySearch
 			L.Add(0, n * num_pivs);
 			for (int p = 0; p < num_pivs; ++p) {
 				S [p] = P.SAMPLE [p];
-				var D = idx.DIST[p];
+				var D = new List<float>(idx.DIST[p]);
 				this.ComputeStats(D, p);
 				for (int i = 0; i < n; ++i) {
 					var sym = this.Discretize(D[i], this.STDDEV[p]);
 					L[num_pivs*i+p] = sym;
 				}
+				if (p % 10 == 0 || p + 1 == num_pivs) {
+					Console.Write ("== advance: {0}/{1}, ", p, num_pivs);
+					if (p % 100 == 0 || p + 1 == num_pivs) {
+						Console.WriteLine ();
+					}
+				}
 			}
 			this.PIVS = new SampleSpace ("", P.DB, S);
 			//var _L = new ListEqRL();
 			//_L.Build(L, MAX_SYMBOL);
-			//this.TEXT = _L;
-			this.TEXT = L;
+			if (list_builder == null) {
+				this.TEXT = L;
+			} else {
+				this.TEXT = list_builder(L, MAX_SYMBOL);
+			}
 		}
 
 		public virtual int Discretize (double d, float stddev)

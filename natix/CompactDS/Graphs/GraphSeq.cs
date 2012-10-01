@@ -67,7 +67,7 @@ namespace natix.CompactDS
 					var link = line.Split ('\t', ' ');
 					var start_node = int.Parse (link [0]);
 					var end_node = int.Parse (link [1]);
-					// on webgraph format, start nodes are already sorted, so, just advance and count
+					// on webgraph format, starting nodes are already sorted, just advance and count
 					if (start_node != prev_context) {
 						for (int diffcount = start_node - prev_context; diffcount > 0; --diffcount) {
 							len_stream.Write (true);
@@ -124,6 +124,5 @@ namespace natix.CompactDS
 		{
 			return new SortedListRSCache(this.SEQ.Unravel (node));
 		}
-	
 	}
 }

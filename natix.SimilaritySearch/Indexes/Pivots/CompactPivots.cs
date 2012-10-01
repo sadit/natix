@@ -60,45 +60,14 @@ namespace natix.SimilaritySearch
 			PrimitiveIO<float>.WriteVector(Output, this.STDDEV);
 		}
 
-		public void Build (CompactPivots idx, int num_pivs, int search_pivs, SequenceBuilder seq_build = null)
-		{
-			this.DB = idx.DB;
-			var P = (idx.PIVS as SampleSpace);
-			var S = new int[num_pivs];
-			this.SEARCHPIVS = search_pivs;
-			this.STDDEV = new float[num_pivs];
-			this.SEQ = new IRankSelectSeq[num_pivs];
-			for (int i = 0; i < num_pivs; ++i) {
-				S[i] = P.SAMPLE[i];
-				this.STDDEV[i] = idx.STDDEV[i];
-				this.SEQ[i] = idx.SEQ[i];
-				if (seq_build != null) {
-					var seq = this.SEQ[i];
-					var _seq = new int[seq.Count];
-					// this construction supposes a fast Select operation rather than a fast access
-					for (int s = 0; s < seq.Sigma; ++s) {
-						var rs = seq.Unravel(s);
-						var count1 = rs.Count1;
-						for (int c = 1; c <= count1; ++c) {
-							_seq[ rs.Select1(c) ] = s;
-						}
-					}
-					this.SEQ[i] = seq_build(_seq, seq.Sigma);
-				}
-			}
-			this.PIVS = new SampleSpace("", P.DB, S);
-		}
 
-		public void Build (MetricDB db, int num_pivs, int search_pivs, SequenceBuilder seq_builder = null)
+		public virtual void Build (MetricDB db, int num_pivs, int search_pivs = 0, SequenceBuilder seq_builder = null)
 		{
 			if (seq_builder == null) {
-				// seq_builder = SequenceBuilders.GetSeqXLB_SArray64(24);
-				// seq_builder = SequenceBuilders.GetIISeq(BitmapBuilders.GetSArray(BitmapBuilders.GetGGMN_wt(8)));
-				seq_builder = SequenceBuilders.GetIISeq(BitmapBuilders.GetSArray(BitmapBuilders.GetDArray_wt (12, 64)));
-				// seq_builder = SequenceBuilders.GetIISeq(BitmapBuilders.GetDiffSetRL2(31));
-				// seq_builder = SequenceBuilders.GetSeqXLB_DiffSet64(24, 31);
-				// seq_builder = SequenceBuilders.GetWT_GGMN_BinaryCoding(12);
-				// seq_builder = SequenceBuilders.GetWT_BinaryCoding(BitmapBuilders.GetRRR_wt(12));
+				seq_builder = SequenceBuilders.GetIISeq();
+			}
+			if (search_pivs <= 0) {
+				search_pivs = num_pivs;
 			}
 			this.DB = db;
 			this.PIVS = new SampleSpace("", db, num_pivs);
@@ -129,43 +98,68 @@ namespace natix.SimilaritySearch
 			}
 		}
 
-		/*
-		public virtual double GetLowerDist (int sym, float stddev)
+		public void Build (LAESA idx, int num_pivs, int search_pivs = 0, SequenceBuilder seq_builder = null)
 		{
-			return (sym) * stddev;
+			if (seq_builder == null) {
+				seq_builder = SequenceBuilders.GetSeqPlain(32);
+			}
+			this.DB = idx.DB;
+			var P = (idx.PIVS as SampleSpace);
+			var S = new int[num_pivs];
+			int n = this.DB.Count;
+			this.STDDEV = new float[num_pivs];
+			this.SEQ = new IRankSelectSeq[num_pivs];
+			for (int p = 0; p < num_pivs; ++p) {
+				S [p] = P.SAMPLE [p];
+				var D = new List<float>(idx.DIST[p]);
+				this.ComputeStats(D, p);
+				var stddev = this.STDDEV[p];
+				var L = new ListIFS(ListIFS.GetNumBits(MAX_SYMBOL));
+				for (int i = 0; i < n; ++i) {
+					var d = D[i];
+					var sym = this.Discretize(d, stddev);
+					L.Add (sym);
+				}
+				this.SEQ[p] = seq_builder(L, MAX_SYMBOL);
+				if (p % 10 == 0 || p + 1 == num_pivs) {
+					Console.Write ("== advance: {0}/{1}, ", p, num_pivs);
+					if (p % 100 == 0 || p + 1 == num_pivs) {
+						Console.WriteLine ();
+					}
+				}
+
+			}
+			this.PIVS = new SampleSpace ("", P.DB, S);
 		}
 
-		public virtual double GetUpperDist (int sym, float stddev)
-		{
-			return (sym + 1) * stddev;
-		}*/
+		static int MAX_SYMBOL = 7;
 
 		public virtual int Discretize (double d, float stddev)
 		{
 			var sym = d / stddev;
-			if (ushort.MaxValue < sym) {
-				// we should have really small values, other values are problems induced by Result.MaxValue
-				sym = ushort.MaxValue;
+			if (sym < 0) {
+				return 0;
 			}
-			/*if (sym >= 4) {
-				--sym;
-			}*/
+			if (sym > MAX_SYMBOL) {
+				return MAX_SYMBOL;
+			}
 			return (int)sym;
 		}
 
-		protected void ComputeStats(float[] seq, int piv_id)
+		protected void ComputeStats(IList<float> seq, int piv_id)
 		{
 			float mean = 0;
 			float stddev = 0;
-			for (int i = 0; i < seq.Length; ++i) {
+			var n = seq.Count;
+			for (int i = 0; i < n; ++i) {
 				mean += seq[i];
 			}
-			mean = mean / seq.Length;
-			for (int i = 0; i < seq.Length; ++i) {
+			mean = mean / n;
+			for (int i = 0; i < n; ++i) {
 				float x = seq[i] - mean;
 				stddev += x * x;
 			}
-			stddev = (float)Math.Sqrt(stddev / seq.Length);
+			stddev = (float)Math.Sqrt(stddev / n);
 			// this.MEAN[piv_id] = mean;
 			this.STDDEV[piv_id] = stddev;
 		}

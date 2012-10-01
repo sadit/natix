@@ -99,8 +99,8 @@ namespace natix.CompactDS
 							// this.Alphabet.Add (leaf);
 							this.Alphabet [symbol] = leaf;
 							node.Right = leaf;
-						} else {
-							(node.Right as WT_Leaf).Increment ();
+//						} else {
+//							(node.Right as WT_Leaf).Increment ();
 						}
 					} else {
 						if (node.Right == null) {
@@ -115,8 +115,8 @@ namespace natix.CompactDS
 							// this.Alphabet.Add (leaf);
 							this.Alphabet [symbol] = leaf;
 							node.Left = leaf;
-						} else {
-							(node.Left as WT_Leaf).Increment ();
+//						} else {
+//							(node.Left as WT_Leaf).Increment ();
 						}
 					} else {
 						if (node.Left == null) {
@@ -160,7 +160,7 @@ namespace natix.CompactDS
 			} else {
 				Output.Write (false);
 				var asLeaf = node as WT_Leaf;
-				Output.Write ((int)asLeaf.Count);
+				// Output.Write ((int)asLeaf.Count);
 				Output.Write ((int)asLeaf.Symbol);
 			}
 		}
@@ -191,10 +191,11 @@ namespace natix.CompactDS
 				}
 				return node;
 			} else {
-				var count = Input.ReadInt32 ();
+				// var count = Input.ReadInt32 ();
 				var symbol = Input.ReadInt32 ();
 				// Console.WriteLine ("--leaf> count: {0}, symbol: {1}", count, symbol);
-				var leaf = new WT_Leaf (parent, symbol, count);
+				//var leaf = new WT_Leaf (parent, symbol, count);
+				var leaf = new WT_Leaf (parent, symbol);
 				this.Alphabet[symbol] = leaf;
 				return leaf;
 			}
@@ -263,7 +264,8 @@ namespace natix.CompactDS
 			this.Coder.Encode (coderstream, symbol);
 			int numbits = (int)coderstream.CountBits;
 			var symnode = this.Alphabet [symbol];
-			if (symnode == null || symnode.Count < rank) {
+			//if (symnode == null || symnode.Count < rank) {
+			if (symnode == null || rank == 0) {
 				return -1;
 			}
 			WT_Inner node = symnode.Parent as WT_Inner;
@@ -340,25 +342,25 @@ namespace natix.CompactDS
 		public class WT_Leaf : WT_Node
 		{
 			
-			public int Count;
+			// public int Count;
 			public int Symbol;
 			
 			public WT_Leaf (WT_Inner parent, int symbol) : base(parent)
 			{
-				this.Count = 1;
+				// this.Count = 1;
 				this.Symbol = symbol;
 			}
 			
-			public WT_Leaf (WT_Inner parent, int symbol, int count) : base(parent)
+			/*public WT_Leaf (WT_Inner parent, int symbol, int count) : base(parent)
 			{
-				this.Count = count;
+				// this.Count = count;
 				this.Symbol = symbol;
-			}
+			}*/
 			
-			public void Increment ()
-			{
-				this.Count++;
-			}
+//			public void Increment ()
+//			{
+//				// this.Count++;
+//			}
 		}
 
 	}

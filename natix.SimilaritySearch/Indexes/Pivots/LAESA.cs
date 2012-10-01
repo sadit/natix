@@ -18,6 +18,7 @@ using System.Collections;
 using System.Collections.Generic;
 using natix.CompactDS;
 using natix.SortingSearching;
+using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
@@ -59,33 +60,45 @@ namespace natix.SimilaritySearch
 			var P = (idx.PIVS as SampleSpace);
 			var S = new int[num_pivs];
 			this.DIST = new IList<float>[num_pivs];
-			for (int i = 0; i < num_pivs; ++i) {
+			int I = 0;
+			Action<int> one_pivot = delegate (int i) {
 				S [i] = P.SAMPLE [i];
-				this.DIST[i] = idx.DIST[i];
-			}
+				var L = new List<float>(idx.DIST[i]);
+				this.DIST[i] = L;
+				if (I % 10 == 0) {
+					Console.WriteLine("LAESA Build, advance {0}/{1} (approx.) ", I, num_pivs);
+				}
+				I++;
+			};
+			Parallel.For (0, num_pivs, one_pivot);
 			this.PIVS = new SampleSpace("", P.DB, S);
 		}
 
 		public void Build (MetricDB db, int num_pivs)
 		{
-			this.DB = db;
-			this.PIVS = new SampleSpace("", db, num_pivs);
-			var n = db.Count;
-			this.DIST = new IList<float>[num_pivs];
-			for (int i = 0; i < num_pivs; ++i) {
-				var seq = new float[n];
-				for (int j = 0; j < n; ++j) {
-					var d = this.DB.Dist (this.PIVS[i], this.DB [j]);
-					seq[j]  = (float)d;
-					// Console.WriteLine ("=======> d {0}", d);
-				}
-				this.DIST[i] = seq;
-				if (i % 10 == 0) {
-					Console.WriteLine ("XXX advance: {0}/{1}", i+1, num_pivs);
-				}
-			}
+			var laesa = new LAESA();
+			laesa.BuildLazy(db, num_pivs);
+			this.Build(laesa, num_pivs);
 		}
 
+		IList<float> GetLazyDIST (int piv)
+		{
+			var seq = new ListGen<float>((int index) => {
+				var d = this.DB.Dist (this.PIVS[piv], this.DB [index]);
+				return (float)d;
+			}, this.DB.Count);
+			return seq;
+		}
+
+		public void BuildLazy (MetricDB db, int num_pivs)
+		{
+			this.DB = db;
+			this.PIVS = new SampleSpace("", db, num_pivs);
+			this.DIST = new IList<float>[num_pivs];
+			for (int i = 0; i < num_pivs; ++i) {
+				this.DIST[i] = this.GetLazyDIST(i);
+			}
+		}
 
 		public override IResult SearchKNN (object q, int K, IResult res)
 		{		

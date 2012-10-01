@@ -25,8 +25,8 @@ namespace natix.CompactDS
 {
 	public class SeqSinglePerm : IRankSelectSeq
 	{
-		IPermutation PERM;
-		IRankSelect LENS;
+		public IPermutation PERM;
+		public IRankSelect LENS;
 		
 		public int Count {
 			get {
@@ -39,16 +39,6 @@ namespace natix.CompactDS
 				// we write an additional 1 to the end
 				return this.LENS.Count1 - 1;
 			}
-		}
-
-		public IPermutation GetPERM ()
-		{
-			return this.PERM;
-		}
-
-		public IRankSelect GetLENS ()
-		{
-			return this.LENS;
 		}
 
 		public SeqSinglePerm ()

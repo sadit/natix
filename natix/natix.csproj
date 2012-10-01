@@ -232,6 +232,10 @@
     <Compile Include="CompactDS\Sequences\FakeSeq.cs" />
     <Compile Include="CompactDS\Sequences\WTM.cs" />
     <Compile Include="CompactDS\Sequences\SeqPlain.cs" />
+    <Compile Include="CompactDS\Sequences\WTM_SymbolSplit\ISymbolCoder.cs" />
+    <Compile Include="CompactDS\Sequences\WTM_SymbolSplit\EqualSizeCoder.cs" />
+    <Compile Include="CompactDS\Sequences\WTM_SymbolSplit\SymbolCoderGenericIO.cs" />
+    <Compile Include="CompactDS\Sequences\WTM_SymbolSplit\TopKFreqCoder.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -263,6 +267,7 @@
     <Folder Include="SortingSearching\Sequences\" />
     <Folder Include="Sets\NumericIntersection\" />
     <Folder Include="CompactDS\Lists\Sorted\" />
+    <Folder Include="CompactDS\Sequences\WTM_SymbolSplit\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>

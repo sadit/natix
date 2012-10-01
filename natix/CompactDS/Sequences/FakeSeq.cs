@@ -23,7 +23,8 @@ namespace natix.CompactDS
 	public class FakeSeq : IRankSelectSeq
 	{
 		public IList<int> SEQ;
-		public int sigma;
+		public int sigma; // upper bound
+		public int RealSigma; // real value
 
 		public FakeSeq ()
 		{
@@ -33,6 +34,12 @@ namespace natix.CompactDS
 		public FakeSeq (IList<int> seq, int sigma) : this()
 		{
 			this.Build(seq, sigma);
+		}
+
+		public FakeSeq (int sigma) : this()
+		{
+			var numbits = ListIFS.GetNumBits(sigma-1);
+			this.Build(new ListIFS(numbits), sigma);
 		}
 
 		public void Build (IList<int> seq, int sigma)
@@ -53,6 +60,9 @@ namespace natix.CompactDS
 
 		public void Add (int item)
 		{
+			if (this.RealSigma < item + 1) {
+				this.RealSigma = item + 1;
+			}
 			this.SEQ.Add(item);
 		}
 

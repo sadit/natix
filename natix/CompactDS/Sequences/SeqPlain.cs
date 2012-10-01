@@ -150,6 +150,9 @@ namespace natix.CompactDS
 
 		public int Rank (int symbol, int pos)
 		{
+			if (symbol >= this.Sigma) {
+				throw new ArgumentOutOfRangeException(String.Format ("symbol {0} it's bigger than sigma: {1}", symbol, this.Sigma));
+			}
 			if (pos < 0) {
 				return 0;
 			}
@@ -184,6 +187,9 @@ namespace natix.CompactDS
 
 		public int Select (int symbol, int rank)
 		{
+			if (symbol >= this.Sigma) {
+				throw new ArgumentOutOfRangeException(String.Format ("symbol {0} it's bigger than sigma: {1}", symbol, this.Sigma));
+			}
 			if (rank <= 0) {
 				return -1;
 			}
