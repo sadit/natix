@@ -88,6 +88,8 @@ namespace natix.CompactDS
 			for (int i = 0; i < plen; ++i) {
 				var code = list[i];
 				(node.SEQ as FakeSeq).Add (code.symbol);
+//				Console.WriteLine ("== i: {0}, plen: {1}, symbol: {2}, code.symbol: {3}, code.numbits: {4}, children-count: {5}",
+//				                   i, plen, symbol, code.symbol, code.numbits, node.CHILDREN.Length);
 				if (i+1 == plen) {
 					var leaf = node.CHILDREN[code.symbol] as WTM_Leaf;
 					if (leaf == null) {
@@ -100,8 +102,9 @@ namespace natix.CompactDS
 				} else {
 					var inner = node.CHILDREN[code.symbol] as WTM_Inner;
 					if (inner == null) {
-						//inner = new WTM_Inner((short)node.CHILDREN.Length, node, true);
-						inner = new WTM_Inner(1 << code.numbits, node, true);
+						var arity = 1 << list[i+1].numbits;
+						inner = new WTM_Inner(arity, node, true);
+						// Console.WriteLine("*** children-length: {0}, next-children-length: {1}", node.CHILDREN.Length, inner.CHILDREN.Length);
 					}
 					node.CHILDREN[code.symbol] = inner;
 					node = inner;
@@ -132,7 +135,7 @@ namespace natix.CompactDS
 				// isInner?
 				Output.Write (true);
 				var arity = asInner.CHILDREN.Length;
-				Output.Write ((short)arity);
+				Output.Write ((int)arity);
 				RankSelectSeqGenericIO.Save(Output, asInner.SEQ);
 				for (int i = 0; i < arity; ++i) {
 					var child = asInner.CHILDREN[i];
@@ -156,7 +159,7 @@ namespace natix.CompactDS
 			// Console.WriteLine ("xxxxxxxxx LoadNode");
 			var isInner = Input.ReadBoolean ();
 			if (isInner) {
-				var arity = Input.ReadInt16 ();
+				var arity = Input.ReadInt32 ();
 				var node = new WTM_Inner (arity, parent, false);
 				node.SEQ = RankSelectSeqGenericIO.Load(Input);
 				node.CHILDREN = new WTM_Node[arity];
@@ -218,12 +221,7 @@ namespace natix.CompactDS
 			var mlen = ministring.Count;
 			for (int i = 0; i < mlen; ++i) {
 				var code = ministring[i];
-				try {
-					position = node.SEQ.Rank (code.symbol, position) - 1;
-				} catch (Exception e) {
-					Console.WriteLine("i: {0}, position: {1}, code: {2}, mlen: {3}, sigma: {4}, len-seq: {5}", i, position, code, mlen, node.SEQ.Sigma, node.SEQ.Count);
-					throw e;
-				}
+				position = node.SEQ.Rank (code.symbol, position) - 1;
 				if (i+1 < mlen) {
 					node = node.CHILDREN[code.symbol] as WTM_Inner;
 				}
@@ -255,7 +253,7 @@ namespace natix.CompactDS
 		
 		public int Access (int position)
 		{
-			// Console.WriteLine("=== Access position: {0}", position);
+			//Console.WriteLine("=== Access position: {0}", position);
 			var node = this.Root;
 			WTM_Inner tmp;
 			var codes = new List<int>();
@@ -263,6 +261,7 @@ namespace natix.CompactDS
 				var code = node.SEQ.Access(position);
 				codes.Add(code);
 				position = node.SEQ.Rank (code, position) - 1;
+				// Console.WriteLine ("== i: {0}, position: {1}, code: {2}, children-count: {3} ", i, position, code, node.CHILDREN.Length);
 				tmp = node.CHILDREN[code] as WTM_Inner;
 				if (tmp == null) {
 					var symcode = this.SymbolCoder.Decode(codes);

@@ -51,7 +51,7 @@ namespace natix.CompactDS
 				output = new List<WTM_Symbol> ();
 			}
 			var K = this.Dic.Count;
-			var numbits = (byte)ListIFS.GetNumBits(K + 1);
+			var numbits = (byte)ListIFS.GetNumBits(K);
 			for (int i = 0; i < K; ++i) {
 				if (this.Dic[i] == symbol) {
 					output.Add(new WTM_Symbol(i, numbits));

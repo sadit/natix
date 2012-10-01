@@ -96,10 +96,12 @@ namespace natix.SimilaritySearch
 			this.K = K;
 			this.MAXCAND = maxcand;
 			int[] G = new int[n * this.K];
+			int I = 0;
 			Action<int> compute = delegate (int i) {
-				if (i % 1000 == 0) {
-					Console.WriteLine ("computing knr {0}/{1} (adv. {2:0.00}%, curr. time: {3})", i, n, i*100.0/n, DateTime.Now);
+				if (I % 1000 == 0) {
+					Console.WriteLine ("computing knr {0}/{1} (adv. {2:0.00}%, curr. time: {3})", I, n, I*100.0/n, DateTime.Now);
 				}
+				++I;
 				var u = this.DB[i];
 				var useq = this.GetKnr(u);
 				for (int j = 0; j < this.K; ++j) {
