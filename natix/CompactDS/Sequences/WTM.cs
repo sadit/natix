@@ -221,7 +221,7 @@ namespace natix.CompactDS
 				try {
 					position = node.SEQ.Rank (code.symbol, position) - 1;
 				} catch (Exception e) {
-					Console.WriteLine("i: {0}, position: {1}, code: {2}, mlen: {3}, sigma: {4}",i, position, code, mlen, node.SEQ.Sigma);
+					Console.WriteLine("i: {0}, position: {1}, code: {2}, mlen: {3}, sigma: {4}, len-seq: {5}", i, position, code, mlen, node.SEQ.Sigma, node.SEQ.Count);
 					throw e;
 				}
 				if (i+1 < mlen) {
