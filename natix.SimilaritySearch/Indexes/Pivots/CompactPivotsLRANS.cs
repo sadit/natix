@@ -77,7 +77,7 @@ namespace natix.SimilaritySearch
 				num_rings = Math.Max (8, num_rings);
 				num_rings = 1 << ((int)Math.Ceiling (Math.Log (num_rings, 2)));
 				this.MAX_SYMBOL = num_rings - 1;
-				this.alpha_stddev = 8 / num_rings;
+				this.alpha_stddev = 8.0 / num_rings;
 			}
 			this.DB = idx.DB;
 			var P = (idx.PIVS as SampleSpace);

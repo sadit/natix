@@ -260,7 +260,6 @@ namespace natix.CompactDS
 			for (int i = 0; true; i++) {
 				var code = node.SEQ.Access(position);
 				codes.Add(code);
-				position = node.SEQ.Rank (code, position) - 1;
 				// Console.WriteLine ("== i: {0}, position: {1}, code: {2}, children-count: {3} ", i, position, code, node.CHILDREN.Length);
 				tmp = node.CHILDREN[code] as WTM_Inner;
 				if (tmp == null) {
@@ -272,9 +271,9 @@ namespace natix.CompactDS
 					//	throw new Exception("symcode and sym are not equal");
 					// }
 					return symcode;
-				} else {
-					node = tmp;
 				}
+				position = node.SEQ.Rank (code, position) - 1;
+				node = tmp;
 			}
 		}
 		

@@ -33,7 +33,7 @@ namespace natix.SimilaritySearch
 		public override void Load (BinaryReader Input)
 		{
 			this.IDX = IndexGenericIO.Load(Input);
-			this.DB = (this.IDX.DB as PermutedSpace).DB;
+			this.DB = (this.IDX.DB as SampleSpace).DB;
 		}
 
 		public PermutedIndex () : base()
@@ -47,21 +47,21 @@ namespace natix.SimilaritySearch
 
 		public void Build (Index idx)
 		{
-			if ((idx.DB as PermutedSpace) == null) {
+			if ((idx.DB as SampleSpace) == null) {
 				throw new ArgumentException("PermutedIndex idx.DB should be a PermutedSpace instance");
 			}
 			this.IDX = idx;
-			this.DB = (idx.DB as PermutedSpace).DB;
+			this.DB = (idx.DB as SampleSpace).DB;
 		}
 
 
 		public override IResult SearchKNN (object q, int knn, IResult res)
 		{
 			var R = this.IDX.SearchKNN (q, knn, new Result (res.K, res.Ceiling));
-			var P = (this.IDX.DB as PermutedSpace);
+			var P = (this.IDX.DB as SampleSpace);
 			foreach (var p in R) {
 				// res.Push(P.PERM.Inverse(p.docid), p.dist);
-				res.Push(P.PERM[p.docid], p.dist);
+				res.Push(P.SAMPLE[p.docid], p.dist);
 			}
 			return res;
 		}
@@ -70,10 +70,10 @@ namespace natix.SimilaritySearch
 		{
 			var res = new Result(int.MaxValue, false);
 			var R = this.IDX.SearchRange (q, radius);
-			var P = (this.IDX.DB as PermutedSpace);
+			var P = (this.IDX.DB as SampleSpace);
 			foreach (var p in R) {
 				// res.Push(P.PERM.Inverse(p.docid), p.dist);
-				res.Push(P.PERM[p.docid], p.dist);
+				res.Push(P.SAMPLE[p.docid], p.dist);
 			}
 			// IDX 1 2 3 4 
 			// DIR 4 2 1 3  (3,4) => (1,3) => (3,4)

@@ -29,7 +29,7 @@ namespace natix.SimilaritySearch
 		public Index R;
 		public IRankSelectSeq SEQ;
 
-		public KnrSeqSearch GetSortedByPrefix (SequenceBuilder seq_builder = null, PermutationBuilder perm_builder = null)
+		public KnrSeqSearch GetSortedByPrefix (SequenceBuilder seq_builder = null, ListIBuilder list_builder = null)
 		{
 			int n = this.DB.Count;
 			var seqs = new IList<int>[n];
@@ -42,14 +42,14 @@ namespace natix.SimilaritySearch
 			// Sorting.Sort<int> (perm, (x,y) => StringSpace<int>.LexicographicCompare (seqs [x], seqs [y]));
 			Sorting.Sort<IList<int>,int> (seqs, perm, (x,y) => StringSpace<int>.LexicographicCompare (x, y));
 			var S = new ListGen<int> ((int i) => seqs [i / this.K] [i % this.K], n * this.K);
-			if (perm_builder == null) {
-				perm_builder = PermutationBuilders.GetCyclicPermsListIFS(24);
+			if (list_builder == null) {
+				list_builder = ListIBuilders.GetListIFS();
 			}
 			if (seq_builder == null) {
 				seq_builder = SequenceBuilders.GetSeqXLB_DiffSet64(24, 63);
 			}
 			var knr = new KnrSeqSearch();
-			knr.DB = new PermutedSpace("", this.DB, perm_builder(perm));
+			knr.DB = new SampleSpace("", this.DB, list_builder(perm, n-1));
 			knr.K = this.K;
 			knr.MAXCAND = this.MAXCAND;
 			knr.R = this.R;

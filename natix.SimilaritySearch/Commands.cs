@@ -116,6 +116,10 @@ namespace natix.SimilaritySearch
 				} else {
 					res = index.SearchKNN (index.DB.Parse(qItem.QRaw, true), (int)qItem.QArg);
 				}
+				var qraw = qItem.QRaw;
+				if (qraw.Length > 1024) {
+					qraw = "<very-large-qraw>";
+				}
 				SearchCost finalCost = index.Cost;
 				finalCost.Internal -= startCost.Internal;
 				finalCost.External -= startCost.External;
@@ -144,7 +148,7 @@ namespace natix.SimilaritySearch
 						Console.WriteLine ("WARNING: Histogram of distances was disabled because there are too many bins");
 					}
 				}
-				ResultInfo info = new ResultInfo (qid, qItem.EncodeQTypeQArgInSign(), qItem.QRaw, finalCost, new TimeSpan (time), res);
+				ResultInfo info = new ResultInfo (qid, qItem.EncodeQTypeQArgInSign(), qraw, finalCost, new TimeSpan (time), res);
 				if (ResultOutput != null) {
 					// Dirty.SerializeBinary (ResultOutput, info);
 					info.Save (ResultOutput);

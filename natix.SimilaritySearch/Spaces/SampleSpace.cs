@@ -30,7 +30,12 @@ namespace natix.SimilaritySearch
 		public MetricDB DB;
 		public IList<int> SAMPLE;
 
-		public void Save (BinaryWriter Output)
+		public IList<int> PERM {
+			get {
+				return this.SAMPLE;
+			}
+		}
+		public virtual void Save (BinaryWriter Output)
 		{
 			Output.Write(this.Name);
 			Output.Write((int)this.SAMPLE.Count);
@@ -38,7 +43,7 @@ namespace natix.SimilaritySearch
 			SpaceGenericIO.SmartSave(Output, this.DB);
 		}
 
-		public void Load (BinaryReader Input)
+		public virtual void Load (BinaryReader Input)
 		{
 			this.Name = Input.ReadString ();
 			var count = Input.ReadInt32 ();
