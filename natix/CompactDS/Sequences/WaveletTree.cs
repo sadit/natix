@@ -287,21 +287,20 @@ namespace natix.CompactDS
 			WT_Inner tmp;
 			for (int i = 0; true; i++) {
 				if (node.B.Access(position)) {
-					position = node.B.Rank1 (position) - 1;
 					tmp = node.Right as WT_Inner;
 					if (tmp == null) {
 						return (node.Right as WT_Leaf).Symbol;
-					} else {
-						node = tmp;
 					}
+					position = node.B.Rank1 (position) - 1;
+					node = tmp;
+
 				} else {
-					position = node.B.Rank0 (position) - 1;
 					tmp = node.Left as WT_Inner;
 					if (tmp == null) {
 						return (node.Left as WT_Leaf).Symbol;
-					} else {
-						node = tmp;
 					}
+					position = node.B.Rank0 (position) - 1;
+					node = tmp;
 				}
 			}
 		}
