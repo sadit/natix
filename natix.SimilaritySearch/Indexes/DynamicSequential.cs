@@ -52,6 +52,13 @@ namespace natix.SimilaritySearch
 			}
 		}
 
+		public void Remove (IResult res)
+		{	
+			foreach (var p in res) {
+				this.Remove(p.docid);
+			}
+		}
+
 		public int GetRandom ()
 		{
 			if (this.DOCS.Count == 0) {
