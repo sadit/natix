@@ -60,7 +60,6 @@ namespace natix.SimilaritySearch
 			PrimitiveIO<float>.WriteVector(Output, this.STDDEV);
 		}
 
-
 		public virtual void Build (MetricDB db, int num_pivs, int search_pivs = 0, SequenceBuilder seq_builder = null)
 		{
 			if (seq_builder == null) {

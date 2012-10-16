@@ -13,53 +13,81 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
-//   Original filename: natix/SimilaritySearch/Indexes/Sequential.cs
+//   Original filename: natix/SimilaritySearch/Indexes/DynamicSequential.cs
 // 
 using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using NDesk.Options;
+using natix;
+using natix.SortingSearching;
 
 namespace natix.SimilaritySearch
 {
 	/// <summary>
 	/// The sequential index
 	/// </summary>
-	public class Sequential : BasicIndex
+	public class DynamicSequential : BasicIndex
 	{
+		public SkipList2<int> DOCS;
+		Random rand = new Random();
 		/// <summary>
 		/// Constructor
 		/// </summary>
-		public Sequential ()
+		public DynamicSequential ()
 		{
+		}
+
+		public void Remove (int docid)
+		{
+			this.DOCS.Remove(docid, null);
+		}
+
+		public void Remove (IEnumerable<int> docs)
+		{	
+			foreach (var docid in docs) {
+				this.Remove(docid);
+			}
+		}
+
+		public int GetRandom ()
+		{
+			if (this.DOCS.Count == 0) {
+				throw new KeyNotFoundException("GetRandom cannot select an item from an empty set");
+			}
+			var docid = this.rand.Next (0, this.DB.Count);
+			var node = this.DOCS.FindNode (docid, null);
+			if (node == this.DOCS.LAST) {
+				return this.DOCS.GetLast();
+			}
+			return node.data;
 		}
 
 		/// <summary>
 		/// API build command
 		/// </summary>
-		public virtual void Build (MetricDB db)
+		public virtual void Build (MetricDB db, IList<int> sample = null)
 		{
 			this.DB = db;
+			if (sample == null) {
+				sample = RandomSets.GetExpandedRange (this.DB.Count);
+			}
+			this.DOCS = new SkipList2<int> (0.5, (x,y) => x.CompareTo (y));
+			var ctx = new SkipList2AdaptiveContext<int>(true, this.DOCS.FIRST);
+			foreach (var s in sample) {
+				this.DOCS.Add(s, ctx);
+			}
 		}
 
 		/// <summary>
 		/// Search by range
 		/// </summary>
-		/// <param name="q">
-		/// Query object 
-		/// </param>
-		/// <param name="radius">
-		/// Radius <see cref="System.Double"/>
-		/// </param>
-		/// <returns>
-		/// The result set <see cref="Result"/>
-		/// </returns>
 		public override IResult SearchRange (object q, double radius)
 		{
-			int L = this.DB.Count;
-			var r = new Result (L);
-			for (int docid = 0; docid < L; docid++) {
+			var r = new Result (this.DOCS.Count);
+			foreach (var docid in this.DOCS.Traverse()) {
 				double d = this.DB.Dist (q, this.DB[docid]);
 				if (d <= radius) {
 					r.Push (docid, d);
@@ -71,19 +99,9 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// KNN Search
 		/// </summary>
-		/// <param name="q">
-		/// Query object 
-		/// </param>
-		/// <param name="k">
-		/// The number of nearest neighbors 
-		/// </param>
-		/// <returns>
-		/// The result set <see cref="IResult"/>
-		/// </returns>
 		public override IResult SearchKNN (object q, int k, IResult R)
 		{
-			int L = this.DB.Count;
-			for (int docid = 0; docid < L; docid++) {
+			foreach (var docid in this.DOCS.Traverse()) {
 				double d = this.DB.Dist (q, this.DB[docid]);
 				R.Push (docid, d);
 			}

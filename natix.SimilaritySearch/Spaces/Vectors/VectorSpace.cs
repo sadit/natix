@@ -27,7 +27,7 @@ namespace natix.SimilaritySearch
 	/// </summary>
 	public class VectorSpace<T> : MetricDB
 	{
-		//static INumeric<T> Num = (INumeric<T>)(natix.Numeric.Get (typeof(T)));
+		static INumeric<T> Num = (INumeric<T>)(natix.Numeric.Get (typeof(T)));
 		/// <summary>
 		/// The underlying storage for vectors 
 		/// </summary>
@@ -172,7 +172,20 @@ namespace natix.SimilaritySearch
 		/// </summary>
 		public virtual double Dist (object a, object b)
 		{
-			throw new NotImplementedException();
+			++this.numdist;
+			return Num.DistLP ((IList<T>)a, (IList<T>)b, this.P, true);
+		}
+
+		public IList<T> GetColumnVector (int col)
+		{
+			int n = this.VECTORS.Count;
+			return new ListGen<T>( (int i) => this.VECTORS[i][col], n);
+		}
+
+		public IList<IList<T>> Transpose()
+		{
+			int dim = this.VECTORS[0].Count;
+			return new ListGen<IList<T>>( (int row) => this.GetColumnVector(row), dim);
 		}
 	}
 }

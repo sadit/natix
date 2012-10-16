@@ -63,7 +63,7 @@ namespace natix.SimilaritySearch
 					var seq = this.SEQ[piv_id];
 					var sym = seq.Access(i);
 					var stddev = this.STDDEV[piv_id];
-					var lower = this.Discretize(dqp - res.CoveringRadius, stddev);
+					var lower = this.Discretize(Math.Abs (dqp - res.CoveringRadius), stddev);
 					var upper = this.Discretize(dqp + res.CoveringRadius, stddev);
 					if (sym < lower || upper < sym ) {
 						check_object = false;
@@ -93,7 +93,7 @@ namespace natix.SimilaritySearch
 					for (int i = 0; i < n; ++i) {
 						var sym = seq.Access(i);
 						var stddev = this.STDDEV[piv_id];
-						var lower = this.Discretize(dqp - radius, stddev);
+						var lower = this.Discretize(Math.Abs (dqp - radius), stddev);
 						var upper = this.Discretize(dqp + radius, stddev);
 						if (sym < lower || upper < sym ) {
 							A.Add (i);
@@ -104,7 +104,7 @@ namespace natix.SimilaritySearch
 					foreach (var i in A) {
 						var sym = seq.Access(i);
 						var stddev = this.STDDEV[piv_id];
-						var lower = this.Discretize(dqp - radius, stddev);
+						var lower = this.Discretize(Math.Abs (dqp - radius), stddev);
 						var upper = this.Discretize(dqp + radius, stddev);
 						if (sym < lower || upper < sym ) {
 							B.Add(i);

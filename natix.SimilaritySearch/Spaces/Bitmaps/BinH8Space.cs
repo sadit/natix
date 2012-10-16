@@ -115,7 +115,6 @@ namespace natix.SimilaritySearch
 
 		public void Build (string out_filename, IList<IList<byte>> data_list, BitmapFromBitStream len_builder = null)
 		{
-			Console.WriteLine ("****** Reading database from list of files");
 			this.Name = out_filename;
 			int counter = 0;
 			var data_stream = new List<byte> ();

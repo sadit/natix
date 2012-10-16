@@ -237,7 +237,7 @@ namespace natix.SortingSearching
 			}
 			return s;
 		}
-		
+
 		public bool Contains (T key)
 		{
 			var s = this.FindNode (key, null);
@@ -247,7 +247,7 @@ namespace natix.SortingSearching
 			return true;
 		}
 		
-		virtual protected SkipNode2<T> FindNode (T key, SkipList2AdaptiveContext<T> ctx)
+		virtual public SkipNode2<T> FindNode (T key, SkipList2AdaptiveContext<T> ctx)
 		{
 			if (ctx == null) {
 				return this.FindNode (key, this.FIRST, this.FIRST.Level - 1);

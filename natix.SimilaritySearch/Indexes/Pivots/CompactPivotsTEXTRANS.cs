@@ -145,7 +145,7 @@ namespace natix.SimilaritySearch
 					// Console.WriteLine ("i: {0}, sp: {1}, p: {2}, pos: {3}, sym: {4}", i, sp, p, sp + p, sym);
 					var dqp = P[p];
 					var stddev = this.STDDEV[p];
-					var lower = this.Discretize(dqp - res.CoveringRadius, stddev);
+					var lower = this.Discretize(Math.Abs (dqp - res.CoveringRadius), stddev);
 					var upper = this.Discretize(dqp + res.CoveringRadius, stddev);
 					if (sym < lower || upper < sym ) {
 						review = false;
@@ -182,7 +182,7 @@ namespace natix.SimilaritySearch
 					var sym = this.TEXT[sp + p];
 					var dqp = P[p];
 					var stddev = this.STDDEV[p];
-					var lower = this.Discretize(dqp - radius, stddev);
+					var lower = this.Discretize(Math.Abs (dqp - radius), stddev);
 					var upper = this.Discretize(dqp + radius, stddev);
 					if (sym < lower || upper < sym ) {
 						review = false;

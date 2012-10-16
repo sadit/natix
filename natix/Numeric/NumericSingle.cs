@@ -13,16 +13,12 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
-//   Original filename: natix/Numeric/NumericSingle.cs
-// 
+//   Original filename: natix/natix/Numeric/Numeric.cs.template
+//
 using System;
-//using System.Text;
-//using System.Text.RegularExpressions;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-// using System.Runtime.Serialization;
-//using System.Linq;
 
 namespace natix
 {
@@ -145,9 +141,7 @@ namespace natix
 				d += Math.Pow(Math.Abs(m), p);
 			}
 			if (do_sqrt) {
-				var m = Math.Pow(d, 1.0/p);
-				// Console.WriteLine ("p: {0}, pre-d: {1}, final-d: {2}", p, d, m);
-				return m;
+				return Math.Pow(d, 1.0/p);
 			} else {
 				return d;
 			}
@@ -194,11 +188,17 @@ namespace natix
 			}
 			return d;
 		}
+
 		/// <summary>
 		/// Angle between two vectors (computing the cosine between them)
 		/// </summary>
 
 		public double DistCos(IList<Single> a, IList<Single> b) {
+			var M = SimCos(a, b);
+			return Math.Acos(M);
+		}
+
+		public double SimCos(IList<Single> a, IList<Single> b) {
 			double sum,norm1,norm2;
 			norm1=norm2=sum=0.0f;
 			for(int i=0; i<a.Count; i++) {
@@ -207,12 +207,14 @@ namespace natix
 	    		sum+= (a[i] * b[i]);
 			}
 			double M = sum/(Math.Sqrt(norm1)*Math.Sqrt(norm2));
-			M=Math.Max(-1.0f,Math.Min(1.0f,M));
-			//M=min(1.0,M);
-			//cerr << "COS::::" << M << endl;
-			return Math.Acos(M);
+			if (M > 1.0) {
+				return 1.0;
+			}
+			if (M < -1.0) {
+				return -1.0;
+			}
+			return M;
 		}
-
 	   /// <summary>
 	   /// c[i] = a[i] + b[i]
 	   /// </summary>
@@ -268,6 +270,67 @@ namespace natix
 	    	}
 	   }
 
+	   public double Sum(IList<Single> a)
+	   {
+	   		var len = a.Count;
+	   		double s = 0;
+	    	for (int i = 0; i < len; ++i) {
+	    		s += a[i];
+	    	}
+	    	return s;
+	   }
+	   
+	   public double Mean(IList<Single> a)
+	   {
+	   		return this.Sum(a) / a.Count;
+	   }
+	   
+	   public double Max(IList<Single> a, out int pos)
+	   {
+	   		var len = a.Count;
+	   		double s = a[0];
+	   		pos = 0;
+	    	for (int i = 1; i < len; ++i) {
+	    		var x = a[i];
+	    		if (s < x) {
+	    			s = x;
+	    			pos = i;
+	    		}
+	    	}
+	    	return s;
+	   }
+	   
+	   public double Min(IList<Single> a, out int pos)
+	   {
+	   		var len = a.Count;
+	   		double s = a[0];
+	   		pos = 0;
+	    	for (int i = 1; i < len; ++i) {
+	    		var x = a[i];
+	    		if (s > x) {
+	    			s = x;
+	    			pos = i;
+	    		}
+	    	}
+	    	return s;
+	   }
+
+	   public double Var(IList<Single> a, double mean)
+	   {
+	   		var len = a.Count;
+	   		double s = 0;
+	    	for (int i = 0; i < len; ++i) {
+	    		var x = a[i] - mean;
+	    		s += x*x;
+	    	}
+	    	return s / len;
+	   }
+
+	   public double StdDev(IList<Single> a, double mean)
+	   {
+	   		return Math.Sqrt(Var(a, mean));
+	   }
+	   
    	   /// <summary>
 	   /// c[i] = a[i] * b
 	   /// </summary>

@@ -91,12 +91,19 @@ namespace natix
 		///  angle (from cosine) distance
 		/// </summary>
 		double DistCos (IList<T> a, IList<T> b);
+		double SimCos (IList<T> a, IList<T> b);
 		
 		void Sum (IList<T> u, IList<T> v, IList<T> output);
 		void Sub (IList<T> u, IList<T> v, IList<T> output);
 		void Prod (IList<T> u, IList<T> v, IList<T> output);
 		void Div (IList<T> u, IList<T> v, IList<T> output);
 		void Sum (IList<T> u, float c, IList<T> output);
+		double Sum (IList<T> u);
+		double Mean (IList<T> u);
+		double Min (IList<T> u, out int pos);
+		double Max (IList<T> u, out int pos);
+		double Var (IList<T> u, double mean);
+		double StdDev (IList<T> u, double mean);
 		void Prod (IList<T> u, float c, IList<T> output);
 		T SumSingle (T u, float c);
 		T ProdSingle (T u, float c);
