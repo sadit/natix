@@ -242,6 +242,7 @@ namespace natix.SimilaritySearch
 			if (d == covering) {
 				if (this.ceilingKNN) {
 					this.overflow.Add (new ResultPair (docid, d));
+					return true;
 				}
 				return false;
 			}

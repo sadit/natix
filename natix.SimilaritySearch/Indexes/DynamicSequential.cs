@@ -122,8 +122,9 @@ namespace natix.SimilaritySearch
 		{
 			foreach (var docid in this.DOCS.Traverse()) {
 				double d = this.DB.Dist (q, this.DB[docid]);
-				near.Push (docid, d);
-				far.Push (docid, -d);
+				if (!near.Push (docid, d)) {
+					far.Push (docid, -d);
+				}
 			}
 		}
 
