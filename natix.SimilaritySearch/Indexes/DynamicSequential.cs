@@ -108,5 +108,17 @@ namespace natix.SimilaritySearch
 			return R;
 		}
 
+		/// <summary>
+		/// KNN Search
+		/// </summary>
+		public void SearchExtremes (object q, IResult near, IResult far)
+		{
+			foreach (var docid in this.DOCS.Traverse()) {
+				double d = this.DB.Dist (q, this.DB[docid]);
+				near.Push (docid, d);
+				far.Push (docid, -d);
+			}
+		}
+
 	}
 }
