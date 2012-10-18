@@ -104,6 +104,8 @@
     <Compile Include="Indexes\Pivots\CompactPivotsTEXTRANS.cs" />
     <Compile Include="Indexes\Pivots\CompactPivotsSEQRANS.cs" />
     <Compile Include="Indexes\DynamicSequential.cs" />
+    <Compile Include="Indexes\Pivots\PivotGroup.cs" />
+    <Compile Include="Indexes\Pivots\PivotGroupIndex.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
