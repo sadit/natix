@@ -89,7 +89,7 @@ namespace natix
 		/// </summary>
 		public static int[] GetRandomSubSet (int count, int n)
 		{
-			var rand = new Random();
+			var rand = GetRandom();
 			var D = new HashSet<int>();
 			int[] L = new int[count];
 			while (D.Count < count) {
@@ -109,7 +109,7 @@ namespace natix
 		public static void RandomShuffle<T> (IList<T> list)
 		{
 			int n = list.Count;
-			Random rand = new Random ();
+			Random rand = GetRandom();
 			for (int i = 0; i < n; i++) {
 				int j = rand.Next (i, n); // the range is [i,n)
 				var tmp = list [i];
@@ -148,6 +148,22 @@ namespace natix
 				Inv [P [i]] = i;
 			}
 			return Inv;
+		}
+
+		static Random _SeedGenerator = new Random();
+		// static object _SeedMonitor = new object();
+		public static Random GetRandom()
+		{
+			return new Random(GetRandomInt());
+		}
+
+		public static int GetRandomInt()
+		{
+			int seed;
+			//lock (_SeedMonitor) {
+				seed = _SeedGenerator.Next();
+			// }
+			return seed;
 		}
 	}
 }

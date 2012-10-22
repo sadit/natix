@@ -22,15 +22,13 @@ using System.Collections.Generic;
 using NDesk.Options;
 using natix.CompactDS;
 using natix.SortingSearching;
+using System.Threading;
 
 namespace natix.SimilaritySearch
 {
 	/// <summary>
 	/// LC with fixed percentiles (M)
 	/// </summary>
-	/// <exception cref='ArgumentNullException'>
-	/// Is thrown when an argument passed to a method is invalid because it is <see langword="null" /> .
-	/// </exception>
 	public class LC : LC_RNN
 	{
 		/// <summary>
@@ -90,12 +88,11 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Builds the LC with fixed bucket size (static version).
 		/// </summary>
-		protected virtual IList<int> InternalBuild (ref IList<int> rest_list, int bsize)
+		protected virtual IList<int> InternalBuild (ref IList<int> rest_list, int bsize, Random rand)
 		{
 			int iteration = 0;
 			int numiterations = rest_list.Count / bsize + 1;
 			var seq = new int[this.DB.Count];
-			var rand = new Random ();
 			Console.WriteLine ("XXX BEGIN Build rest_list.Count: {0}", rest_list.Count);
 			while (rest_list.Count > 0) {
 				int center;
@@ -138,7 +135,7 @@ namespace natix.SimilaritySearch
 			for (int i = 0; i < n; ++i) {
 				rest_list.Add (i);
 			}
-			var seq = this.InternalBuild (ref rest_list, bsize);
+			var seq = this.InternalBuild (ref rest_list, bsize, RandomSets.GetRandom());
 			foreach (var c in this.CENTERS) {
 				seq[c] = this.CENTERS.Count;
 			}

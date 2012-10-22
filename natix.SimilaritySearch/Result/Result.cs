@@ -253,7 +253,7 @@ namespace natix.SimilaritySearch
 			bool removedLast = false;
 			// we need a default value
 			ResultPair last = new ResultPair (0, 0);
-			// Console.WriteLine ("=== Inserting: {0}, Pool Length: {1}, kmax: {2}, ", r, this.Pool.Count, this.kmax);
+			//Console.WriteLine ("=== Inserting: {0}, Pool Length: {1}, kmax: {2}, ", r, pairset.Count, this.kmax);
 			if (this.pairset.Count >= this.kmax) {
 				removedLast = true;
 				last = this.pairset.RemoveLast ();

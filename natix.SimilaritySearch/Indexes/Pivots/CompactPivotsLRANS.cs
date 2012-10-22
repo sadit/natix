@@ -27,6 +27,7 @@ namespace natix.SimilaritySearch
 		public IList<int>[] SEQ;
 		public MetricDB PIVS;
 		public IList<float> STDDEV;
+		public IList<float> MEAN;
 		/// <summary>
 		/// The alpha_stddev. A positive value used to multiply the stddev in order to manipulate
 		/// the number of rings
@@ -55,6 +56,7 @@ namespace natix.SimilaritySearch
 			this.alpha_stddev = Input.ReadSingle();
 			//PrimitiveIO<float>.ReadFromFile(Input, this.MEAN.Count, this.MEAN);
 			this.STDDEV = PrimitiveIO<float>.ReadFromFile(Input, this.PIVS.Count, null);
+			this.MEAN = PrimitiveIO<float>.ReadFromFile(Input, this.PIVS.Count, null);
 		}
 		
 		public override void Save (BinaryWriter Output)
@@ -68,6 +70,7 @@ namespace natix.SimilaritySearch
 			Output.Write((int) this.MAX_SYMBOL);
 			Output.Write((float) this.alpha_stddev);
 			PrimitiveIO<float>.WriteVector(Output, this.STDDEV);
+			PrimitiveIO<float>.WriteVector(Output, this.MEAN);
 		}
 
 		public void Build (LAESA idx, int num_pivs, int num_rings, ListIBuilder list_builder = null)
@@ -84,6 +87,7 @@ namespace natix.SimilaritySearch
 			var S = new int[num_pivs];
 			int n = this.DB.Count;
 			this.STDDEV = new float[num_pivs];
+			this.MEAN = new float[num_pivs];
 			this.SEQ = new IList<int>[num_pivs];
 			int I = 0;
 			Action<int> build_one_pivot = delegate(int p) {
@@ -91,10 +95,11 @@ namespace natix.SimilaritySearch
 				var D = new List<float>(idx.DIST[p]);
 				this.ComputeStats(D, p);
 				var stddev = this.STDDEV[p];
+				var mean = this.MEAN[p];
 				var L = new ListIFS(ListIFS.GetNumBits(this.MAX_SYMBOL));
 				for (int i = 0; i < n; ++i) {
 					var d = D[i];
-					var sym = this.Discretize(d, stddev);
+					var sym = this.Discretize(d, stddev, mean);
 					L.Add (sym);
 				}
 				if (list_builder == null) {
@@ -137,9 +142,13 @@ namespace natix.SimilaritySearch
 			this.PIVS = new SampleSpace ("", P.DB, S);
 		}
 
-		public virtual int Discretize (double d, float stddev)
+		public virtual int Discretize (double d, float stddev, float mean)
 		{
-			var sym = d / (stddev * this.alpha_stddev);
+			// we suppose a gaussian distribution
+			//var sym = d / (stddev * this.alpha_stddev);
+			var sym = (d - mean) / stddev;
+			sym += 4;
+			sym /= this.alpha_stddev;
 			if (sym < 0) {
 				return 0;
 			}
@@ -163,7 +172,7 @@ namespace natix.SimilaritySearch
 				stddev += x * x;
 			}
 			stddev = (float)Math.Sqrt(stddev / n);
-			// this.MEAN[piv_id] = mean;
+			this.MEAN[p] = mean;
 			this.STDDEV[p] = stddev;
 		}
 
@@ -192,8 +201,9 @@ namespace natix.SimilaritySearch
 					var seq = this.SEQ[piv_id];
 					var sym = seq[i];
 					var stddev = this.STDDEV[piv_id];
-					var lower = this.Discretize(Math.Abs (dqp - res.CoveringRadius), stddev);
-					var upper = this.Discretize(dqp + res.CoveringRadius, stddev);
+					var mean = this.MEAN[piv_id];
+					var lower = this.Discretize(Math.Abs (dqp - res.CoveringRadius), stddev, mean);
+					var upper = this.Discretize(dqp + res.CoveringRadius, stddev, mean);
 					if (sym < lower || upper < sym ) {
 						check_object = false;
 						break;
@@ -221,8 +231,9 @@ namespace natix.SimilaritySearch
 					for (int i = 0; i < n; ++i) {
 						var sym = seq[i];
 						var stddev = this.STDDEV[piv_id];
-						var lower = this.Discretize(Math.Abs (dqp - radius), stddev);
-						var upper = this.Discretize(dqp + radius, stddev);
+						var mean = this.MEAN[piv_id];
+						var lower = this.Discretize(Math.Abs (dqp - radius), stddev, mean);
+						var upper = this.Discretize(dqp + radius, stddev, mean);
 						if (sym < lower || upper < sym ) {
 							A.Add (i);
 						}
@@ -232,8 +243,9 @@ namespace natix.SimilaritySearch
 					foreach (var i in A) {
 						var sym = seq[i];
 						var stddev = this.STDDEV[piv_id];
-						var lower = this.Discretize(Math.Abs (dqp - radius), stddev);
-						var upper = this.Discretize(dqp + radius, stddev);
+						var mean = this.MEAN[piv_id];
+						var lower = this.Discretize(Math.Abs (dqp - radius), stddev, mean);
+						var upper = this.Discretize(dqp + radius, stddev, mean);
 						if (sym < lower || upper < sym ) {
 							B.Add(i);
 						}

@@ -54,55 +54,47 @@ namespace natix.SimilaritySearch
 			}
 		}
 
-		public void Build (MetricDB db, int num_groups, double percentil)
+		public void Build (PivotGroupIndex pgi, int num_groups)
+		{
+			this.DB = pgi.DB;
+			this.GROUPS = new PivotGroup[num_groups];
+			for (int i = 0; i < num_groups; ++i) {
+				this.GROUPS[i] = pgi.GROUPS[i];
+			}
+		}
+
+		public void Build (MetricDB db, int num_groups, double alpha_stddev, int min_bs, bool parallel_build = true)
 		{
 			this.DB = db;
 			this.GROUPS = new PivotGroup[num_groups];
-			for (int i = 0; i < num_groups; ++i) {
-				this.GROUPS[i] = this.GetGroup(percentil);
-				if(i%5 == 0){
-					Console.WriteLine ("*** Procesing groups ({0}/{1}) ***",i,num_groups);
+			ParallelOptions ops = new ParallelOptions ();
+			ops.MaxDegreeOfParallelism = -1;
+			//Parallel.For (0, num_groups, ops, (i) => this.GROUPS[i] = this.GetGroup(percentil));
+			int I = 0;
+			var build_one = new Action<int> (delegate(int i) {
+				this.GROUPS[i] = new PivotGroup();
+				this.GROUPS[i].Build(this.DB, alpha_stddev, min_bs, RandomSets.GetRandomInt());
+				// this.GROUPS [i] = this.GetGroup (alpha_stddev, min_bs);
+				Console.WriteLine ("Advance {0}/{1} (alpha_stddev={2}, db={3}, timestamp={4})",
+				                   I, num_groups, alpha_stddev, db.Name, DateTime.Now);
+				I++;
+			});
+			//parallel_build = false;
+			if (parallel_build) {
+				//Parallel.ForEach (new List<int>(RandomSets.GetExpandedRange (num_groups)), ops, build_one);
+				Parallel.For (0, num_groups, ops, build_one);
+			} else {
+				for (int i = 0; i < num_groups; ++i) {
+					//this.GROUPS[i] = this.GetGroup(percentil);
+					build_one (i);
+					if (i % 5 == 0) {
+						Console.WriteLine ("*** Procesing groups ({0}/{1}) ***", i, num_groups);
+					}
 				}
 			}
 		}
 
-		PivotGroup GetGroup(double percentil)
-		{
-			DynamicSequential idxDynamic = new DynamicSequential();
-			idxDynamic.Build (this.DB);
-			PivotGroup g = new PivotGroup(this.DB.Count);
-			//Console.WriteLine ("Number of objects: {0}",idxDynamic.DOCS.Count);
-			int minobj = 100;
-			while(idxDynamic.DOCS.Count > 0){
-				int nobjects = (int) (idxDynamic.DOCS.Count * percentil);
-				if (idxDynamic.DOCS.Count <= minobj) {
-					nobjects = minobj;
-				}
-				//Console.WriteLine("Number objects near: {0}, far: {1}",nobjects,nobjects);
-				IResult near = new Result(nobjects,false);
-				IResult far = new Result(nobjects,false);
-
-				var pidx = idxDynamic.GetRandom();
-				object piv = this.DB[pidx];
-				g.pivots_list.Add(pidx);
-				idxDynamic.SearchExtremes(piv,near,far);
-				foreach (var nr in near){
-					g.pivots_idx[nr.docid] = pidx; 
-					g.pivots_dist[nr.docid] = nr.dist;
-				}
-				//Console.WriteLine("Distance near(last): {0}, far(last): {1}, far(first): {2}",near.Last.dist/(-far.First.dist), -far.Last.dist/(-far.First.dist), -far.First.dist/(-far.First.dist));
-				foreach (var fr in far){
-					g.pivots_idx[fr.docid] = pidx;
-					g.pivots_dist[fr.docid] = -fr.dist;
-				}
-				idxDynamic.Remove(near);
-				idxDynamic.Remove(far);
-				//Console.WriteLine("Number of objects after: {0}",idxDynamic.DOCS.Count);
-			}
-			Console.WriteLine("Number of pivots per group: {0}",g.pivots_list.Count);
-
-			return g;
-		}
+		// static object LOCK = new object();
 
 		public override IResult SearchKNN (object q, int K, IResult res)
 		{		
@@ -133,7 +125,7 @@ namespace natix.SimilaritySearch
 						break;
 					}
 				}
-				if(check_object){
+				if (check_object) {
 					res.Push(docid, this.DB.Dist(q, this.DB[docid]));
 				}
 			}
