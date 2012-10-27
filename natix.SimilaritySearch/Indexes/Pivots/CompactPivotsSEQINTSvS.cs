@@ -21,26 +21,27 @@ using natix.SortingSearching;
 
 namespace natix.SimilaritySearch
 {
-	public class CompactPivotsSEQINT : CompactPivotsSEQRANS
+	public class CompactPivotsSEQINTSvS : CompactPivotsSEQRANS
 	{
-		public int SEARCHPIVS;
+		// public int SEARCHPIVS;
 
-		public CompactPivotsSEQINT () : base()
+		public CompactPivotsSEQINTSvS () : base()
 		{
 		}
 
-		public override void Build (LAESA idx, int num_pivs, int num_rings, int search_pivs, SequenceBuilder seq_builder)
+		public override void Build (LAESA idx, int num_pivs, int num_rings, SequenceBuilder seq_builder = null)
 		{
 			if (seq_builder == null) {
 				seq_builder = SequenceBuilders.GetIISeq(BitmapBuilders.GetSArray());
 			}
-			base.Build (idx, num_pivs, num_rings, search_pivs, seq_builder);
+			base.Build (idx, num_pivs, num_rings, seq_builder);
 		}
 
 		public override IResult SearchKNN (object q, int K, IResult res)
 		{
 			var m = this.PIVS.Count;
-			var max = Math.Min (this.SEARCHPIVS, m);
+			//var max = Math.Min (this.SEARCHPIVS, m);
+			var max = m;
 			var P = new TopK<Tuple<double, float, float, IRankSelectSeq>> (max);
 			var A = new ushort[this.DB.Count];
 			var _PIVS = (this.PIVS as SampleSpace).SAMPLE;
@@ -51,9 +52,9 @@ namespace natix.SimilaritySearch
 				var seq = this.SEQ [piv_id];
 				A[_PIVS[piv_id]] = (ushort)max;
 				res.Push(_PIVS[piv_id], dqp);
-				var start_sym = Math.Max (this.Discretize (dqp, stddev, mean), 0);
+				var start_sym = this.Discretize (dqp, stddev, mean);
 				var end_sym = this.Discretize (dqp, stddev, mean);
-				var count = Math.Min(start_sym, Math.Abs(seq.Sigma - 1 - end_sym));
+				var count = Math.Min(start_sym, Math.Abs(this.MAX_SYMBOL - end_sym));
 				P.Push (count, Tuple.Create (dqp, stddev, mean, seq));
 			}
 			var queue = new Queue<IEnumerator<IRankSelect>> ();
@@ -115,14 +116,14 @@ namespace natix.SimilaritySearch
 		public override IResult SearchRange (object q, double radius)
 		{
 			var m = this.PIVS.Count;
-			var P = new TopK<Tuple<double, int, int, IRankSelectSeq>> (this.SEARCHPIVS);
+			var P = new TopK<Tuple<double, int, int, IRankSelectSeq>> (m);
 			for (int piv_id = 0; piv_id < m; ++piv_id) {
 				var dqp = this.DB.Dist (q, this.PIVS [piv_id]);
 				var stddev = this.STDDEV [piv_id];
 				var mean = this.MEAN [piv_id];
-				var start_sym = Math.Max (this.Discretize (dqp - radius, stddev, mean), 0);
+				var start_sym = this.Discretize (dqp - radius, stddev, mean);
 				var seq = this.SEQ [piv_id];
-				var end_sym = Math.Min (this.Discretize (dqp + radius, stddev, mean), seq.Sigma - 1);
+				var end_sym = this.Discretize (dqp + radius, stddev, mean);
 				var count = 0;
 				var n = seq.Count;
 				for (int s = start_sym; s <= end_sym; ++s) {
@@ -142,7 +143,7 @@ namespace natix.SimilaritySearch
 				for (int s = start_sym; s <= end_sym; ++s) {
 					var rs = seq.Unravel(s);
 					var count1 = rs.Count1;
-					for (int i = 1; i < count1; ++i) {
+					for (int i = 1; i <= count1; ++i) {
 						if (B == null) {
 							A.Add( rs.Select1(i) );
 						} else {

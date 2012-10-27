@@ -63,15 +63,15 @@ namespace natix.SimilaritySearch
 			}
 		}
 
-		public void Build (MetricDB db, int num_groups, double alpha_stddev, int min_bs, bool parallel_build = true)
+		public void Build (MetricDB db, int num_groups, double alpha_stddev, int min_bs, int num_build_processors = -1)
 		{
 			this.DB = db;
 			this.GROUPS = new PivotGroup[num_groups];
 			ParallelOptions ops = new ParallelOptions ();
-			ops.MaxDegreeOfParallelism = -1;
+			ops.MaxDegreeOfParallelism = num_build_processors;
 			//Parallel.For (0, num_groups, ops, (i) => this.GROUPS[i] = this.GetGroup(percentil));
 			int I = 0;
-			var build_one = new Action<int> (delegate(int i) {
+			var build_one_group = new Action<int> (delegate(int i) {
 				this.GROUPS[i] = new PivotGroup();
 				this.GROUPS[i].Build(this.DB, alpha_stddev, min_bs, RandomSets.GetRandomInt());
 				// this.GROUPS [i] = this.GetGroup (alpha_stddev, min_bs);
@@ -79,18 +79,19 @@ namespace natix.SimilaritySearch
 				                   I, num_groups, alpha_stddev, db.Name, DateTime.Now);
 				I++;
 			});
-			//parallel_build = false;
-			if (parallel_build) {
+			//         parallel_build = false;
+			if (num_build_processors == 1 || num_build_processors == 0) {
 				//Parallel.ForEach (new List<int>(RandomSets.GetExpandedRange (num_groups)), ops, build_one);
-				Parallel.For (0, num_groups, ops, build_one);
-			} else {
 				for (int i = 0; i < num_groups; ++i) {
 					//this.GROUPS[i] = this.GetGroup(percentil);
-					build_one (i);
+					build_one_group (i);
 					if (i % 5 == 0) {
 						Console.WriteLine ("*** Procesing groups ({0}/{1}) ***", i, num_groups);
 					}
 				}
+
+			} else {
+				Parallel.For (0, num_groups, ops, build_one_group);
 			}
 		}
 

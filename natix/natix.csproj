@@ -236,6 +236,7 @@
     <Compile Include="CompactDS\Sequences\WTM_SymbolSplit\EqualSizeCoder.cs" />
     <Compile Include="CompactDS\Sequences\WTM_SymbolSplit\SymbolCoderGenericIO.cs" />
     <Compile Include="CompactDS\Sequences\WTM_SymbolSplit\TopKFreqCoder.cs" />
+    <Compile Include="CompactDS\Lists\Unsorted\ListRankSelectSeq.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

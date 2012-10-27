@@ -24,7 +24,7 @@ namespace natix.SimilaritySearch
 {
 	public class CompactPivotsLRANS : BasicIndex
 	{
-		public IList<int>[] SEQ;
+		public IList<int>[] DIST;
 		public MetricDB PIVS;
 		public IList<float> STDDEV;
 		public IList<float> MEAN;
@@ -38,19 +38,27 @@ namespace natix.SimilaritySearch
 		public CompactPivotsLRANS () : base()
 		{
 		}
-	
-		public void Build(CompactPivots pivs)
+
+		public virtual void Load_DIST(BinaryReader Input)
 		{
+			this.DIST = new IList<int>[this.PIVS.Count];
+			for (int i = 0; i < this.PIVS.Count; ++i) {
+				this.DIST[i] = ListIGenericIO.Load(Input);
+			}
+		}
+
+		public virtual void Save_DIST (BinaryWriter Output)
+		{
+			for (int i = 0; i < this.PIVS.Count; ++i) {
+				ListIGenericIO.Save(Output, this.DIST[i]);
+			}
 		}
 
 		public override void Load (BinaryReader Input)
 		{
 			base.Load (Input);
 			this.PIVS = SpaceGenericIO.SmartLoad(Input, false);
-			this.SEQ = new IList<int>[this.PIVS.Count];
-			for (int i = 0; i < this.PIVS.Count; ++i) {
-				this.SEQ[i] = ListIGenericIO.Load(Input);
-			}
+			this.Load_DIST(Input);
 			// this.MEAN = new float[this.PIVS.Count];
 			this.MAX_SYMBOL = Input.ReadInt32 ();
 			this.alpha_stddev = Input.ReadSingle();
@@ -63,9 +71,7 @@ namespace natix.SimilaritySearch
 		{
 			base.Save (Output);
 			SpaceGenericIO.SmartSave (Output, this.PIVS);
-			for (int i = 0; i < this.PIVS.Count; ++i) {
-				ListIGenericIO.Save(Output, this.SEQ[i]);
-			}
+			this.Save_DIST(Output);
 			// PrimitiveIO<float>.WriteVector(Output, this.MEAN);
 			Output.Write((int) this.MAX_SYMBOL);
 			Output.Write((float) this.alpha_stddev);
@@ -73,7 +79,7 @@ namespace natix.SimilaritySearch
 			PrimitiveIO<float>.WriteVector(Output, this.MEAN);
 		}
 
-		public void Build (LAESA idx, int num_pivs, int num_rings, ListIBuilder list_builder = null)
+		public virtual void Build (LAESA idx, int num_pivs, int num_rings, ListIBuilder list_builder = null)
 		{
 			// setting up MAX_SYMBOL and alpha_stddev values
 			{
@@ -88,7 +94,7 @@ namespace natix.SimilaritySearch
 			int n = this.DB.Count;
 			this.STDDEV = new float[num_pivs];
 			this.MEAN = new float[num_pivs];
-			this.SEQ = new IList<int>[num_pivs];
+			this.DIST = new IList<int>[num_pivs];
 			int I = 0;
 			Action<int> build_one_pivot = delegate(int p) {
 				S [p] = P.SAMPLE [p];
@@ -103,9 +109,9 @@ namespace natix.SimilaritySearch
 					L.Add (sym);
 				}
 				if (list_builder == null) {
-					this.SEQ[p] = L;
+					this.DIST[p] = L;
 				} else {
-					this.SEQ[p] = list_builder(L, this.MAX_SYMBOL);
+					this.DIST[p] = list_builder(L, this.MAX_SYMBOL);
 				}
 				if (I % 10 == 0 ) {
 					Console.Write ("== advance: {0}/{1}, ", I, num_pivs);
@@ -116,30 +122,8 @@ namespace natix.SimilaritySearch
 				I++;
 			};
 			Parallel.For(0, num_pivs, build_one_pivot);
-			/*for (int p = 0; p < num_pivs; ++p) {
-				S [p] = P.SAMPLE [p];
-				var D = new List<float>(idx.DIST[p]);
-				this.ComputeStats(D, p);
-				var stddev = this.STDDEV[p];
-				var L = new ListIFS(ListIFS.GetNumBits(this.MAX_SYMBOL));
-				for (int i = 0; i < n; ++i) {
-					var d = D[i];
-					var sym = this.Discretize(d, stddev);
-					L.Add (sym);
-				}
-				if (list_builder == null) {
-					this.SEQ[p] = L;
-				} else {
-					this.SEQ[p] = list_builder(L, this.MAX_SYMBOL);
-				}
-				if (p % 10 == 0 || p + 1 == num_pivs) {
-					Console.Write ("== advance: {0}/{1}, ", p, num_pivs);
-					if (p % 100 == 0 || p + 1 == num_pivs) {
-						Console.WriteLine ();
-					}
-				}
-			}*/
 			this.PIVS = new SampleSpace ("", P.DB, S);
+			Console.WriteLine ("=== done Build CompactPivotsLRANS");
 		}
 
 		public virtual int Discretize (double d, float stddev, float mean)
@@ -198,7 +182,7 @@ namespace natix.SimilaritySearch
 				bool check_object = true;
 				for (int piv_id = 0; piv_id < m; ++piv_id) {
 					var dqp = P[piv_id];
-					var seq = this.SEQ[piv_id];
+					var seq = this.DIST[piv_id];
 					var sym = seq[i];
 					var stddev = this.STDDEV[piv_id];
 					var mean = this.MEAN[piv_id];
@@ -225,7 +209,7 @@ namespace natix.SimilaritySearch
 			HashSet<int> B = null;
 			for (int piv_id = 0; piv_id < m; ++piv_id) {
 				var dqp = this.DB.Dist (q, this.PIVS [piv_id]);
-				var seq = this.SEQ[piv_id];
+				var seq = this.DIST[piv_id];
 				if (A == null) {
 					A = new HashSet<int>();
 					for (int i = 0; i < n; ++i) {

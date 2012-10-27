@@ -49,6 +49,11 @@ namespace natix.CompactDS
 
 		}
 
+		public virtual void Build (IRankSelectSeq seq)
+		{
+			this.S = seq;
+		}
+
 		public virtual void Load (BinaryReader Input)
 		{
 			this.S = RankSelectSeqGenericIO.Load(Input);
@@ -61,7 +66,7 @@ namespace natix.CompactDS
 
 		public override int GetItem (int index)
 		{
-			this.S.Access(index);
+			return this.S.Access(index);
 		}
 
 		public override void SetItem (int index, int u)

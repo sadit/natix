@@ -98,13 +98,13 @@
     <Compile Include="Indexes\KNR\CNAPP.cs" />
     <Compile Include="Spaces\MetricDB.cs" />
     <Compile Include="Indexes\PermutedIndex.cs" />
-    <Compile Include="Indexes\Pivots\CompactPivots.cs" />
     <Compile Include="Indexes\Pivots\LAESA.cs" />
     <Compile Include="Indexes\Pivots\CompactPivotsLRANS.cs" />
     <Compile Include="Indexes\Pivots\CompactPivotsSEQRANS.cs" />
     <Compile Include="Indexes\DynamicSequential.cs" />
     <Compile Include="Indexes\Pivots\PivotGroup.cs" />
     <Compile Include="Indexes\Pivots\PivotGroupIndex.cs" />
+    <Compile Include="Indexes\Pivots\CompactPivotsSEQINTSvS.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

@@ -46,7 +46,8 @@ namespace natix.CompactDS
 			typeof(ListIDiffsRL),
 			typeof(ListEqRL),
 			typeof(ListIFS8),
-			typeof(ListIFS4)
+			typeof(ListIFS4),
+			typeof(ListRankSelectSeq)
 		};
 	
 		/// <summary>
