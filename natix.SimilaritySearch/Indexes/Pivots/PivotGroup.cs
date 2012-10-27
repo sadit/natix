@@ -14,7 +14,9 @@
 //    limitations under the License.
 // 
 // Eric S. Tellez
-// Load and Save methods
+// - Load and Save methods
+// - Everything was modified to compute slices using radius instead of the percentiles
+// - Argument minimum bucket size
 
 using System;
 using System.IO;
