@@ -165,29 +165,44 @@ namespace natix.SimilaritySearch
 			var L = new double[ this.DOCS.Count ];
 			mean = 0;
 			int i = 0;
-			var fixed_near = new Result(min_bs, false);
-			var fixed_far = new Result(min_bs, false);
+			var fixed_near = new Result (min_bs, false);
+			var fixed_far = new Result (min_bs, false);
 			double min = double.MaxValue;
 			double max = double.MinValue;
 			foreach (var docid in this.DOCS.Traverse()) {
-				double d = this.DB.Dist (q, this.DB[docid]);
-				L[i] = d;
+				double d = this.DB.Dist (q, this.DB [docid]);
+				L [i] = d;
 				mean += d;
 				++i;
-				min = Math.Min(min, d);
-				max = Math.Max(max, d);
+				min = Math.Min (min, d);
+				max = Math.Max (max, d);
 			}
 			mean /= L.Length;
 			stddev = 0;
 			i = 0;
 			foreach (var docid in this.DOCS.Traverse()) {
-				var d = L[i];
+				var d = L [i];
 				double m = d - mean;
 				stddev += m * m;
 				++i;
 			}
-			stddev = Math.Sqrt(stddev / L.Length);
-			var radius = stddev * alpha_stddev;
+			stddev = Math.Sqrt (stddev / L.Length);
+			var __alpha_stddev = alpha_stddev;
+			if (alpha_stddev < 0) {
+				// this is a value describing the frontier between discarding and not discarding
+				// using the given pivot but using a query following the same distribution
+				__alpha_stddev = (max - 3 * min) / (2 * stddev);
+				if (__alpha_stddev < 0) {
+					// it cannot be smaller than 0
+					__alpha_stddev = 0;
+				} else {
+					// alpha_stddev has the negative value of the scaling of the dynamically
+					// computed __alpha_stddev
+					__alpha_stddev = Math.Abs( alpha_stddev * __alpha_stddev );
+				}
+			}
+			var radius = stddev * __alpha_stddev;
+			// Console.WriteLine ("read alpha_stddev: {0}, stddev: {1}, radius: {2}, min: {3}, max: {4}, raw alpha: {5}, n: {6}", __alpha_stddev, stddev, radius, min, max, (max-3*min)/stddev, this.DOCS.Count);
 			near = new Result(L.Length, false);
 			far = new Result(L.Length, false);
 			i = 0;
