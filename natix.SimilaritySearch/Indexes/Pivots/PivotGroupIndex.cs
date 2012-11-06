@@ -69,7 +69,7 @@ namespace natix.SimilaritySearch
 			this.GROUPS = new PivotGroup[num_groups];
 			ParallelOptions ops = new ParallelOptions ();
 			ops.MaxDegreeOfParallelism = num_build_processors;
-			//Parallel.For (0, num_groups, ops, (i) => this.GROUPS[i] = this.GetGroup(percentil));
+			// Parallel.For (0, num_groups, ops, (i) => this.GROUPS[i] = this.GetGroup(percentil));
 			int I = 0;
 			var build_one_group = new Action<int> (delegate(int i) {
 				this.GROUPS[i] = new PivotGroup();
@@ -79,7 +79,7 @@ namespace natix.SimilaritySearch
 				                   I, num_groups, alpha_stddev, db.Name, DateTime.Now);
 				I++;
 			});
-			//         parallel_build = false;
+			// parallel_build = false;
 			if (num_build_processors == 1 || num_build_processors == 0) {
 				//Parallel.ForEach (new List<int>(RandomSets.GetExpandedRange (num_groups)), ops, build_one);
 				for (int i = 0; i < num_groups; ++i) {
@@ -89,7 +89,6 @@ namespace natix.SimilaritySearch
 						Console.WriteLine ("*** Procesing groups ({0}/{1}) ***", i, num_groups);
 					}
 				}
-
 			} else {
 				Parallel.For (0, num_groups, ops, build_one_group);
 			}

@@ -54,16 +54,18 @@ namespace natix.SimilaritySearch
 			int m = Input.ReadInt32();
 			this.CENTERS = new int[m];
 			this.COV = new float[m];
-			PrimitiveIO<int>.ReadFromFile(Input, m, this.CENTERS);
+			// PrimitiveIO<int>.ReadFromFile(Input, m, this.CENTERS);
 			PrimitiveIO<float>.ReadFromFile(Input, m, this.COV);
 			this.SEQ = RankSelectSeqGenericIO.Load(Input);
+			var L = new SortedListRSCache(this.SEQ.Unravel(this.SEQ.Sigma - 1));
+			this.CENTERS = new List<int>(L);
 		}
 
 		public override void Save (BinaryWriter Output)
 		{
 			base.Save (Output);
 			Output.Write(this.CENTERS.Count);
-			PrimitiveIO<int>.WriteVector(Output, this.CENTERS);
+			// PrimitiveIO<int>.WriteVector(Output, this.CENTERS);
 			PrimitiveIO<float>.WriteVector(Output, this.COV);
 			RankSelectSeqGenericIO.Save(Output, this.SEQ);
 		}
@@ -141,7 +143,7 @@ namespace natix.SimilaritySearch
 		public virtual void Build (MetricDB db, int num_centers, SequenceBuilder seq_builder = null)
 		{
 			this.DB = db;
-			this.CENTERS = RandomSets.GetRandomSubSet(num_centers, this.DB.Count);
+			this.CENTERS = RandomSets.GetRandomSubSet (num_centers, this.DB.Count);
 			Sorting.Sort<int> (this.CENTERS);
 			BitStream32 IsCenter = new BitStream32 ();
 			IsCenter.Write (false, db.Count);
@@ -149,13 +151,34 @@ namespace natix.SimilaritySearch
 			this.COV = new float[num_centers];
 			for (int i = 0; i < num_centers; i++) {
 				IsCenter [this.CENTERS [i]] = true;
-				seq[this.CENTERS[i]] = this.CENTERS.Count;
+				seq [this.CENTERS [i]] = this.CENTERS.Count;
+			}
+			if (seq_builder == null) {
+				seq_builder = SequenceBuilders.GetIISeq(BitmapBuilders.GetPlainSortedList());
 			}
 			this.BuildInternal (IsCenter, seq, seq_builder);
 			//this.Save (output_name, invindex);
 		}
 
-
+		public virtual void Build (LC_RNN lc, SequenceBuilder seq_builder = null)
+		{
+			this.COV = lc.COV;
+			this.DB = lc.DB;
+			this.CENTERS = new List<int>(lc.CENTERS);
+			var S = new int[lc.SEQ.Count];
+			for (int sym = 0; sym < lc.SEQ.Sigma; ++sym) {
+				var rs = lc.SEQ.Unravel(sym);
+				var count1 = rs.Count1;
+				for (int i = 1; i <= count1; ++i) {
+					var p = rs.Select1(i);
+					S[p] = sym;
+				}
+			}
+			if (seq_builder == null) {
+				seq_builder = SequenceBuilders.GetIISeq(BitmapBuilders.GetPlainSortedList());
+			}
+			this.SEQ = seq_builder(S, lc.SEQ.Sigma);
+		}
 
 		/// <summary>
 		/// Search the specified q with radius qrad.

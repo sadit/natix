@@ -82,7 +82,6 @@ namespace natix.SimilaritySearch
 					this.pivots_dist[pair.docid] = (float)-pair.dist;
 				}
 				if (I % 10 == 0) {
-					//lock (LOCK) {
 					Console.WriteLine("--- I {0}> remains: {1}, alpha_stddev: {2}, mean: {3}, stddev: {4}, pivot: {5}",
 					                  I, idxDynamic.DOCS.Count, alpha_stddev, mean, stddev, pidx);
 					double near_first, near_last, far_first, far_last;

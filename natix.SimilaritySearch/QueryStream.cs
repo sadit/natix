@@ -16,14 +16,9 @@
 //   Original filename: natix/SimilaritySearch/QueryStream.cs
 // 
 using System;
-//using NUnit.Framework;
-using System.Xml;
 using System.IO;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
-using System.Xml.Serialization;
-using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 
 
@@ -79,6 +74,7 @@ namespace natix.SimilaritySearch
 		static char[] sep1 = new char[] {','};
 		static char[] sep2 = new char[] {' '};
 		string[] commands;
+
 		/// <summary>
 		/// Constructor from file (use "-" to read from standard input)
 		/// </summary>
@@ -93,8 +89,8 @@ namespace natix.SimilaritySearch
 				if (line == "-0") {
 					break;
 				}
-				string[] s = line.Split (sep1, 2);
 				CommandQuery cmd;
+				string[] s = line.Split (sep1, 2);
 				if (s [0].StartsWith ("search")) {
 					var m = s [0].Split (sep2);
 					if (m.Length != 3) {
