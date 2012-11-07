@@ -77,6 +77,7 @@ namespace natix.SimilaritySearch
 			if (covering == dist && !this.Ceiling) {
 				return false;
 			}
+	
 			List<int> list;
 			if (!this.pool.TryGetValue (dist, out list)) {
 				list = new List<int> ();

@@ -12,34 +12,47 @@
 //   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
-
+//
+using natix;
 using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace natix.SimilaritySearch
+namespace natix
 {
-
-	/// <summary>
-	/// String space
-	/// </summary>
-	public class StringHammingSpace<T> : StringSpace< T > where T : IComparable
+	public class ListPaddingToN<T> : ListGenerator<T>
 	{
-		/// <summary>
-		/// Constructor
-		/// </summary>
-		public StringHammingSpace () : base()
-		{
-		}
+		public IList<T> L;
+		public int N;
+		public T padding_value;
 
-		/// <summary>
-		/// Wrapper to the real string distance
-		/// </summary>
-		public override double Dist (object a, object b)
+		public ListPaddingToN (IList<T> L, int N, T padding_value)
 		{
-			this.numdist++;
-			return StringSpace<T>.Hamming ((IList<T>)a, (IList<T>)b);
+			this.L = L;
+			this.N = N;
+			this.padding_value = padding_value;
+		}
+		
+		public override int Count {
+			get {
+				return this.N;
+			}
+		}
+		
+		public override T GetItem (int index)
+		{
+			if (index < this.L.Count) {
+				return this.L[index];
+			}
+			return this.padding_value;
+		}
+		
+		public override void SetItem (int index, T u)
+		{
+			if (index < this.L.Count) {
+				this.L[index] = u;
+			}
 		}
 	}
 }

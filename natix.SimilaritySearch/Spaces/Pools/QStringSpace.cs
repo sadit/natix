@@ -13,53 +13,48 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
-//   Original filename: natix/SimilaritySearch/Spaces/SequenceSpace.cs
-// 
 using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using natix.CompactDS;
 
 namespace natix.SimilaritySearch
 {
 	/// <summary>
 	/// String space
 	/// </summary>
-	public class StringSpace<T> : MetricDB where T : IComparable
+	public class QStringSpace : MetricDB
 	{
-		// static INumeric<T> Num = (INumeric<T>)(natix.Numeric.Get (typeof(T)));
-		public IList< IList<T> > seqs;
-		//public IListContainer<T> seqs;
-		protected int numdist;
-		public Func<string,IList<T>> StringParser = null;
+		/// <summary>
+		/// The length of each element
+		/// </summary>
+		public int Q;
+		public IList<int> TEXT;
+		public bool CopyQGramsOnAccess;
+		public bool ParseIntegers;
+		protected int numdist = 0;
 
 		public virtual void Load (BinaryReader Input)
 		{
-			this.Name = Input.ReadString();
-			var len = Input.ReadInt32 ();
-			this.seqs = new IList<T>[len];
-			for (int i = 0; i < this.seqs.Count; ++i) {
-				len = Input.ReadInt32 ();
-				var v = new T[len];
-				PrimitiveIO<T>.ReadFromFile(Input, len, v);
-				this.seqs[i] = v;
-			}
+			this.Q = Input.ReadInt32 ();
+			this.CopyQGramsOnAccess = Input.ReadBoolean();
+			this.ParseIntegers = Input.ReadBoolean();
+			this.TEXT = ListIGenericIO.Load(Input);
 		}
 
 		public virtual void Save (BinaryWriter Output)
 		{
-			Output.Write (this.Name);
-			Output.Write ((int)this.seqs.Count);
-			for (int i = 0; i < this.seqs.Count; ++i) {
-				Output.Write((int)this.seqs[i].Count);
-				PrimitiveIO<T>.WriteVector(Output, this.seqs[i]);
-			}
+			Output.Write ((int) this.Q);
+			Output.Write ((bool) this.CopyQGramsOnAccess);
+			Output.Write ((bool) this.ParseIntegers);
+			ListIGenericIO.Save(Output, this.TEXT);
 		}
 
 		/// <summary>
 		/// Constructor
 		/// </summary>
-		public StringSpace ()
+		public QStringSpace ()
 		{
 		}
 
@@ -68,7 +63,22 @@ namespace natix.SimilaritySearch
 		/// </summary>
 		public object this[int docid]
 		{
-			get { return this.seqs[docid]; }
+			get {
+				return this.GetQGram(docid, this.Q);
+			}
+		}
+
+		public IList<int> GetQGram (int docid, int qlen = 0)
+		{
+			if (qlen <= 0) {
+				qlen = this.Q;
+			}
+			var slist = new ListShiftIndex<int>(this.TEXT, docid*this.Q, qlen);
+			if (this.CopyQGramsOnAccess) {
+				return new List<int>(slist);
+			} else {
+				return slist;
+			}
 		}
 
 		/// <summary>
@@ -77,7 +87,6 @@ namespace natix.SimilaritySearch
 		public string Name {
 			get;
 			set;
-
 		}
 		
 		public IResult CreateResult (int K, bool ceiling)
@@ -86,23 +95,17 @@ namespace natix.SimilaritySearch
 			return new ResultTies (K, ceiling);
 		}
 
-		public void Build (string outname, IList<IList<T>> seqs)
+		public void Build (string outname, IList<int> text, int sigma, int q, bool copy_on_access = true, bool parse_integers = false, ListIBuilder list_builder = null)
 		{
 			this.Name = outname;
-			this.seqs = seqs;
-		}
-
-		public virtual void Build (string seqlist)
-		{
-			Console.WriteLine ("Reading sequence '{0}'", seqlist);
-			this.seqs = new List<IList<T>> ();
-			this.Name = seqlist;
-			using (var stream = File.OpenText(seqlist)) {
-				while (!stream.EndOfStream) {
-					var line = stream.ReadLine ();
-					this.seqs.Add( (IList<T>) this.Parse(line, false) );
-				}
+			this.Q = q;
+			this.CopyQGramsOnAccess = copy_on_access;
+			this.ParseIntegers = parse_integers;
+			if (list_builder == null) {
+				list_builder = ListIBuilders.GetListIFS();
 			}
+			var N = (int)(Math.Ceiling(text.Count*1.0/q))*q;
+			this.TEXT = list_builder(new ListPaddingToN<int>(text, N, sigma), sigma);
 		}
 
 		/// <summary>
@@ -110,13 +113,15 @@ namespace natix.SimilaritySearch
 		/// </summary>
 		public object Parse (string s, bool isquery)
 		{
-			if (isquery && s.StartsWith ("obj")) {
-				return this.seqs [int.Parse (s.Split (' ') [1])];
+			if (this.ParseIntegers) {
+				return PrimitiveIO<int>.ReadVectorFromString (s);
+			} else {
+				var u = new int[s.Length];
+				for (int i = 0; i < u.Length; ++i) {
+					u[i] = Convert.ToInt32(s[i]);
+				}
+				return u;
 			}
-			if (this.StringParser == null) { 
-				return PrimitiveIO<T>.ReadVectorFromString (s);
-			}
-			return this.StringParser(s);
 		}
 		
 		/// <summary>
@@ -130,7 +135,10 @@ namespace natix.SimilaritySearch
 		/// The length of the space
 		/// </summary>
 		public int Count {
-			get { return (this.seqs == null) ? 0 : this.seqs.Count; }
+			get {
+				// this.TEXT.Count is padded to be multiplo of Q
+				return this.TEXT.Count/this.Q;
+			}
 		}
 		
 		/// <summary>
@@ -155,25 +163,7 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Levenshtein distance for generic datatype. It has customizable costs
 		/// </summary>
-		/// <param name="a">
-		/// The first sequence
-		/// </param>
-		/// <param name="b">
-		/// Second sequence
-		/// </param>
-		/// <param name="inscost">
-		/// The cost of a single insert
-		/// </param>
-		/// <param name="delcost">
-		/// The cost of a deletion operation
-		/// </param>
-		/// <param name="repcost">
-		/// The cost of a replace operation
-		/// </param>
-		/// <returns>
-		/// The edit distance between a and b
-		/// </returns>
-		public static int Levenshtein (IList<T> a, IList<T> b, byte inscost, byte delcost, byte repcost) 
+ 		public static int Levenshtein (IList<int> a, IList<int> b, byte inscost, byte delcost, byte repcost) 
 		{
 			int alength = a.Count;
 			int blength = b.Count;
@@ -215,21 +205,21 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Edit distance
 		/// </summary>
-		public static double Levenshtein (IList<T> a, IList<T> b)
+		public static double Levenshtein (IList<int> a, IList<int> b)
 		{
 			return Levenshtein (a, b, 1, 1, 1);
 		}
 		/// <summary>
 		/// LCS over Levenshtein
 		/// </summary>
-		public static double LCS (IList<T> a, IList<T> b)
+		public static double LCS (IList<int> a, IList<int> b)
 		{
 			return Levenshtein (a, b, 1, 1, 2);
 		}
 		/// <summary>
 		/// Hamming distance for Generic Datatype
 		/// </summary>
-		public static double Hamming (IList<T> a, IList<T> b)
+		public static double Hamming (IList<int> a, IList<int> b)
 		{
 			int d = 0;
 			for (int i = 0; i < a.Count; i++) {
@@ -242,14 +232,14 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// lexicographic comparison, starting always at position 0 of every sequence
 		/// </summary>
-		public static int LexicographicCompare (IList<T> a, IList<T> b)
+		public static int LexicographicCompare (IList<int> a, IList<int> b)
 		{
 			return LexicographicCompare (a, 0, b.Count, b, 0, a.Count);
 		}
 		/// <summary>
 		/// Compare to arrays lexicographically, returns an integer representing something like a - b
 		/// </summary>
-		public static int LexicographicCompare (IList<T> a, int aStart, int aEnd, IList<T> b, int bStart, int bEnd)
+		public static int LexicographicCompare (IList<int> a, int aStart, int aEnd, IList<int> b, int bStart, int bEnd)
 		{
 			int cmp = 0;
 			for (int i = aStart, j = bStart; i < aEnd && j < bEnd; i++,j++) {
@@ -263,7 +253,7 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Jaccard's distance
 		/// </summary>
-		public static double Jaccard (IList<T> a, IList<T> b)
+		public static double Jaccard (IList<int> a, IList<int> b)
 		{
 			// a & b are already sorted
 			// union
@@ -291,7 +281,7 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Hamming distance
 		/// </summary>
-		public static double Dice (IList<T> a, IList<T> b)
+		public static double Dice (IList<int> a, IList<int> b)
 		{
 			// a & b are already sorted
 			// union
@@ -315,7 +305,7 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Knr Intersection distance
 		/// </summary>
-		public static double Intersection (IList<T> a, IList<T> b)
+		public static double Intersection (IList<int> a, IList<int> b)
 		{
 			// a & b are already sorted
 			// union
@@ -340,10 +330,10 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Knr prefix length distance
 		/// </summary>
-		public static double PrefixLength (IList<T> a, IList<T> b)
+		public static double PrefixLength (IList<int> a, IList<int> b)
 		{
 			int i, min = Math.Min (a.Count, b.Count);
-			for (i = 0; i < min && a[i].CompareTo (b[i]) == 0; i++) {
+			for (i = 0; i < min && a[i] == b[i]; i++) {
 				//empty
 			}
 			return -i;

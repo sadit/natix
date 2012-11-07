@@ -24,14 +24,15 @@ namespace natix.SimilaritySearch
 	/// <summary>
 	/// String space
 	/// </summary>
-	public class StringHammingSpace<T> : StringSpace< T > where T : IComparable
+	public class QStringLevenshteinSpace : QStringSpace
 	{
 		/// <summary>
 		/// Constructor
 		/// </summary>
-		public StringHammingSpace () : base()
+		public QStringLevenshteinSpace () : base()
 		{
 		}
+
 
 		/// <summary>
 		/// Wrapper to the real string distance
@@ -39,7 +40,7 @@ namespace natix.SimilaritySearch
 		public override double Dist (object a, object b)
 		{
 			this.numdist++;
-			return StringSpace<T>.Hamming ((IList<T>)a, (IList<T>)b);
+			return QStringSpace.Levenshtein ((IList<int>)a, (IList<int>) b);
 		}
 	}
 }

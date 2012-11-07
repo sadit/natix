@@ -105,11 +105,17 @@
     <Compile Include="Indexes\Pivots\PivotGroup.cs" />
     <Compile Include="Indexes\Pivots\PivotGroupIndex.cs" />
     <Compile Include="Indexes\Pivots\CompactPivotsSEQINTSvS.cs" />
+    <Compile Include="Spaces\Pools\QStringSpace.cs" />
+    <Compile Include="Spaces\Pools\QStringLevenshteinSpace.cs" />
+    <Compile Include="Spaces\Pools\QStringHammingSpace.cs" />
+    <Compile Include="Spaces\Pools\QStringLCSSpace.cs" />
+    <Compile Include="Spaces\Pools\QStringPrefixLengthSpace.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Indexes\PI\" />
     <Folder Include="Indexes\Pivots\" />
+    <Folder Include="Spaces\Pools\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\natix\natix.csproj">
