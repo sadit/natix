@@ -218,6 +218,7 @@ namespace natix.SimilaritySearch
 			var C = this.DB.CreateResult (len, false);
 			for (int center = 0; center < len; center++) {
 				var dcq = sp.Dist (this.DB [this.CENTERS [center]], q);
+                ++this.internal_numdists;
 				R.Push (this.CENTERS [center], dcq);
 				//var rm = Math.Abs (dcq - this.COV [center]);
 				if (dcq <= R.CoveringRadius + this.COV [center]) {
@@ -264,6 +265,7 @@ namespace natix.SimilaritySearch
 					}
 				}
 				if (dcq < 0) {
+                    ++this.internal_numdists;
 					dcq = sp.Dist (sp [oid], q);
 					if (cache != null) {
 						cache [oid] = dcq;
@@ -298,6 +300,7 @@ namespace natix.SimilaritySearch
 					dcq = -1;
 				}
 				if (dcq < 0) {
+                    ++this.internal_numdists;
 					dcq = sp.Dist (sp [oid], q);
 					cache [oid] = dcq;
 				}
@@ -342,6 +345,7 @@ namespace natix.SimilaritySearch
 					}
 				}
 				if (dcq < 0) {
+                    ++this.internal_numdists;
 					dcq = sp.Dist (sp [oid], q);
 					if (cache != null) {
 						cache [oid] = dcq;

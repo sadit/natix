@@ -63,7 +63,7 @@ namespace natix.SimilaritySearch
 			this.qid = Input.ReadInt32 ();
 			this.qtype = Input.ReadDouble ();
 			this.qraw = Input.ReadString ();
-			this.cost.External = Input.ReadInt32 ();
+			this.cost.Total = Input.ReadInt32 ();
 			this.cost.Internal = Input.ReadInt32 ();
 			this.time = new TimeSpan (Input.ReadInt64 ());
 			this.result = new List<ResultPair> ();
@@ -80,7 +80,7 @@ namespace natix.SimilaritySearch
 			Output.Write ((int)this.qid);
 			Output.Write ((double)this.qtype);
 			Output.Write (this.qraw);
-			Output.Write ((int)this.cost.External);
+			Output.Write ((int)this.cost.Total);
 			Output.Write ((int)this.cost.Internal);
 			Output.Write ((long)this.time.Ticks);
 			int n = this.result.Count;
@@ -112,7 +112,7 @@ namespace natix.SimilaritySearch
 		/// </param>
 		public void Extend (ResultInfo res)
 		{
-			this.cost.External += res.cost.External;
+			this.cost.Total += res.cost.Total;
 			this.cost.Internal += res.cost.Internal;
 			this.time = this.time.Add (res.time);
 			foreach (ResultPair p in res.result) {
@@ -125,7 +125,7 @@ namespace natix.SimilaritySearch
 
 		public void Extend (IResult res, SearchCost cost, TimeSpan time)
 		{
-			this.cost.External += cost.External;
+			this.cost.Total += cost.Total;
 			this.cost.Internal += cost.Internal;
 			this.time = this.time.Add (time);
 			foreach (ResultPair p in res) {
@@ -165,8 +165,8 @@ namespace natix.SimilaritySearch
 			ofile.WriteLine ("-----");
 			ofile.WriteLine ("qid: {0}, qtype: {1}", qid, qtype);
 			ofile.WriteLine ("time: {0}", time.TotalSeconds);
-			ofile.WriteLine ("internalCost: {0}", this.cost.Internal);
-			ofile.WriteLine ("externalCost: {0}", this.cost.External);
+			ofile.WriteLine ("internal-cost: {0}", this.cost.Internal);
+			ofile.WriteLine ("total-cost: {0}", this.cost.Total);
 			showmaxres = Math.Min (showmaxres, result.Count);
 			if (names == null) {
 				for (int i = 0; i < showmaxres; i++) {

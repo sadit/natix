@@ -29,20 +29,20 @@ namespace natix.SimilaritySearch
 	public struct SearchCost
 	{
 		/// <summary>
-		/// Internal cost
+		/// Total cost
+		/// </summary>
+		public int Total;
+		/// <summary>
+		/// Internal
 		/// </summary>
 		public int Internal;
 		/// <summary>
-		/// External cost
-		/// </summary>
-		public int External;
-		/// <summary>
 		/// Constructor
 		/// </summary>
-		public SearchCost (int Internal, int External)
+		public SearchCost (int Total, int Internal) //, int External)
 		{
-			this.Internal = Internal;
-			this.External = External;
+			this.Total = Total;
+            this.Internal = Internal;
 		}
 	}
 	

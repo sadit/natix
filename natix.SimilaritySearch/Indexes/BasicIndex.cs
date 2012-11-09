@@ -76,13 +76,13 @@ namespace natix.SimilaritySearch
 		/// </summary>
 		public abstract IResult SearchKNN(object q, int K, IResult res);
 
+        protected int internal_numdists = 0;
 		/// <summary>
 		/// The current search cost object for the index
 		/// </summary>
 		public virtual SearchCost Cost {
 			get {
-				var numdists = this.DB.NumberDistances;
-				return new SearchCost (numdists, 0);
+				return new SearchCost (this.DB.NumberDistances, this.internal_numdists);
 			}
 		}
 

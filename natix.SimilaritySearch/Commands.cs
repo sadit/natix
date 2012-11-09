@@ -122,9 +122,9 @@ namespace natix.SimilaritySearch
 				}
 				SearchCost finalCost = index.Cost;
 				finalCost.Internal -= startCost.Internal;
-				finalCost.External -= startCost.External;
+				finalCost.Total -= startCost.Total;
 				totalCost.Internal += finalCost.Internal;
-				totalCost.External += finalCost.External;
+				totalCost.Total += finalCost.Total;
 				long time = DateTime.Now.Ticks - tstart;
 				totaltime += time;
 				SortedDictionary<double, int> hist = new SortedDictionary<double, int> ();
@@ -179,7 +179,8 @@ namespace natix.SimilaritySearch
 				File.Move (searchOps.ResultName + ".tmp", searchOps.ResultName);
 			}
 			Console.WriteLine ("Number queries: {0}", qid);
-			Console.WriteLine ("Average numdists: {0}", (totalCost.Internal + totalCost.External + 0.0) / qid);
+			Console.WriteLine ("Average total-numdists: {0}", (totalCost.Total + 0.0) / qid);
+            Console.WriteLine ("Average internal-distances: {0}", (totalCost.Internal + 0.0) / qid);
 			Console.WriteLine ("Total search time: {0}", (new TimeSpan (totaltime)).TotalSeconds);
 			Console.WriteLine ("Average search time: {0}", (new TimeSpan (totaltime / qid)).TotalSeconds);
 		}

@@ -18,6 +18,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using natix.CompactDS;
+using System.Text;
 
 namespace natix.SimilaritySearch
 {
@@ -37,6 +38,7 @@ namespace natix.SimilaritySearch
 
 		public virtual void Load (BinaryReader Input)
 		{
+            this.Name = Input.ReadString ();
 			this.Q = Input.ReadInt32 ();
 			this.CopyQGramsOnAccess = Input.ReadBoolean();
 			this.ParseIntegers = Input.ReadBoolean();
@@ -45,6 +47,7 @@ namespace natix.SimilaritySearch
 
 		public virtual void Save (BinaryWriter Output)
 		{
+            Output.Write (this.Name);
 			Output.Write ((int) this.Q);
 			Output.Write ((bool) this.CopyQGramsOnAccess);
 			Output.Write ((bool) this.ParseIntegers);
@@ -96,16 +99,21 @@ namespace natix.SimilaritySearch
 		}
 
 		public void Build (string outname, IList<int> text, int sigma, int q, bool copy_on_access = true, bool parse_integers = false, ListIBuilder list_builder = null)
-		{
-			this.Name = outname;
-			this.Q = q;
-			this.CopyQGramsOnAccess = copy_on_access;
-			this.ParseIntegers = parse_integers;
-			if (list_builder == null) {
-				list_builder = ListIBuilders.GetListIFS();
-			}
-			var N = (int)(Math.Ceiling(text.Count*1.0/q))*q;
-			this.TEXT = list_builder(new ListPaddingToN<int>(text, N, sigma), sigma);
+        {
+            this.Name = outname;
+            this.Q = q;
+            this.CopyQGramsOnAccess = copy_on_access;
+            this.ParseIntegers = parse_integers;
+            if (list_builder == null) {
+                list_builder = ListIBuilders.GetListIFS ();
+            }
+            var N = (int)(Math.Ceiling (text.Count * 1.0 / q)) * q;
+            Console.WriteLine ("=== sigma: {0}, q: {1}, N: {2}", sigma, q, N);
+            if (N == text.Count) {
+                this.TEXT = list_builder (text, sigma);
+            } else {
+                this.TEXT = list_builder (new ListPaddingToN<int> (text, N, sigma), sigma);
+            }
 		}
 
 		/// <summary>
@@ -123,6 +131,20 @@ namespace natix.SimilaritySearch
 				return u;
 			}
 		}
+
+        public string AsString (int docid)
+        {
+            return this.AsString(this.GetQGram(docid));
+        }
+
+        public string AsString (IList<int> L)
+        {
+            var s = new StringBuilder ();
+            foreach (var u in L) {
+                s.Append(Convert.ToChar(u));
+            }
+            return s.ToString();
+        }
 		
 		/// <summary>
 		/// Accumulated number of distances

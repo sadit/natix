@@ -47,24 +47,23 @@ namespace natix.CompactDS
 				return this.charT.Length - 1;
 			}
 		}
-				
-		public SequenceBuilder SeqBuilder {			
-			get;
-			set;
-		}
 
-		public void Build (string sa_name)
-		{
-			using (var Input = new BinaryReader (File.OpenRead (sa_name + ".structs"))) {
-				this.newF = RankSelectGenericIO.Load (Input);
-				int len = this.newF.Count1;
-				this.charT = new int[len];
-				PrimitiveIO<int>.ReadFromFile (Input, len, this.charT);
-			}
+		public void Build (string sa_name, SequenceBuilder seq_builder = null)
+        {
+            using (var Input = new BinaryReader (File.OpenRead (sa_name + ".structs"))) {
+                this.newF = RankSelectGenericIO.Load (Input);
+                int len = this.newF.Count1;
+                this.charT = new int[len];
+                PrimitiveIO<int>.ReadFromFile (Input, len, this.charT);
+            }
+            if (seq_builder == null) {
+                // seq_builder = SequenceBuilders.GetWT_BinaryCoding(BitmapBuilders.GetRRR_wt(16));
+                seq_builder = SequenceBuilders.GetSeqXLB_DiffSet64();
+            }
 			using (var Input = new BinaryReader (File.OpenRead (sa_name + ".bwt"))) {
 				var L = new ListIFS ();
 				L.Load (Input);
-				this.seqIndex = this.SeqBuilder (L, this.charT.Length);
+				this.seqIndex = seq_builder (L, this.charT.Length);
 			}
 			using (var Input = new BinaryReader (File.OpenRead (sa_name + ".samples"))) {
 				this.SA_sample_step = Input.ReadInt16 ();

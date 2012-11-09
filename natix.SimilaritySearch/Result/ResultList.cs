@@ -163,7 +163,7 @@ namespace natix.SimilaritySearch
 			this.avg_covering_radius = 0;
 			double size = this.Count;
 			double cost_internal = 0;
-			double cost_external = 0;
+			double cost_total = 0;
 
 			for (int i = 0; i < size; i++) {
 				int basisSize = Math.Min (maxBasisSize, basis [i].result.Count);
@@ -176,7 +176,7 @@ namespace natix.SimilaritySearch
 				// cost internal and external are divided here to avoid overflows
 				// (the costs can be very large)
 				cost_internal += this [i].cost.Internal / size;
-				cost_external += this [i].cost.External / size;
+				cost_total += this [i].cost.Total / size;
 				this.avg_result_size += resultSize;
 				this.avg_basis_size += basisSize;
 				if (resultSize < 1 || basisSize < 1) {
@@ -194,7 +194,7 @@ namespace natix.SimilaritySearch
 			this.avg_basis_size /= (int)size;
 			this.avg_recall = recall / size;
 			this.avg_seconds = sec / size;
-			this.avg_cost.External = (int)cost_external;
+			this.avg_cost.Total = (int)cost_total;
 			this.avg_cost.Internal = (int)cost_internal;
 			this.avg_recall_by_name /= size;			
 		}
@@ -216,7 +216,7 @@ namespace natix.SimilaritySearch
 				s.WriteLine ("avg_recall_by_name: {0}", this.avg_recall_by_name);
 				s.WriteLine ("avg_seconds: {0}", this.avg_seconds);
 				s.WriteLine ("avg_cost_internal: {0}", this.avg_cost.Internal);
-				s.WriteLine ("avg_cost_external: {0}", this.avg_cost.External);
+				s.WriteLine ("avg_cost_total: {0}", this.avg_cost.Total);
 				s.WriteLine ("saved_results: {0}", this.Count);
 				s.WriteLine ("avg_covering_radius_basis: {0}", this.avg_covering_radius_basis);
 				s.WriteLine ("avg_covering_radius_result: {0}", this.avg_covering_radius);
@@ -234,7 +234,7 @@ namespace natix.SimilaritySearch
 				s.Write (" {0}", this.avg_recall_by_name);
 				s.Write (" {0}", this.avg_seconds);
 				s.Write (" {0}", this.avg_cost.Internal);
-				s.Write (" {0}", this.avg_cost.External);
+				s.Write (" {0}", this.avg_cost.Total);
 				s.Write (" {0}", this.Name);
 				s.Write (" {0}", this.avg_covering_radius_basis);
 				s.Write (" {0}", this.avg_covering_radius);

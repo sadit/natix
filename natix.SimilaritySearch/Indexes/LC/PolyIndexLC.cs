@@ -48,6 +48,14 @@ namespace natix.SimilaritySearch
 			}
 		}
 
+        public override SearchCost Cost {
+            get {
+                foreach (var lc in this.LC_LIST) {
+                    this.internal_numdists += lc.Cost.Internal;
+                }
+                return base.Cost;
+            }
+        }
 		public override MetricDB DB {
 			get {
 				return this.LC_LIST[0].DB;

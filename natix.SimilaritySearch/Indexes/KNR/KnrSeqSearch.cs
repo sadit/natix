@@ -128,7 +128,9 @@ namespace natix.SimilaritySearch
 
 		public int[] GetKnr (object q)
 		{
+            this.internal_numdists-=this.R.Cost.Internal;
 			var res = this.R.SearchKNN(q, this.K);
+            this.internal_numdists+=this.R.Cost.Internal;
 			var qseq = new  int[this.K];
 			int i = 0;
 			foreach (var s in res) {

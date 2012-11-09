@@ -238,6 +238,7 @@
     <Compile Include="CompactDS\Sequences\WTM_SymbolSplit\TopKFreqCoder.cs" />
     <Compile Include="CompactDS\Lists\Unsorted\ListRankSelectSeq.cs" />
     <Compile Include="FunLists\ListPaddingToN.cs" />
+    <Compile Include="CompactDS\Text\SuffixSearch\SA_sort.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

@@ -30,6 +30,12 @@ namespace natix.SimilaritySearch
 			IndexGenericIO.Save(Output, this.IDX);
 		}
 
+        public override SearchCost Cost {
+            get {
+                return this.IDX.Cost;
+            }
+        }
+
 		public override void Load (BinaryReader Input)
 		{
 			this.IDX = IndexGenericIO.Load(Input);

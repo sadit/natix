@@ -170,6 +170,7 @@ namespace natix.SimilaritySearch
 			var A = new HashSet<int>();
 			for (int piv_id = 0; piv_id < m; ++piv_id) {
 				var dqp = this.DB.Dist (q, this.PIVS [piv_id]);
+                ++this.internal_numdists;
 				var i = _PIVS[piv_id];
 				A.Add(i);
 				P[piv_id] = (float)dqp;
@@ -194,7 +195,6 @@ namespace natix.SimilaritySearch
 					}
 				}
 				if (check_object) {
-					// Console.WriteLine ("CHECKING i: {0}, m: {1}, n: {2}", i, m, n);
 					res.Push(i, this.DB.Dist(q, this.DB[i]));
 				}
 			}
@@ -209,6 +209,7 @@ namespace natix.SimilaritySearch
 			HashSet<int> B = null;
 			for (int piv_id = 0; piv_id < m; ++piv_id) {
 				var dqp = this.DB.Dist (q, this.PIVS [piv_id]);
+                ++this.internal_numdists;
 				var seq = this.DIST[piv_id];
 				if (A == null) {
 					A = new HashSet<int>();

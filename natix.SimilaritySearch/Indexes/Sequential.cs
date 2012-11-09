@@ -46,15 +46,6 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Search by range
 		/// </summary>
-		/// <param name="q">
-		/// Query object 
-		/// </param>
-		/// <param name="radius">
-		/// Radius <see cref="System.Double"/>
-		/// </param>
-		/// <returns>
-		/// The result set <see cref="Result"/>
-		/// </returns>
 		public override IResult SearchRange (object q, double radius)
 		{
 			int L = this.DB.Count;
@@ -71,15 +62,6 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// KNN Search
 		/// </summary>
-		/// <param name="q">
-		/// Query object 
-		/// </param>
-		/// <param name="k">
-		/// The number of nearest neighbors 
-		/// </param>
-		/// <returns>
-		/// The result set <see cref="IResult"/>
-		/// </returns>
 		public override IResult SearchKNN (object q, int k, IResult R)
 		{
 			int L = this.DB.Count;

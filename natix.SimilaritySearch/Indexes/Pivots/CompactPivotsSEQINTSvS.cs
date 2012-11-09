@@ -49,6 +49,7 @@ namespace natix.SimilaritySearch
 				var stddev = this.STDDEV [piv_id];
 				var mean = this.MEAN [piv_id];
 				var dqp = this.DB.Dist (q, this.PIVS [piv_id]);
+                ++this.internal_numdists;
 				var seq = this.SEQ [piv_id];
 				A[_PIVS[piv_id]] = (ushort)max;
 				res.Push(_PIVS[piv_id], dqp);
@@ -119,6 +120,7 @@ namespace natix.SimilaritySearch
 			var P = new TopK<Tuple<double, int, int, IRankSelectSeq>> (m);
 			for (int piv_id = 0; piv_id < m; ++piv_id) {
 				var dqp = this.DB.Dist (q, this.PIVS [piv_id]);
+                ++this.internal_numdists;
 				var stddev = this.STDDEV [piv_id];
 				var mean = this.MEAN [piv_id];
 				var start_sym = this.Discretize (dqp - radius, stddev, mean);

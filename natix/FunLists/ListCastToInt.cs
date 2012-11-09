@@ -61,7 +61,7 @@ namespace natix
 		/// </summary>
 		public override int Count {
 			get {
-				return this.Count;
+				return this.list.Count;
 			}
 		}
 	}

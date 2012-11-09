@@ -93,15 +93,6 @@ namespace natix.SimilaritySearch
 		}
 	
 		/// <summary>
-		/// The current search cost object for the index
-		/// </summary>
-		public override SearchCost Cost {
-			get {
-				return new SearchCost (this.REFS.NumberDistances, this.DB.NumberDistances);
-			} 
-		}
-		
-		/// <summary>
 		/// Constructor
 		/// </summary>
 		public GenPerms () : base()
@@ -201,6 +192,7 @@ namespace natix.SimilaritySearch
 		public override IResult SearchKNN (object q, int k, IResult res)
 		{
 			IList<GType> qinv = this.GetInverse (q);
+            this.internal_numdists+= this.REFS.Count;
 			var cand = this.INVPERMS.CreateResult (Math.Abs (this.MAXCAND), false);
 			for (int docid = 0; docid < this.INVPERMS.Count; docid++) {
 				cand.Push (docid, this.INVPERMS.Dist ((IList<GType>)this.INVPERMS[docid], qinv));

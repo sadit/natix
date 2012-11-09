@@ -74,6 +74,7 @@ namespace natix.SimilaritySearch
 					}
 				}
 			};
+
 			Action<ResultPair> review_buckets = delegate(ResultPair center_pair) {
 				var center_id = center_pair.docid;
 				var dcq = center_pair.dist;
@@ -97,6 +98,7 @@ namespace natix.SimilaritySearch
 			var pops = new ParallelOptions ();
 			pops.MaxDegreeOfParallelism = -1;
 			Parallel.For (0, len, pops, review_centers);
+            this.internal_numdists += this.CENTERS.Count;
 			/*
 			Action<int> review_items = delegate (int u) {
 				// var u = rs.Select1 (i);

@@ -185,6 +185,7 @@ namespace natix.SimilaritySearch
 		public override IResult SearchKNN (object q, int k)
 		{
 			IList<byte> enc = this.Encode (q);
+            ++this.internal_numdists;
 			//Console.WriteLine ("EncQuery: {0}", BinaryHammingSpace.ToAsciiString (enc));
 			var cand = this.IndexHamming.SearchKNN (enc, Math.Abs (this.MAXCAND));
 			//Result candseq = this.indexHammingSeq.KNNSearch (enc, 10);

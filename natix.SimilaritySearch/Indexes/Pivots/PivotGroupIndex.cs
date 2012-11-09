@@ -33,7 +33,7 @@ namespace natix.SimilaritySearch
 		public PivotGroupIndex ()
 		{
 		}
-
+       
 		public override void Load (BinaryReader Input)
 		{
 			base.Load(Input);
@@ -106,6 +106,7 @@ namespace natix.SimilaritySearch
 					var d = this.DB.Dist(this.DB[pivID], q);
 					res.Push(pivID, d);
 					DIST[pivID] = d;
+                    ++this.internal_numdists;
 				}
 			}
 
@@ -142,6 +143,7 @@ namespace natix.SimilaritySearch
 			for (int group_id = 0; group_id < l; ++group_id) {
 				foreach (var pivID in this.GROUPS[group_id].pivots_list) {
 					//if (!DIST.ContainsKey(pivID)) {
+                        ++this.internal_numdists;
 						var d = this.DB.Dist(this.DB[pivID], q);
 						if (d <= radius) {
 							res.Push(pivID, d);
