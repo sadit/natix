@@ -109,7 +109,6 @@ namespace natix.SimilaritySearch
                     ++this.internal_numdists;
 				}
 			}
-
 			for(int docid=0; docid<n; ++docid){
 				bool check_object = true;
 				if(DIST.ContainsKey(docid)){

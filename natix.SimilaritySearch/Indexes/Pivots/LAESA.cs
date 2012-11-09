@@ -136,43 +136,76 @@ namespace natix.SimilaritySearch
 			return res;
 		}
 
-		public override IResult SearchRange (object q, double radius)
-		{
-			var m = this.PIVS.Count;
-			var n = this.DB.Count;
-			HashSet<int> A = null;
-			HashSet<int> B = null;
-			for (int piv_id = 0; piv_id < m; ++piv_id) {
-				var dqp = this.DB.Dist (q, this.PIVS [piv_id]);
-                ++this.internal_numdists;
-				if (A == null) {
-					A = new HashSet<int>();
-					for (int i = 0; i < n; ++i) {
-						var dpu = this.DIST[piv_id][i];
-						if (Math.Abs (dqp - dpu) <= radius) {
-							A.Add(i);
-						}
-					}
-				} else {
-					B = new HashSet<int>();
-					foreach (var i in A) {
-						var dpu = this.DIST[piv_id][i];
-						if (Math.Abs (dqp - dpu) <= radius) {
-							B.Add(i);
-						}
-					}
-					A = B;
-				}
-			}
-			var res = new Result(this.DB.Count, false);
-			foreach (var docid in A) {
-				var d = this.DB.Dist(this.DB[docid], q);
-				if (d <= radius) {
-					res.Push(docid, d);
-				}
-			}
-			return res;
-		}
+//		public override IResult SearchRange (object q, double radius)
+//		{
+//			var m = this.PIVS.Count;
+//			var n = this.DB.Count;
+//			HashSet<int> A = null;
+//			HashSet<int> B = null;
+//			for (int piv_id = 0; piv_id < m; ++piv_id) {
+//				var dqp = this.DB.Dist (q, this.PIVS [piv_id]);
+//                ++this.internal_numdists;
+//				if (A == null) {
+//					A = new HashSet<int>();
+//					for (int i = 0; i < n; ++i) {
+//						var dpu = this.DIST[piv_id][i];
+//						if (Math.Abs (dqp - dpu) <= radius) {
+//							A.Add(i);
+//						}
+//					}
+//				} else {
+//					B = new HashSet<int>();
+//					foreach (var i in A) {
+//						var dpu = this.DIST[piv_id][i];
+//						if (Math.Abs (dqp - dpu) <= radius) {
+//							B.Add(i);
+//						}
+//					}
+//					A = B;
+//				}
+//			}
+//			var res = new Result(this.DB.Count, false);
+//			foreach (var docid in A) {
+//				var d = this.DB.Dist(this.DB[docid], q);
+//				if (d <= radius) {
+//					res.Push(docid, d);
+//				}
+//			}
+//			return res;
+//		}
+
+        public override IResult SearchRange (object q, double radius)
+        {
+            var res = new Result(this.DB.Count, false);
+            var dqp_cache = new Dictionary<int, double>();
+            //++this.internal_numdists;
+            var n = this.DB.Count;
+            var m = this.PIVS.Count;
+            for (int docID = 0; docID < n; ++docID) {
+                bool check = true;
+                for (int pivID = 0; pivID < m; ++pivID) {
+                    var dpu = this.DIST[pivID][docID];
+                    double dqp;
+                    if (!dqp_cache.TryGetValue(pivID, out dqp)) {
+                        dqp = this.DB.Dist(q, this.PIVS[pivID]);
+                        dqp_cache[pivID] = dqp;
+                        ++this.internal_numdists;
+                    }
+                    if (Math.Abs (dqp - dpu) > radius) {
+                        check = false;
+                        break;
+                    }
+                }
+                if (check) {
+                    var d = this.DB.Dist(this.DB[docID], q);
+                    if (d <= radius) {
+                        res.Push(docID, d);
+                    }
+                }
+            }
+            return res;
+        }
+
 	}
 }
 
