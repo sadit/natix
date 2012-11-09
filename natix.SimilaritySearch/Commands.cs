@@ -181,6 +181,7 @@ namespace natix.SimilaritySearch
 			Console.WriteLine ("Number queries: {0}", qid);
 			Console.WriteLine ("Average total-numdists: {0}", (totalCost.Total + 0.0) / qid);
             Console.WriteLine ("Average internal-distances: {0}", (totalCost.Internal + 0.0) / qid);
+            Console.WriteLine ("Average external-distances: {0}", (totalCost.Total - totalCost.Internal + 0.0) / qid);
 			Console.WriteLine ("Total search time: {0}", (new TimeSpan (totaltime)).TotalSeconds);
 			Console.WriteLine ("Average search time: {0}", (new TimeSpan (totaltime / qid)).TotalSeconds);
 		}

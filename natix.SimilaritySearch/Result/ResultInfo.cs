@@ -166,6 +166,7 @@ namespace natix.SimilaritySearch
 			ofile.WriteLine ("qid: {0}, qtype: {1}", qid, qtype);
 			ofile.WriteLine ("time: {0}", time.TotalSeconds);
 			ofile.WriteLine ("internal-cost: {0}", this.cost.Internal);
+            ofile.WriteLine ("external-cost: {0}", this.cost.Total - this.cost.Internal);
 			ofile.WriteLine ("total-cost: {0}", this.cost.Total);
 			showmaxres = Math.Min (showmaxres, result.Count);
 			if (names == null) {
