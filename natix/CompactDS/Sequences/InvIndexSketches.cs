@@ -66,6 +66,11 @@ namespace natix.CompactDS
 			set;
 		}
 		
+        public IList<int> GetRawSeq ()
+        {
+            return RankSelectSeqGenericIO.ToIntArray(this, false);
+        }
+
 		public InvIndexSketches ()
 		{
 			this.BitmapBuilder = BitmapBuilders.GetSArray ();

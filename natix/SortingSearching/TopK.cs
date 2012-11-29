@@ -33,7 +33,7 @@ namespace natix.SortingSearching
 		public SkipList2<KeyValuePair<double,T>> Items;
 		// this must be disabled until handle all removing exceptions (checking that the current
 		// node in the AdaptiveContext is not removed)
-		SkipList2AdaptiveContext<KeyValuePair<double,T>> AdaptiveContext = null;
+		SkipList2<KeyValuePair<double,T>>.AdaptiveContext AdaptiveContext = null;
 		/// <summary>
 		/// Gets the number of objects of this result.
 		/// </summary>

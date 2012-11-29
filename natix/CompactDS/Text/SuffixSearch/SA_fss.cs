@@ -23,375 +23,93 @@ namespace natix.CompactDS
 	public class SA_fss
 	{
 		public IList<int> TXT;
-		public int[] SA;
-        public int[] INV_SA;
-		public IList<int> charT;
-		public GGMN newF;
-		// int alphabetSize;
-		int alphabet_numbits;
+        public SkipListRank<int>[] Char_SA;
+        public SkipList2<SkipListRank<int>.DataRank>.Node[] SA_pointers;
+        public int[] A;
+        public IRankSelect newF;
+        public IList<int> charT;
+		// int alphabet_numbits;
 	
 		public SA_fss (IList<int> text, int alphabet_size)
-		{
-			this.TXT = text;
-            this.alphabet_numbits = ListIFS.GetNumBits(alphabet_size);
-			int len = this.TXT.Count + 1;
-			this.SA = new int[len];
-            for (int i = 0; i < len; i++) {
-				this.SA[i] = i;
-			}
+        {
+            this.TXT = text;
+            var n = text.Count;
+            // this.alphabet_numbits = ListIFS.GetNumBits(alphabet_size);
+            // this.SA = new int[n];
+            //this.Char_Offsets = new int[alphabet_size];
+            this.Char_SA = new SkipListRank<int>[alphabet_size];
+            var cmp_fun = new Comparison<int> (this.compare_suffixes);
+            for (int i = 0; i < alphabet_size; ++i) {
+                this.Char_SA [i] = new SkipListRank<int> (cmp_fun);
+            }
+            this.SA_pointers = new SkipList2<SkipListRank<int>.DataRank>.Node[n];
+            for (int suffixID = this.TXT.Count-1; suffixID >= 0; --suffixID) {
+                var c = this.TXT [suffixID];
+                var list = this.Char_SA [c];
+                //Console.WriteLine ("=== adding: {0} ({1})", c, Convert.ToChar(c));
+                var p = list.Add (suffixID);
+                this.SA_pointers [suffixID] = p;
+            }
+            this.A = new int[n+1];
+            this.A[0] = n;
+            int I = 1;
+            foreach (var SLR in this.Char_SA) {
+                foreach (var data in SLR.SKIPLIST.Traverse()) {
+                    this.A[I] = data.Data;
+                    ++I;
+                }
+            }
+            this.SA_pointers = null;
+            var stream = new BitStream32();
+            this.charT = new List<int>();
+            stream.Write(true); // $ symbol
+            this.charT.Add(0);
+            for (int i = 0; i < alphabet_size; ++i) {
+                var count = this.Char_SA[i].Count;
+                if (count > 0) {
+                    stream.Write(true);
+                    stream.Write(false, count-1);
+                    this.charT.Add(i+1);
+                }
+                this.Char_SA[i] = null;
+            }
+            this.Char_SA = null;
+            this.newF = BitmapBuilders.GetGGMN_wt(12).Invoke(new FakeBitmap(stream));
 		}
 		
-		public void Sort ()
-		{
-			this._numerical_sort (0, 0, this.SA.Length - 1);
-			// this._sort(0, 0, this.SA.Length-1);
-			// creating auxiliar structures and bitmaps
-			this.charT = new List<int> ();
-			var B_newF = new BitStream32 ();
-			this.charT.Add ('$'); // the special lexicographically smaller symbol
-			B_newF.Write (true);
-			for (int i = 1; i < this.SA.Length; i++) {
-				var c = this.TXT[this.SA[i]];
-				if (i == 1) {
-					this.charT.Add (c);
-					B_newF.Write (true);
-				} else {
-					if (this.charT[this.charT.Count - 1] != c) {
-						this.charT.Add (c);
-						B_newF.Write (true);
-					} else {
-						B_newF.Write (false);
-					}
-				}
-			}
-			this.newF = new GGMN ();
-			this.newF.Build (B_newF, 8);
-		}
-		
-		public void _numerical_sort (int offset, int low, int high)
-		{
-			if (offset > 1) {
-				this._sort (offset, low, high);
-			} else {
-				var S = new InPlaceCountingSort<int> (alphabet_numbits, alphabet_numbits);
-				var G = new ListGen2<int> ((int x) =>
-					{
-					var c = this._get_char (offset, x);
-					if (c < 0) {
-						return 0;
-					}
-					return c;
-				}, null, this.SA.Length);
-				// Console.WriteLine ("LLLLLL low: {0}, high: {1}", low, high);
-				S.Sort (G, this.SA, low, high - low + 1);
-				int startIndex = low;
-				for (int i = 0; i < S.finalpos.Length; i++) {
-					int finalIndex = S.finalpos[i];
-					int len = finalIndex - startIndex;
-					if (len > 1) {
-						this._numerical_sort (offset + 1, startIndex, finalIndex - 1);
-					}
-					startIndex = finalIndex;
-				}
-			}
-		}
+        /// <summary>
+        /// compare two suffixes, the new one and some already stored.
+        /// cmp =  0 if TXT[new_suffix] == TXT[stored_suffix] (impossible for this suffix sorting algorithm)
+        /// cmp =  1 if TXT[new_suffix] &gt; TXT[stored_suffix]
+        /// cmp = -1 if TXT[new_suffix] &le; TXT[stored_suffix]
+        /// </summary>
 
-//		public void _numerical_sort (int offset, int low, int high)
-//		{
-//			if (offset > 5) {
-//				this._sort (offset, low, high);
-//			} else {
-//				var S = new InPlaceCountingSort<int> (8, 8);
-//				while (true) {
-//					var G = new ListGen2<int> ((int x) =>
-//					{
-//						var c = this._get_char (offset, x);
-//						if (c < 0) {
-//							return 0;
-//						}
-//						return c;
-//					}, null, this.SA.Length);
-//					S.Sort (G, this.SA, low, high - low + 1);
-//					
-//					int startIndex = low;
-//					for (int i = 0; i < S.finalpos.Length; i++) {
-//						int finalIndex = S.finalpos[i];
-//						int len = finalIndex - startIndex;
-//						if (len > 1) {
-//							this._sort (offset + 1, startIndex, finalIndex - 1);
-//						}
-//						startIndex = finalIndex;
-//					}
-//				}
-//			}
-//		}
+        protected int _compare_suffixes (int new_suffix, int old_suffix)
+        {
+            var n = this.TXT.Count;
+            if (old_suffix + 1 == n) {
+                return 1; // stored suffix is lex. smaller
+            }
+            var new_c = this.TXT [new_suffix + 1];
+            var old_c = this.TXT [old_suffix + 1];
+            if (new_c == old_c) {
+                var next_new = this.Char_SA[new_c].Rank (this.SA_pointers[new_suffix+1]);
+                var next_old = this.Char_SA[old_c].Rank (this.SA_pointers[old_suffix+1]);
+                return next_new.CompareTo(next_old);
+            } else {
+                return new_c.CompareTo(old_c);
+            }
+        }
 
-		void _swap (int a, int b)
-		{
-			// Console.WriteLine ("a: {0}, b: {1}, len: {2}",a,b, this.SA.Length);
-			int v = this.SA[a];
-			this.SA[a] = this.SA[b];
-			this.SA[b] = v;
-		}
-		
-		int _get_char (int offset, int i)
-		{
-			var p = this.SA[i];
-			if (p + offset < this.TXT.Count) {
-				return this.TXT[p + offset];
-			} else {
-				return -1;
-			}
-		}
-		
-		struct stack_sort
-		{
-			public int offset;
-			public int low;
-			public int high;
-			
-			public stack_sort (int _offset, int _low, int _high)
-			{
-				this.offset = _offset;
-				this.low = _low;
-				this.high = _high;
-			}
-		}
-		
-		long XXX = 0;
-		//int NUMCALLS = 0;
-		void _sort (int offset, int low0, int high0)
-		{
-			Stack<stack_sort> stack = new Stack<stack_sort> ();
-			stack.Push (new stack_sort (offset, low0, high0));
-			while (stack.Count > 0) {
-				var s = stack.Pop ();
-				offset = s.offset;
-				low0 = s.low;
-				high0 = s.high;
-				/*if (high0 - low0 > 16 || offset < 4) {
-					//Console.WriteLine ("REALLY LARGE {0}, low: {1}, high: {2}, offset: {3}, stack: {4}",
-					//	high0 - low0 + 1, low0, high0, offset, stack.Count);
-					this._numerical_sort (offset, low0, high0);
-					continue;
-				}*/
-				/*if (XXX % 1000000 == 0) {
-					Console.WriteLine ("X: {4}, offset: {0}, low: {1}, high: {2}, stack: {3}", offset, low0, high0, stack.Count, XXX);
-				}*/
-				XXX++;
-				if (low0 >= high0) {
-					continue;
-				}
-				int[] start_pos = new int[3];
-				int[] final_pos = new int[3];
-				int mid = low0 + ((high0 - low0) >> 1);
-				var piv = this._get_char (offset, mid);
-				for (int i = low0; i <= high0; i++) {
-					var c = this._get_char (offset, i);
-					/*if (offset > 10000 && i == low0) {
-						Console.WriteLine ("0000> offset: {0}, low: {1}, high: {2}, stack: {3}", offset, low0, high0, stack.Count);
-						Console.WriteLine ("0000> piv: {0}, c: {1}", piv, c);
-						Console.WriteLine ("0000> text-low: {0}, text-high: {1}", this.SA[low0], this.SA[high0]);
-					}*/
-					if (c < piv) {
-						final_pos[0]++;
-					} else if (c == piv) {
-						final_pos[1]++;
-					} else {
-						final_pos[2]++;
-					}
-				}
-				start_pos[0] = low0;
-				final_pos[0] += low0;
-				for (int i = 1; i < final_pos.Length; i++) {
-					start_pos[i] = final_pos[i - 1];
-					final_pos[i] += final_pos[i - 1];
-				}
-				for (int i = 0; i < final_pos.Length; i++) {
-					while (start_pos[i] < final_pos[i]) {
-						var start = start_pos[i];
-						var c = this._get_char (offset, start);
-						if (c < piv) {
-							if (i != 0) {
-								this._swap (start, start_pos[0]);
-							}
-							start_pos[0]++;
-						} else if (c == piv) {
-							if (i != 1) {
-								this._swap (start, start_pos[1]);
-							}
-							start_pos[1]++;
-						} else {
-							if (i != 2) {
-								this._swap (start, start_pos[2]);
-							}
-							start_pos[2]++;
-						}
-					}
-				}
-				int L = low0;
-				int R = final_pos[0] - 1;
-				if (L < R) {
-					stack.Push (new stack_sort (offset, L, R));
-				}
-				if (piv >= 0) {
-					L = final_pos[0];
-					R = final_pos[1] - 1;
-					if (L < R) {
-						stack.Push (new stack_sort (offset + 1, L, R));
-					}
-				}
-				L = final_pos[1];
-				R = high0;
-				if (L < R) {
-					stack.Push (new stack_sort (offset, L, R));
-				}
-			}
-		}
+        protected int compare_suffixes (int new_suffix, int stored_suffix)
+        {
+            if (new_suffix < stored_suffix) {
+                return this._compare_suffixes (new_suffix, stored_suffix);
+            } else {
+                return -this._compare_suffixes (stored_suffix, new_suffix);
+            }
+        }
+
 	}
 }
 
-//		void _sort (int offset, int low0, int high0)
-//		{
-//			Stack<stack_sort> stack = new Stack<stack_sort> ();
-//			stack.Push (new stack_sort (offset, low0, high0));
-//			long X = 0;
-//			while (stack.Count > 0) {
-//				var s = stack.Pop ();
-//				offset = s.offset;
-//				low0 = s.low;
-//				high0 = s.high;
-//				if (X % 1000000 == 0) {
-//					Console.WriteLine ("X: {4}, offset: {0}, low: {1}, high: {2}, stack: {3}", offset, low0, high0, stack.Count, X);
-//				}
-//				X++;
-//				if (low0 >= high0) {
-//					continue;
-//				}
-//				int[] start_pos = new int[3];
-//				int[] final_pos = new int[3];
-//				int mid = low0 + ((high0 - low0) >> 1);
-//				var piv = this._get_char (offset, mid);
-//				for (int i = low0; i <= high0; i++) {
-//					var c = this._get_char (offset, i);
-//					if (c < piv) {
-//						final_pos[0]++;
-//					} else if (c == piv) {
-//						final_pos[1]++;
-//					} else {
-//						final_pos[2]++;
-//					}
-//				}
-//				start_pos[0] = low0;
-//				final_pos[0] += low0;
-//				for (int i = 1; i < final_pos.Length; i++) {
-//					start_pos[i] = final_pos[i - 1];
-//					final_pos[i] += final_pos[i - 1];
-//				}
-//				for (int i = 0; i < final_pos.Length; i++) {
-//					while (start_pos[i] < final_pos[i]) {
-//						var start = start_pos[i];
-//						var c = this._get_char (offset, start);
-//						if (c < piv) {
-//							if (i != 0) {
-//								this._swap (start, start_pos[0]);
-//							}
-//							start_pos[0]++;
-//						} else if (c == piv) {
-//							if (i != 1) {
-//								this._swap (start, start_pos[1]);
-//							}
-//							start_pos[1]++;
-//						} else {
-//							if (i != 2) {
-//								this._swap (start, start_pos[2]);
-//							}
-//							start_pos[2]++;
-//						}
-//					}
-//				}
-//				int L = low0;
-//				int R = final_pos[0] - 1;
-//				if (L < R) {
-//					stack.Push (new stack_sort (offset, L, R));
-//				}
-//				if (piv >= 0) {
-//					L = final_pos[0];
-//					R = final_pos[1] - 1;
-//					if (L < R) {
-//						stack.Push (new stack_sort (offset + 1, L, R));
-//					}
-//				}
-//				L = final_pos[1];
-//				R = high0;
-//				if (L < R) {
-//					stack.Push (new stack_sort (offset, L, R));
-//				}
-//			}
-//		}
-
-//			Console.WriteLine ("offset: {0}, low0: {1}, high0: {2}", offset, low0, high0);
-//			
-//			// adapted from source ./mcs/class/corlib/System/Array.cs, from mono-2.6.4 source
-//			if (low0 >= high0) {
-//				return;
-//			}
-//			int[] start_pos = new int[3];
-//			int[] final_pos = new int[3];
-//			int mid = low0 + ((high0 - low0) >> 1);
-//			var piv = this._get_char (offset, mid);
-//			for (int i = low0; i <= high0; i++) {
-//				var c = this._get_char (offset, i);
-//				if (c < piv) {
-//					final_pos[0]++;
-//				} else if (c == piv) {
-//					final_pos[1]++;
-//				} else {
-//					final_pos[2]++;
-//				}
-//			}
-//			start_pos[0] = low0;
-//			final_pos[0] += low0;
-//			for (int i = 1; i < final_pos.Length; i++) {
-//				start_pos[i] = final_pos[i - 1];
-//				final_pos[i] += final_pos[i - 1];
-//			}
-//			for (int i = 0; i < final_pos.Length; i++) {
-//				while (start_pos[i] < final_pos[i]) {
-//					var start = start_pos[i];
-//					var c = this._get_char (offset, start);
-//					if (c < piv) {
-//						if (i != 0) {
-//							this._swap (start, start_pos[0]);
-//						}
-//						start_pos[0]++;
-//					} else if (c == piv) {
-//						if (i != 1) {
-//							this._swap (start, start_pos[1]);
-//						}
-//						start_pos[1]++;
-//					} else {
-//						if (i != 2) {
-//							this._swap (start, start_pos[2]);
-//						}
-//						start_pos[2]++;
-//					}
-//				}
-//			}
-//			int L = low0;
-//			int R = final_pos[0] - 1;
-//			if (L < R) {
-//				this._sort (offset, L, R);
-//			}
-//			if (piv >= 0) {
-//				L = final_pos[0];
-//				R = final_pos[1] - 1;
-//				if (L < R) {
-//					this._sort (offset + 1, L, R);
-//				}
-//			}
-//			L = final_pos[1];
-//			R = high0;
-//			if (L < R) {
-//				this._sort (offset, L, R);
-//			}

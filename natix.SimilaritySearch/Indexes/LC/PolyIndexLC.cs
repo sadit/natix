@@ -23,36 +23,46 @@ using NDesk.Options;
 using natix.Sets;
 using natix.CompactDS;
 using natix.SortingSearching;
+using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
-	public class PolyIndexLC_Composite : PolyIndexLC_Partial
+	public class PolyIndexLC : PolyIndexLC_Partial
 	{
-        public IndexSingle IDXS;
-        public Index IDX;
 
-		public PolyIndexLC_Composite ()
+		public PolyIndexLC ()
 		{
 		}
 
-        public override void Build (IList<LC_RNN> indexlist, int max_instances = 0, SequenceBuilder seq_builder = null)
+        public virtual void Build (PolyIndexLC_Composite pmi, int lambda, SequenceBuilder seq_builder = null)
         {
-            var laesa = new LAESA ();
-            if (max_instances == 0) {
-                laesa.Build (indexlist [0].DB, indexlist.Count);
-            } else {
-                laesa.Build (indexlist [0].DB, max_instances);
+            var list = new List<LC_RNN> ();
+            foreach (var lc in pmi.LC_LIST) {
+                list.Add (lc);
             }
-            this.Build(indexlist, max_instances, laesa, seq_builder);
+            var as_pmi = pmi.IDX as PolyIndexLC;
+            if (as_pmi != null) { 
+                foreach (var lc in as_pmi.LC_LIST) {
+                    var _lc = new LC();
+                    _lc.Build(lc, SequenceBuilders.GetIISeq(BitmapBuilders.GetPlainSortedList()));
+                    list.Add(_lc);
+                }
+            }
+            this.Build(list, lambda, seq_builder);
         }
 
-        public void Build (IList<LC_RNN> indexlist, int max_instances = 0, IndexSingle idx = null, SequenceBuilder seq_builder = null)
+        public virtual void Build (MetricDB db, int numcenters, int lambda, SequenceBuilder seq_builder = null)
         {
-            base.Build (indexlist, max_instances, seq_builder);
-            this.IDX = idx as Index;
-            this.IDXS = idx as IndexSingle;
-		}
-   
+            var A = new List<Action>();
+            this.LC_LIST = new LC_RNN[lambda];
+            for (int i = 0; i < lambda; ++i) {
+                A.Add(this.BuildOneClosure(this.LC_LIST, i, db, numcenters, seq_builder));
+            }
+            var ops = new ParallelOptions();
+            ops.MaxDegreeOfParallelism = -1;
+            Parallel.ForEach(A, ops, (action) => action());
+        }
+       
         public override SearchCost Cost {
             get {
                 this.internal_numdists = 0;
@@ -60,35 +70,17 @@ namespace natix.SimilaritySearch
                     var _internal = lc.Cost.Internal;
                     this.internal_numdists += _internal;
                 }
-                this.internal_numdists += this.IDX.Cost.Internal;
                 return base.Cost;
             }
         }
 
-		public override void Save (BinaryWriter Output)
-		{
-            base.Save (Output);
-            IndexGenericIO.Save (Output, this.IDX);
-		}
-
-		public override void Load (BinaryReader Input)
-		{
-            base.Load(Input);
-            this.IDX = IndexGenericIO.Load (Input);
-            this.IDXS = this.IDX as IndexSingle;
-		}
-
-
 		public override IResult SearchRange (object q, double radius)
         {
             IResult R = this.DB.CreateResult (this.DB.Count, false);
-            var L = this.IDXS.CreateQueryContext(q);
             Action<int> on_intersection = delegate(int item) {
-                if (this.IDXS.MustReviewItem(item, radius, L)) {
-                    var dist = this.DB.Dist (q, this.DB [item]);
-                    if (dist <= radius) {
-                        R.Push (item, dist);
-                    }
+                var dist = this.DB.Dist (q, this.DB [item]);
+                if (dist <= radius) {
+                    R.Push (item, dist);
                 }
             };
             return this.PartialSearchRange (q, radius, R, on_intersection);
@@ -96,12 +88,9 @@ namespace natix.SimilaritySearch
 
         public override IResult SearchKNN (object q, int K, IResult R)
         {
-            var L = this.IDXS.CreateQueryContext(q);
             Action<int> on_intersection = delegate(int item) {
-                if (this.IDXS.MustReviewItem(item, R.CoveringRadius, L)) {
-                    var dist = this.DB.Dist (q, this.DB [item]);
-                    R.Push (item, dist);
-                }
+                var dist = this.DB.Dist (q, this.DB [item]);
+                R.Push (item, dist);
             };
             return this.PartialSearchKNN (q, K, R, on_intersection);
         }

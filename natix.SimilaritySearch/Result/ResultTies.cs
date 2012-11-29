@@ -68,6 +68,7 @@ namespace natix.SimilaritySearch
 			this.pool = new SortedList<double, List<int>> ();
 		}
 		
+
 		public bool Push (int docid, double dist)
 		{
 			double covering = this.CoveringRadius;

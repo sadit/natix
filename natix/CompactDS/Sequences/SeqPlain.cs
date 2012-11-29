@@ -107,9 +107,9 @@ namespace natix.CompactDS
 			}
 		}
 
-		public IRankSelect Unravel(int sym)
+		public virtual IRankSelect Unravel(int sym)
 		{
-			return new UnraveledSymbol(this, sym);
+            return new UnraveledSymbol(this, sym);
 		}
 
 		public int Access(int pos)
@@ -230,6 +230,12 @@ namespace natix.CompactDS
 //				throw e;
 //			}
 		}
+
+        public IList<int> GetRawSeq ()
+        {
+            return RankSelectSeqGenericIO.ToIntArray(this, true);
+        }
+
 	}
 }
 

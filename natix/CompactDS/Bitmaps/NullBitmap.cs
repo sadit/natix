@@ -13,35 +13,21 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
-//   Original filename: natix/CompactDS/Bitmaps/FakeBitmap.cs
-// 
 using System;
 using System.IO;
 
 namespace natix.CompactDS
 {
-	public class FakeBitmap : RankSelectBase
+	public class NullBitmap : RankSelectBase
 	{
-		public BitStream32 B;
 		
-		public FakeBitmap ()
+		public NullBitmap ()
 		{
-			this.B = new BitStream32 ();
-		}
-		
-		public FakeBitmap (BitStream32 B)
-		{
-			this.B = B;
-		}
-		
-		public void Write (bool b)
-		{
-			this.B.Write (b);
 		}
 		
 		public bool this[long i] {
 			get {
-				return this.B[i];
+                throw new NotSupportedException();
 			}
 		}
 		
@@ -52,7 +38,7 @@ namespace natix.CompactDS
 
 		public override int Count {
 			get {
-				return (int) this.B.CountBits;
+                throw new NotSupportedException ();
 			}
 		}
 		
@@ -69,20 +55,11 @@ namespace natix.CompactDS
 		
 		public override void Save (BinaryWriter bw)
 		{
-			throw new NotSupportedException ();
 		}
 		
 		public override void Load (BinaryReader br)
 		{
-			throw new NotSupportedException ();
-		}
-		
-		public GGMN GetGGMN (short step)
-		{
-			var g = new GGMN ();
-			g.Build (this.B, step);
-			return g;
-		}
+		}		
 	}
 }
 

@@ -55,5 +55,9 @@ namespace natix.CompactDS
 		/// Returns a rank-select-access bitmap representation of the requested symbol.
 		/// </summary>
 		IRankSelect Unravel (int symbol);
+        /// <summary>
+        /// Copy the internal sequence into a (not indexed) integer IList
+        /// </summary>
+        IList<int> GetRawSeq();
 	}
 }

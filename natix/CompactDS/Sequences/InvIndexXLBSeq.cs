@@ -188,5 +188,11 @@ namespace natix.CompactDS
 			p.SetPERM (this.GetNotIdxPERM ());
 			this.Perm = p;
 		}
+
+        public IList<int> GetRawSeq ()
+        {
+            return RankSelectSeqGenericIO.ToIntArray(this, false);
+        }
+
 	}
 }

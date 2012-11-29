@@ -26,17 +26,17 @@ namespace natix.CompactDS
 	/// <summary>
 	/// A simple and plain suffix-array
 	/// </summary>
-	public class SuffixArray
+	public class SA
 	{
 		/// <summary>
 		/// Data of the suffix array
 		/// </summary>
 		public IList<int> Text;
-		public int[] SA;
+		public int[] A;
 		public IList<int> charT;
 		public IRankSelect newF;
 		
-		public SuffixArray ()
+		public SA ()
 		{
 		}
 
@@ -46,17 +46,16 @@ namespace natix.CompactDS
 		public void Build (IList<int> text, int alphabet_size)
 		{
 			this.Text = text;
-			var SS = new SuffixSorter (text, alphabet_size);
-			SS.Sort ();
-			this.SA = SS.SA;
+			var SS = new SA_fss (text, alphabet_size);
+			this.A = SS.A;
 			this.charT = SS.charT;
 			this.newF = SS.newF;
 		}
 
 		public void Save (BinaryWriter Output)
 		{
-			Output.Write ((int)this.SA.Length);
-			PrimitiveIO<int>.WriteVector (Output, this.SA);
+			Output.Write ((int)this.A.Length);
+			PrimitiveIO<int>.WriteVector (Output, this.A);
 		}
 
 		public void Save_CSA_BWT (string sa_name, int sample_step)
@@ -70,12 +69,12 @@ namespace natix.CompactDS
 			using (var Output = new BinaryWriter (File.Create (sa_name + ".samples"))) {
 				Output.Write ((short)sample_step);
 				var B = new BitStream32 ();
-				int numbits = (int)Math.Ceiling (Math.Log (this.SA.Length, 2));
+				int numbits = (int)Math.Ceiling (Math.Log (this.A.Length, 2));
 				var SA_samples = new List<int> ();
 				var SA_invsamples = new List<int> ();
-				for (int i = 0; i < this.SA.Length; i++) {
-					var s = this.SA[i];
-					if ((s + 1 == this.SA.Length) || (s % sample_step == 0)) {
+				for (int i = 0; i < this.A.Length; i++) {
+					var s = this.A[i];
+					if ((s + 1 == this.A.Length) || (s % sample_step == 0)) {
 						B.Write (true);
 						SA_samples.Add (s);
 						SA_invsamples.Add (i);
@@ -108,9 +107,9 @@ namespace natix.CompactDS
 			using (var Output = new BinaryWriter (File.Create (sa_name + ".bwt"))) {
 				int alphabet_numbits = (int)Math.Ceiling (Math.Log (this.charT.Count + 1, 2));
 				var L = new ListIFS (alphabet_numbits);
-				int bwt_len = this.SA.Length;
+				int bwt_len = this.A.Length;
 				for (int i = 0; i < bwt_len; i++) {
-					var v = this.SA[i];
+					var v = this.A[i];
 					if (v == 0) {
 						L.Add (0);
 					} else {
@@ -136,11 +135,11 @@ namespace natix.CompactDS
 			}
 			// building psi
 			using (var Output = new BinaryWriter (File.Create (sa_name + ".psi"))) {
-				var INV = new int[this.SA.Length];
+				var INV = new int[this.A.Length];
 				for (int i = 0; i < INV.Length; i++) {
-					INV[this.SA[i]] = i;
+					INV[this.A[i]] = i;
 				}
-				var PSI = this.SA;
+				var PSI = this.A;
 				for (int i = 0; i < PSI.Length; i++) {
 					var p = (PSI[i] + 1) % PSI.Length;
 					PSI[i] = INV[p];
@@ -164,7 +163,7 @@ namespace natix.CompactDS
 				 */
 				INV = null;
 			}
-			this.SA = null;
+			this.A = null;
 		}
 		
 		/// <summary>
@@ -173,8 +172,8 @@ namespace natix.CompactDS
 		public void Load (BinaryReader Input)
 		{
 			int len = Input.ReadInt32 ();
-			this.SA = new int[len];
-			PrimitiveIO<int>.ReadFromFile (Input, len, this.SA);
+			this.A = new int[len];
+			PrimitiveIO<int>.ReadFromFile (Input, len, this.A);
 		}
 		
 		/// <summary>
@@ -189,7 +188,7 @@ namespace natix.CompactDS
 			do {
 				//mid = (min + max) / 2;
 				mid = (min >> 1) + (max >> 1);
-				int I = this.SA[mid];
+				int I = this.A[mid];
 				//L = Math.Min (I + query.Length, this.Data.Length);
 				//cmp = this.Compare (query, 0, query.Length, this.Data, I, L);
 				L = Math.Min (I + qlen, this.Text.Count);
@@ -223,7 +222,7 @@ namespace natix.CompactDS
 			do {
 				// mid = (min + max) / 2;
 				mid = (min >> 1) + (max >> 1);
-				int I = this.SA[mid];
+				int I = this.A[mid];
 				//L = Math.Min (I + query.Length, this.Data.Length);
 				//cmp = this.Compare (query, 0, query.Length, this.Data, I, L);
 				L = Math.Min (I + qlen, this.Text.Count);

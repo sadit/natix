@@ -282,6 +282,11 @@ namespace natix.CompactDS
 			return new UnraveledSymbol (this, symbol);
 		}
 		
+        public IList<int> GetRawSeq ()
+        {
+            return RankSelectSeqGenericIO.ToIntArray(this, true);
+        }
+
 		//  Helping classes
 		public class WTM_Node
 		{

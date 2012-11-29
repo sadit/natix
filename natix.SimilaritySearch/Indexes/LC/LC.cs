@@ -113,7 +113,7 @@ namespace natix.SimilaritySearch
 				}
 				COV.Add ((float)covrad);
 				if (iteration % 50 == 0) {
-					Console.WriteLine ("docid {0}, iteration {1}/{2}, date: {3}", center, iteration, numiterations, DateTime.Now);
+					Console.WriteLine ("docid {0}, iteration {1}/{2}, timestamp: {3}", center, iteration, numiterations, DateTime.Now);
 				}
 				iteration++;
 			}
@@ -141,7 +141,7 @@ namespace natix.SimilaritySearch
 			}
 			this.FixOrder(seq);
 			if (seq_builder == null) {
-				seq_builder = SequenceBuilders.GetSeqXLB_SArray64 (16);
+                seq_builder = SequenceBuilders.GetIISeq(BitmapBuilders.GetPlainSortedList());
 			}
 			this.SEQ = seq_builder(seq, this.CENTERS.Count + 1);
 		}

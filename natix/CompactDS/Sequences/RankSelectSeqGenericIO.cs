@@ -37,7 +37,8 @@ namespace natix.CompactDS
 			typeof(SeqXLB),
 			typeof(InvIndexXLBSeq),
 			typeof(SeqPlain),
-			typeof(WTM)
+			typeof(WTM),
+            typeof(SeqPlainCopyOnUnravel)
 		};
 		
 		/// <summary>
@@ -80,5 +81,25 @@ namespace natix.CompactDS
 			seq.Load (Input);
 			return seq;
 		}
+
+        public static int[] ToIntArray (IRankSelectSeq seq, bool use_access_based_copy)
+        {
+            var S = new int[seq.Count];
+            if (use_access_based_copy) {
+                for (int i = 0; i < seq.Count; ++i) {
+                    S[i] = seq.Access(i);
+                }
+            } else {
+                for (int sym = 0; sym < seq.Sigma; ++sym) {
+                    var rs = seq.Unravel (sym);
+                    var count1 = rs.Count1;
+                    for (int i = 1; i <= count1; ++i) {
+                        var p = rs.Select1 (i);
+                        S [p] = sym;
+                    }
+                }
+            }
+            return S;
+        }
 	}
 }

@@ -24,12 +24,12 @@ namespace natix.SortingSearching
 	public class PQueueSL<T>
 	{
 		SkipList2<T> L;
-		SkipList2AdaptiveContext<T> ctx;
+		SkipList2<T>.AdaptiveContext ctx;
 		
 		public PQueueSL (Comparison<T> cmp_fun)
 		{
 			this.L = new SkipList2<T> (0.5, cmp_fun);
-			this.ctx = new SkipList2AdaptiveContext<T> (true, this.L.FIRST);
+			this.ctx = new SkipList2<T>.AdaptiveContext (true, this.L.HEAD);
 			// this.ctx = null;
 			// this.ctx = new SkipListAdaptiveContext<T> (false, null);
 		}
@@ -47,7 +47,7 @@ namespace natix.SortingSearching
 			}
 			var r = this.L.RemoveFirstNode ();
 			if (this.ctx != null && r == this.ctx.StartNode) {
-				this.ctx.StartNode = this.L.FIRST;
+				this.ctx.StartNode = this.L.HEAD;
 			}
 			return r.data;
 		}

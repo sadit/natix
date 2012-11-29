@@ -238,7 +238,12 @@
     <Compile Include="CompactDS\Sequences\WTM_SymbolSplit\TopKFreqCoder.cs" />
     <Compile Include="CompactDS\Lists\Unsorted\ListRankSelectSeq.cs" />
     <Compile Include="FunLists\ListPaddingToN.cs" />
-    <Compile Include="CompactDS\Text\SuffixSearch\SA_sort.cs" />
+    <Compile Include="CompactDS\Text\SuffixSearch\SA_fss.cs" />
+    <Compile Include="SortingSearching\SkipListRank.cs" />
+    <Compile Include="FunLists\ListShiftIndexPadding.cs" />
+    <Compile Include="CompactDS\Bitmaps\NullBitmap.cs" />
+    <Compile Include="CompactDS\Sequences\SeqPlainCopyOnUnravel.cs" />
+    <Compile Include="CompactDS\Text\SuffixSearch\SA.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

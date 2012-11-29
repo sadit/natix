@@ -97,9 +97,8 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// SearchNN method (only used at construction time)
 		/// </summary>
-		public virtual void BuildSearchNN (int docid, out int nn_center, out double nn_dist)
+		public virtual void BuildSearchNN (object u, out int nn_center, out double nn_dist)
 		{
-			var u = this.DB [docid];
 			int num_centers = this.CENTERS.Count;
 			nn_center = 0;
 			nn_dist = float.MaxValue;
@@ -118,22 +117,23 @@ namespace natix.SimilaritySearch
 			int pc = len / 100 + 1;
 			for (int docid = 0; docid < len; docid++) {
 				if (docid % pc == 0) {
-					Console.WriteLine ("docid {0} of {1}, advance {2:0.00}%", docid, len, docid * 100.0 / len);
+                    Console.WriteLine ("docid {0} of {1}, advance {2:0.00}%, timestamp: {3}", docid, len, docid * 100.0 / len, DateTime.Now);
 				}
-				// Console.WriteLine ("docid {0} of {1}, advance {2:0.00}%, index: {3}", docid, len, docid * 100.0 / len, output_name);
 				if (IsCenter [docid]) {
 					seq_lc[docid] = this.CENTERS.Count;
 					continue;
 				}
 				int nn_center;
 				double nn_dist;
-				this.BuildSearchNN (docid, out nn_center, out nn_dist);
+				this.BuildSearchNN (this.DB[docid], out nn_center, out nn_dist);
 				seq_lc[docid] = nn_center;
-				// invindex [nn_center].Add (docid);
 				if (this.COV [nn_center] < nn_dist) {
 					this.COV [nn_center] = (float)nn_dist;
 				}
 			}
+            if (seq_builder == null) {
+                seq_builder = SequenceBuilders.GetIISeq(BitmapBuilders.GetPlainSortedList());
+            }
 			this.SEQ = seq_builder(seq_lc, this.CENTERS.Count + 1);
 		}
 		
@@ -153,9 +153,6 @@ namespace natix.SimilaritySearch
 				IsCenter [this.CENTERS [i]] = true;
 				seq [this.CENTERS [i]] = this.CENTERS.Count;
 			}
-			if (seq_builder == null) {
-				seq_builder = SequenceBuilders.GetIISeq(BitmapBuilders.GetPlainSortedList());
-			}
 			this.BuildInternal (IsCenter, seq, seq_builder);
 			//this.Save (output_name, invindex);
 		}
@@ -165,21 +162,40 @@ namespace natix.SimilaritySearch
 			this.COV = lc.COV;
 			this.DB = lc.DB;
 			this.CENTERS = new List<int>(lc.CENTERS);
-			var S = new int[lc.SEQ.Count];
-			for (int sym = 0; sym < lc.SEQ.Sigma; ++sym) {
-				var rs = lc.SEQ.Unravel(sym);
-				var count1 = rs.Count1;
-				for (int i = 1; i <= count1; ++i) {
-					var p = rs.Select1(i);
-					S[p] = sym;
-				}
-			}
+            var S = lc.SEQ.GetRawSeq();
 			if (seq_builder == null) {
 				seq_builder = SequenceBuilders.GetIISeq(BitmapBuilders.GetPlainSortedList());
 			}
 			this.SEQ = seq_builder(S, lc.SEQ.Sigma);
 		}
 
+
+        public object CreateQueryContext (object q)
+        {
+            return new Dictionary<int, double>();
+        }
+
+        public bool MustReviewItem (object q, int item, double radius, object _ctx)
+        {
+            var cache_dcq = _ctx as Dictionary<int, double>;
+            var centerID = this.SEQ.Access (item);
+            if (centerID == this.CENTERS.Count) {
+                // Console.WriteLine ("Item is center");
+                return true;
+            }
+            var cov = this.COV [centerID];
+            double dcq;
+            if (!cache_dcq.TryGetValue (centerID, out dcq)) {
+                var centerID_real = this.CENTERS[ centerID ];
+                dcq = this.DB.Dist (this.DB[ centerID_real ], q);
+                ++this.internal_numdists;
+                cache_dcq[ centerID ] = dcq;
+            }
+            var review = ( dcq <= radius + cov);
+            //Console.WriteLine ("internal_lc review: {0}, dqc: {1}, radius: {2}, cov: {3}", review, dcq, radius, cov);
+            return review;
+        }
+ 
 		/// <summary>
 		/// Search the specified q with radius qrad.
 		/// </summary>
@@ -243,124 +259,60 @@ namespace natix.SimilaritySearch
 			}
 			return R;
 		}
-		
-		// methods for partial searching (poly metric-index)
-		/// <summary>
-		/// Partial KNN search
-		/// </summary>
-		public IEnumerable<IList<int>> Test_PartialSearchKNN (object q, int K, IResult R, IDictionary<int,double> cache)
-		{
-			//if (cache_space == null) {
-			//	cache_space = this.MainSpace;
-			//}
-			var sp = this.DB;
-			int len = this.CENTERS.Count;
-			var C = sp.CreateResult (len, false);
-			for (int center = 0; center < len; center++) {
-				double dcq = -1;
-				var oid = this.CENTERS [center];
-				if (cache != null) {
-					if (!cache.TryGetValue (oid, out dcq)) {
-						dcq = -1;
-					}
-				}
-				if (dcq < 0) {
+
+        // public virtual void PartialSearchKNN_Adaptive (object q, int K, IResult R, IDictionary<int,double> cache, TopK<IRankSelect> queue)
+        public virtual void PartialSearchKNN_Adaptive (object q, int K, IResult R, IDictionary<int,double> cache, List<double> queue_dist, List<IRankSelect> queue_list)
+        {
+            var sp = this.DB;
+            int numcenters = this.CENTERS.Count;
+            for (int center = 0; center < numcenters; center++) {
+                double dcq = -1;
+                var oid = this.CENTERS [center];
+                var cov = this.COV[center];
+                if (!cache.TryGetValue (oid, out dcq)) {
                     ++this.internal_numdists;
-					dcq = sp.Dist (sp [oid], q);
-					if (cache != null) {
-						cache [oid] = dcq;
-					}
-				}
-				R.Push (oid, dcq);
-				if (dcq <= R.CoveringRadius + this.COV [center]) {
-					C.Push (center, dcq);
-				}
-			}
-			foreach (ResultPair pair in C) {
-				var dcq = pair.dist;
-				var center = pair.docid;
-				if (dcq <= R.CoveringRadius + this.COV [center]) {
-					yield return new SortedListRSCache(this.SEQ.Unravel(center));
-				}
-			}
-		}
-		
-		public virtual IEnumerable<IRankSelect> PartialSearchKNN (object q, int K, IResult R, IDictionary<int,double> cache)
-		{
-			//if (cache_space == null) {
-			//	cache_space = this.MainSpace;
-			//}
-			var sp = this.DB;
-			int len = this.CENTERS.Count;
-			var C = sp.CreateResult (len, false);
-			for (int center = 0; center < len; center++) {
-				double dcq = -1;
-				var oid = this.CENTERS [center];
-				if (!cache.TryGetValue (oid, out dcq)) {
-					dcq = -1;
-				}
-				if (dcq < 0) {
-                    ++this.internal_numdists;
-					dcq = sp.Dist (sp [oid], q);
-					cache [oid] = dcq;
-				}
-				R.Push (oid, dcq);
-				if (dcq <= R.CoveringRadius + this.COV [center]) {
-					//C.Push (center, dcq);
-					var dcq_less_cov = Math.Abs (dcq - this.COV [center]);
-					C.Push (center, dcq_less_cov);
-				}
-			}
-			foreach (ResultPair pair in C) {
-				// var dcq_less_cov = pair.dist;
-				var center = pair.docid;
-				var oid = this.CENTERS [center];
-				var dcq = cache [oid];
-				if (dcq <= R.CoveringRadius + this.COV [center]) {
-					//yield return new SortedListRS(this.SEQ.Unravel(center));
-					yield return this.SEQ.Unravel(center);
-				}
-			}
-		}
+                    dcq = sp.Dist (sp [oid], q);
+                    cache [oid] = dcq;
+                    R.Push (oid, dcq);
+                }
+                // it could be negative!, it's a mathematical
+                // expression independent of the metric properties
+                var dcq_cov = dcq - cov;
+                // if (dcq <= R.CoveringRadius + this.COV [center]) {
+                if (dcq_cov <= R.CoveringRadius) {
+                    var list = this.SEQ.Unravel(center);
+                    queue_dist.Add(dcq_cov);
+                    queue_list.Add(list);
+                }
+            }
+        }
 
 		/// <summary>
 		/// Partial radius search
 		/// </summary>
-
-		public virtual IList<IRankSelect> PartialSearchRange (object q, double qrad, IResult R, IDictionary<int,double> cache)
+        public virtual void PartialSearchRange (object q, double qrad, IResult R, IDictionary<int,double> cache, List<IRankSelect> queue_list)
 		{
-			//if (cache_space == null) {
-			//	cache_space = this.MainSpace;
-			//}
 			var sp = this.DB;
 			int len = this.CENTERS.Count;
-			//IList<IList<int>> output_list = new List<IList<int>> ();
-			IList<IRankSelect> output_list = new List<IRankSelect> ();
+			// IList<IRankSelect> output_list = new List<IRankSelect> ();
 			for (int center_id = 0; center_id < len; center_id++) {
 				double dcq = -1;
 				var oid = this.CENTERS [center_id];
-				if (cache != null) {
-					if (!cache.TryGetValue (oid, out dcq)) {
-						dcq = -1;
-					}
-				}
-				if (dcq < 0) {
+                if (!cache.TryGetValue (oid, out dcq)) {
                     ++this.internal_numdists;
-					dcq = sp.Dist (sp [oid], q);
-					if (cache != null) {
-						cache [oid] = dcq;
-					}
+                    dcq = sp.Dist (sp [oid], q);
+                    cache [oid] = dcq;
+                    if (dcq <= qrad) {
+                        R.Push (oid, dcq);
+                    }
 				}
-				if (dcq <= qrad) {
-					R.Push (this.CENTERS [center_id], dcq);
-				}
-				if (dcq <= qrad + this.COV [center_id]) {
+                var cov = this.COV[center_id];
+				if (dcq <= qrad + cov) {
 					// output_list.Add (this.invindex [center_id]);
 					//output_list.Add (new SortedListRS (this.SEQ.Unravel (center_id)));
-					output_list.Add (this.SEQ.Unravel (center_id));
+                    queue_list.Add (this.SEQ.Unravel (center_id));
 				}
 			}
-			return output_list;
 		}
 	}
 }

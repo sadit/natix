@@ -13,14 +13,79 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace natix.SimilaritySearch
 {
-    public class ResultPushStats
+    public class ResultPushStats : IResult
     {
-        public ResultPushStats ()
+        public IResult R;
+        public int count_push = 0;
+        public int count_true_push = 0;
+
+        public ResultPushStats (IResult R)
         {
+            this.R = R;
         }
+
+        public IEnumerator<ResultPair> GetEnumerator ()
+        {
+            return this.R.GetEnumerator();
+        }
+ 
+        IEnumerator IEnumerable.GetEnumerator ()
+        {
+            return this.R.GetEnumerator();
+        }
+
+        public bool Push (int docid, double dist)
+        {
+            var b = this.R.Push (docid, dist);
+            if (b) {
+                this.count_true_push++;
+            }
+            this.count_push++;
+            return b;
+        }
+
+        public int K {
+            get {
+                return this.R.K;
+            }
+        }
+
+        public int Count {
+            get {
+                return this.R.Count;
+            }
+        }
+
+        public double CoveringRadius {
+            get {
+                return this.R.CoveringRadius;
+            }
+        }
+
+        public bool Ceiling {
+            get {
+                return this.R.Ceiling;
+            }
+        }
+
+        public ResultPair First {
+            get {
+                return this.R.First;
+            }
+        }
+
+
+        public ResultPair Last {
+            get {
+                return this.R.Last;
+            }
+        }
+
     }
 }
 

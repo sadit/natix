@@ -89,6 +89,7 @@ namespace natix.CompactDS
 			}
 		}
 		
+
 		public void Save (BinaryWriter Output)
 		{
 			Output.Write ((int)this.sigma);
@@ -210,5 +211,11 @@ namespace natix.CompactDS
 			return new UnraveledSymbolXLB(this, symbol);
 			// return new UnraveledSymbol (this, symbol);
 		}
+
+        public IList<int> GetRawSeq ()
+        {
+            return RankSelectSeqGenericIO.ToIntArray(this, false);
+        }
+
 	}
 }

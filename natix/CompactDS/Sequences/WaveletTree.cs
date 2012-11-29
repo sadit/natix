@@ -305,6 +305,11 @@ namespace natix.CompactDS
 			}
 		}
 		
+        public IList<int> GetRawSeq ()
+        {
+            return RankSelectSeqGenericIO.ToIntArray(this, true);
+        }
+
 		public IRankSelect Unravel (int symbol)
 		{
 			return new UnraveledSymbol (this, symbol);

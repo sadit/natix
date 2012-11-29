@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
-	public class LAESA : BasicIndex
+	public class LAESA : BasicIndex, IndexSingle
 	{
 		public IList<float>[] DIST;
 		public MetricDB PIVS;
@@ -106,14 +106,6 @@ namespace natix.SimilaritySearch
             var n = this.DB.Count;
             var _PIVS = (this.PIVS as SampleSpace).SAMPLE;
             var dqp_cache = new Dictionary<int,double>();
-//			for (int piv_id = 0; piv_id < m; ++piv_id) {
-//				var i = _PIVS[piv_id];
-//				var d = this.DB.Dist(q, this.DB[i]);
-//                ++this.internal_numdists;
-//				P[piv_id] = (float)d;
-//				res.Push(i, d);
-//				A.Add(i);
-//			}
 			// todo: randomize
 			for (int docID = 0; docID < n; ++docID) {
 				if (dqp_cache.ContainsKey(docID)) {
@@ -185,6 +177,31 @@ namespace natix.SimilaritySearch
 //			}
 //			return res;
 //		}
+
+
+        public object CreateQueryContext (object q)
+        {
+            var m = this.PIVS.Count;
+            var L = new double[ m ];
+            for (int pivID = 0; pivID < m; ++pivID) {
+                ++this.internal_numdists;
+                L[pivID] = this.DB.Dist(q, this.PIVS[pivID]);
+            }
+            return L;
+        }
+
+        public bool MustReviewItem (object q, int item, double radius, object ctx)
+        {
+            var pivs = ctx as Double[];
+            var m = this.PIVS.Count;
+            for (int pivID = 0; pivID < m; ++pivID) {
+                var P = this.DIST[pivID];
+                if (Math.Abs (P[item] - pivs[pivID]) > radius) {
+                    return false;
+                }
+            }
+            return true;
+        }
 
         public override IResult SearchRange (object q, double radius)
         {

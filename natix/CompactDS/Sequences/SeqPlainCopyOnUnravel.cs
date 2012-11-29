@@ -20,9 +20,9 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public class SeqPlainCopyUnravel : SeqPlain
+	public class SeqPlainCopyOnUnravel : SeqPlain
 	{
-		public SeqPlainCopyUnravel (): base()
+		public SeqPlainCopyOnUnravel (): base()
 		{
 		}
 

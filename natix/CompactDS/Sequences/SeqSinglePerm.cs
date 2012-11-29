@@ -158,5 +158,11 @@ namespace natix.CompactDS
 			PermutationGenericIO.Save (Output, this.PERM);
 			RankSelectGenericIO.Save (Output, this.LENS);
 		}
+
+        public IList<int> GetRawSeq ()
+        {
+            return RankSelectSeqGenericIO.ToIntArray(this, false);
+        }
+
 	}
 }

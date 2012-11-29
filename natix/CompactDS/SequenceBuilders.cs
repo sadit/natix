@@ -229,22 +229,24 @@ namespace natix.CompactDS
 			};
 		}
 
-		public static SequenceBuilder GetSeqPlain(short B = 0, ListIBuilder list_builder = null, BitmapFromBitStream bitmap_builder = null)
+		public static SequenceBuilder GetSeqPlain(short B = 0, ListIBuilder list_builder = null, BitmapFromBitStream bitmap_builder = null, bool CopyOnUnravel = false)
 		{
 			return delegate (IList<int> seq, int sigma) {
-				var s = new SeqPlain();
-				s.Build(seq, sigma, B, list_builder, bitmap_builder);
-				return s;
+                if (CopyOnUnravel) {
+                    var s = new SeqPlainCopyOnUnravel();
+                    s.Build(seq, sigma, B, list_builder, bitmap_builder);
+                    return s;
+                } else {
+                    var s = new SeqPlain();
+                    s.Build(seq, sigma, B, list_builder, bitmap_builder);
+                    return s;
+                }
 			};
 		}
 
 		public static SequenceBuilder GetSeqPlainRL(short B = 0, BitmapFromBitStream bitmap_builder = null)
 		{
-			return delegate (IList<int> seq, int sigma) {
-				var s = new SeqPlain();
-				s.Build(seq, sigma, B, ListIBuilders.GetListEqRL(), bitmap_builder);
-				return s;
-			};
+            return GetSeqPlain(B, ListIBuilders.GetListEqRL(), bitmap_builder);
 		}
 	}
 }

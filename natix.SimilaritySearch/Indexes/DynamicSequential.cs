@@ -73,10 +73,10 @@ namespace natix.SimilaritySearch
 			var docid = this.rand.Next (0, this.DB.Count);
 			var node = this.DOCS.FindNode (docid, null);
 			//Console.WriteLine ("RANDOM {0}, FIRST: {1}, LAST: {2}", docid, this.DOCS.GetFirst(), this.DOCS.GetLast());
-			if (node == this.DOCS.LAST) {
+			if (node == this.DOCS.TAIL) {
 				return this.DOCS.GetLast ();
 			}
-			if (node == this.DOCS.FIRST) {
+			if (node == this.DOCS.HEAD) {
 				return this.DOCS.GetFirst();
 			}
 			return node.data;
@@ -92,7 +92,7 @@ namespace natix.SimilaritySearch
 				sample = RandomSets.GetExpandedRange (this.DB.Count);
 			}
 			this.DOCS = new SkipList2<int> (0.5, (x,y) => x.CompareTo (y));
-			var ctx = new SkipList2AdaptiveContext<int>(true, this.DOCS.FIRST);
+			var ctx = new SkipList2<int>.AdaptiveContext(true, this.DOCS.HEAD);
 			foreach (var s in sample) {
 				this.DOCS.Add(s, ctx);
 			}

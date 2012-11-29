@@ -26,6 +26,11 @@ namespace natix.CompactDS
 		public int sigma; // upper bound
 		public int RealSigma; // real value
 
+        public IList<int> GetRawSeq ()
+        {
+            return this.SEQ;
+        }
+
 		public FakeSeq ()
 		{
 			this.SEQ = new List<int>();
@@ -106,6 +111,7 @@ namespace natix.CompactDS
 		{
 			throw new NotSupportedException();
 		}
+
 	}
 }
 

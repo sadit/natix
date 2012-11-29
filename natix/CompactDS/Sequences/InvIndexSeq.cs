@@ -84,6 +84,11 @@ namespace natix.CompactDS
 			}
 			invindex = null;
 		}
+
+        public IList<int> GetRawSeq ()
+        {
+            return RankSelectSeqGenericIO.ToIntArray(this, false);
+        }
 		
 		public int Access (int pos)
 		{

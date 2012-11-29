@@ -50,7 +50,12 @@ namespace natix.CompactDS
 				return this.sigma;
 			}
 		}
-				
+	
+        public IList<int> GetRawSeq ()
+        {
+            return RankSelectSeqGenericIO.ToIntArray(this, true);
+        }
+
 		public GolynskiMunroRaoSeq ()
 		{
 		}

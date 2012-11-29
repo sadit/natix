@@ -43,7 +43,8 @@ namespace natix.CompactDS
 			typeof(SArray),
 			typeof(RRR),
 			typeof(RRRv2),
-			typeof(RankSelectRL)
+			typeof(RankSelectRL),
+            typeof(NullBitmap)
 			// typeof(RankSelectRRR),
 			// typeof(RankSelectUltimate),
 		};

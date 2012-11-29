@@ -33,13 +33,12 @@ namespace natix.SimilaritySearch
 		/// The maximum number of items to be stored
 		/// </summary>
 		public int kmax;
-		
 		static double MaxValue = double.MaxValue / 2;
 		SkipList2<ResultPair> pairset;
 		List<ResultPair> overflow;
 		// this must be disabled until handle all removing exceptions (checking that the current
 		// node in the AdaptiveContext is not removed)
-		SkipList2AdaptiveContext<ResultPair> AdaptiveContext = null;
+		SkipList2<ResultPair>.AdaptiveContext AdaptiveContext = null;
 		/// <summary>
 		/// True if this result is performing ceiling KNN
 		/// </summary>
@@ -233,10 +232,11 @@ namespace natix.SimilaritySearch
 		{
 			return (IEnumerator) ((Result) this).GetEnumerator(); 
 		}
+
 		/// <summary>
 		///  Push a docid and a distance to the result set
 		/// </summary>
-		public bool Push (int docid, double d)
+        public bool Push (int docid, double d)	
 		{
 			double covering = this.CoveringRadius;
 			if (d == covering) {

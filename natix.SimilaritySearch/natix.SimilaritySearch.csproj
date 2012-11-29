@@ -79,7 +79,6 @@
     <Compile Include="Indexes\LC\LC_ParallelSearch.cs" />
     <Compile Include="Indexes\LC\LC_PRNN.cs" />
     <Compile Include="Indexes\LC\LC_RNN.cs" />
-    <Compile Include="Indexes\LC\PolyIndexLC.cs" />
     <Compile Include="Indexes\LC\PolyIndexLC_Approx.cs" />
     <Compile Include="Indexes\LSH\LSC_H1.cs" />
     <Compile Include="Indexes\LSH\LSC_H8.cs" />
@@ -110,6 +109,13 @@
     <Compile Include="Spaces\QString\QStringHammingSpace.cs" />
     <Compile Include="Spaces\QString\QStringLCSSpace.cs" />
     <Compile Include="Spaces\QString\QStringPrefixLengthSpace.cs" />
+    <Compile Include="Indexes\LC\PolyIndexLC_Adaptive.cs" />
+    <Compile Include="Result\ResultPushStats.cs" />
+    <Compile Include="Indexes\LC\PolyIndexLC_Partial.cs" />
+    <Compile Include="Indexes\IndexSingle.cs" />
+    <Compile Include="Indexes\LC\PolyIndexLC_Composite.cs" />
+    <Compile Include="Indexes\LC\PolyIndexLC_Old.cs" />
+    <Compile Include="Indexes\LC\PolyIndexLC.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

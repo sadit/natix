@@ -22,66 +22,13 @@ using System.IO;
 
 namespace natix.SortingSearching
 {
-	public class SkipNode<T>
-	{
-		public T data;
-		public List< SkipNode<T> > forward;
-		
-		public SkipNode (bool init_forward)
-		{
-			if (init_forward) {
-				this.forward = new List< SkipNode<T> >();
-			} else {
-				this.forward = null;
-			}
-		}
-
-		public SkipNode (T _data)
-		{
-			this.data = _data;
-			// this.level = _level;
-			this.forward = new List< SkipNode<T> >();
-		}
-		
-		public bool IsLAST {
-			get {
-				return this.forward == null;
-			}
-		}
-
-		public int Level {
-			get {
-				return this.forward.Count;
-			}
-		}
-		
-		public void PushForwards (int levels, SkipNode<T> next)
-		{
-			for (int i = 0; i < levels; i++) {
-				this.forward.Add (next);
-			}
-		}
-		
-		public void PopForwards ()
-		{
-			if (this.IsLAST) {
-				return;
-			}
-			int count = this.forward.Count - 1;
-			if (count == -1) {
-				return;
-			}
-			this.forward [count].PopForwards ();
-			this.forward.RemoveAt (count);
-		}
-	}
 
 	public class SkipList<T>
 	{
 		float prob;
 		Comparison<T> cmp_fun;
-		public SkipNode<T> FIRST;
-		public SkipNode<T> LAST;
+		public Node HEAD;
+		public Node TAIL;
 		Random rand;
 		int n;
 		
@@ -92,9 +39,9 @@ namespace natix.SortingSearching
 			this.cmp_fun = cmp_fun;
 			// this.max_level = (short)Math.Ceiling (Math.Log (expected_n, 2) / Math.Log (1.0 / this.prob, 2));
 	
-			this.FIRST = new SkipNode<T> (true);
-			this.LAST = new SkipNode<T> (false);
-			this.FIRST.forward.Add (this.LAST);
+			this.HEAD = new Node (true);
+			this.TAIL = new Node (false);
+			this.HEAD.forward.Add (this.TAIL);
 			this.n = 0;
 		}
 		
@@ -104,7 +51,7 @@ namespace natix.SortingSearching
 			}
 		}
 		
-		public SkipNode<T> Find (T key)
+		public Node Find (T key)
 		{
 			var s = this.FindNode (key);
 			if (s.IsLAST || this.cmp_fun (key, s.data) != 0) {
@@ -113,11 +60,11 @@ namespace natix.SortingSearching
 			return s;
 		}
 		
-		protected SkipNode<T> FindNode (T key)
+		protected Node FindNode (T key)
 		{
-			SkipNode<T > s = this.FIRST;
+			Node s = this.HEAD;
 			int i;
-			for (i = this.FIRST.Level - 1; i >= 0; i--) {
+			for (i = this.HEAD.Level - 1; i >= 0; i--) {
 				while (!s.forward[i].IsLAST && this.cmp_fun (s.forward[i].data, key) <= 0) {
 					s = s.forward [i];
 				}
@@ -128,23 +75,23 @@ namespace natix.SortingSearching
 		short random_level()
 		{
 			short l = 1;
-			while (this.prob < this.rand.NextDouble() && l < this.FIRST.Level) {
+			while (this.prob < this.rand.NextDouble() && l < this.HEAD.Level) {
 				l++;
 			}
 			return l;
 		}
 
-		public SkipNode<T> Add (T new_data)
+		public Node Add (T new_data)
 		{
 			int i;
-			SkipNode< T > s = this.FIRST;
-			if (this.FIRST.Level < Math.Ceiling(Math.Log (this.n + 1, 2))) {
-				this.FIRST.PushForwards (1, this.LAST);
+			Node s = this.HEAD;
+			if (this.HEAD.Level < Math.Ceiling(Math.Log (this.n + 1, 2))) {
+				this.HEAD.PushForwards (1, this.TAIL);
 			}
 			var new_level = this.random_level ();
-			var new_node = new SkipNode<T> (new_data);
+			var new_node = new Node (new_data);
 			new_node.PushForwards (new_level, null);
-			for (i = this.FIRST.Level - 1; i >= 0; i--) {
+			for (i = this.HEAD.Level - 1; i >= 0; i--) {
 				int cmp = -1;
 				while (!s.forward[i].IsLAST) {
 					cmp = this.cmp_fun (s.forward [i].data, new_data);
@@ -163,12 +110,12 @@ namespace natix.SortingSearching
 			return new_node;
 		}
 				
-		public SkipNode<T> Remove (T key)
+		public Node Remove (T key)
 		{
 			int i;
 			bool deleted = false;
-			SkipNode< T > s = this.FIRST;
-			for (i = this.FIRST.Level - 1; i >= 0; i--) {
+			Node s = this.HEAD;
+			for (i = this.HEAD.Level - 1; i >= 0; i--) {
 				int cmp = -1;
 				while (!s.forward[i].IsLAST) {
 					cmp = this.cmp_fun (s.forward [i].data, key);
@@ -185,9 +132,9 @@ namespace natix.SortingSearching
 			}
 			if (deleted) {
 				this.n--;
-				if (this.FIRST.Level > Math.Ceiling (Math.Log (this.n, 2))) {
-					if (this.FIRST.Level > 1) {
-						this.FIRST.PopForwards ();
+				if (this.HEAD.Level > Math.Ceiling (Math.Log (this.n, 2))) {
+					if (this.HEAD.Level > 1) {
+						this.HEAD.PopForwards ();
 					}
 				}
 				return s;
@@ -215,7 +162,7 @@ namespace natix.SortingSearching
 		public override string ToString ()
 		{
 			var w = new StringWriter ();
-			var s = this.FIRST.forward[0];
+			var s = this.HEAD.forward[0];
 			int i = 0;
 			w.Write ("(n: {0}) ", this.n);
 			w.Write ("{ ");
@@ -235,16 +182,71 @@ namespace natix.SortingSearching
 			}
 		}
 
-		public IEnumerable<SkipNode<T>> TraverseNodes ()
+		public IEnumerable<Node> TraverseNodes ()
 		{
 			// Console.WriteLine ("****=====> this.Count: {0}", this.Count);
 			if (this.Count > 0) {
-				var s = this.FIRST.forward [0];
+				var s = this.HEAD.forward [0];
 				while (!s.IsLAST) {
 					yield return s;
 					s = s.forward [0];
 				}
 			}
 		}
+
+        public class Node
+        {
+            public T data;
+            public List< Node > forward;
+            
+            public Node (bool init_forward)
+            {
+                if (init_forward) {
+                    this.forward = new List< Node >();
+                } else {
+                    this.forward = null;
+                }
+            }
+            
+            public Node (T _data)
+            {
+                this.data = _data;
+                // this.level = _level;
+                this.forward = new List< Node >();
+            }
+            
+            public bool IsLAST {
+                get {
+                    return this.forward == null;
+                }
+            }
+            
+            public int Level {
+                get {
+                    return this.forward.Count;
+                }
+            }
+            
+            public void PushForwards (int levels, Node next)
+            {
+                for (int i = 0; i < levels; i++) {
+                    this.forward.Add (next);
+                }
+            }
+            
+            public void PopForwards ()
+            {
+                if (this.IsLAST) {
+                    return;
+                }
+                int count = this.forward.Count - 1;
+                if (count == -1) {
+                    return;
+                }
+                this.forward [count].PopForwards ();
+                this.forward.RemoveAt (count);
+            }
+        }
+
 	}
 }

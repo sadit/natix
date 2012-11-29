@@ -13,7 +13,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
-//   Original filename: natix/FunLists/ListShiftIndex.cs
+//   Original filename: natix/FunLists/ListShiftIndexPadding.cs
 // 
 using natix;
 using System;
@@ -23,17 +23,19 @@ using System.Collections.Generic;
 
 namespace natix
 {
-	public class ListShiftIndex<T> : ListGenerator<T>
+	public class ListShiftIndexPadding<T> : ListGenerator<T>
 	{
 		public IList<T> L;
 		public int startIndex;
 		public int count;
-		
-		public ListShiftIndex (IList<T> L, int startIndex, int count)
+        public T padding_symbol;
+
+		public ListShiftIndexPadding (IList<T> L, int startIndex, int count, T padding_symbol)
 		{
 			this.L = L;
 			this.startIndex = startIndex;
 			this.count = count;
+            this.padding_symbol = padding_symbol;
 		}
 		
 		public void Shift (int shift)
@@ -49,13 +51,19 @@ namespace natix
 		}
 		
 		public override T GetItem (int index)
-		{
-			return this.L[index + this.startIndex];
+        {
+            if (index + this.startIndex >= this.L.Count) {
+                return this.padding_symbol;
+            } else {
+                return this.L [index + this.startIndex];
+            }
 		}
 		
 		public override void SetItem (int index, T u)
-		{
-			this.L[index + this.startIndex] = u;
+        {
+            if (index + this.startIndex < this.L.Count) {
+                this.L [index + this.startIndex] = u;
+            }
 		}
 	}
 }

@@ -64,5 +64,5 @@ namespace natix.SimilaritySearch
 		int Count {
 			get;
 		}
-	}
+    }
 }

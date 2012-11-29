@@ -102,6 +102,14 @@ namespace natix.CompactDS
 				return rs;
 			};
 		}
+
+        public static BitmapFromList GetNull ()
+        {
+            return delegate (IList<int> L) {
+                return new NullBitmap();
+            };
+        }
+
 		
 		public static IList<int> CreateSortedList (FakeBitmap bitmap)
 		{
@@ -178,6 +186,14 @@ namespace natix.CompactDS
 			};
 		}
 		
+
+        public static BitmapFromBitStream GetNull_wt ()
+        {
+            return delegate (FakeBitmap b) {
+                return new NullBitmap();
+            };
+        }
+    
 		// 64 bit bitmaps
 		public static BitmapFromList64 GetSArray64 (BitmapFromBitStream H_builder = null)
 		{
