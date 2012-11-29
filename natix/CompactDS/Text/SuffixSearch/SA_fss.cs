@@ -20,7 +20,7 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public class SA_sort
+	public class SA_fss
 	{
 		public IList<int> TXT;
 		public int[] SA;
@@ -30,7 +30,7 @@ namespace natix.CompactDS
 		// int alphabetSize;
 		int alphabet_numbits;
 	
-		public SA_sort (IList<int> text, int alphabet_size)
+		public SA_fss (IList<int> text, int alphabet_size)
 		{
 			this.TXT = text;
             this.alphabet_numbits = ListIFS.GetNumBits(alphabet_size);
