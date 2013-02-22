@@ -97,8 +97,7 @@ namespace natix.SimilaritySearch
 				b.Write (v.weight);
 			}
 		}
-		
-		
+				
 		/// <summary>
 		/// Load a document's vector from stream
 		/// </summary>

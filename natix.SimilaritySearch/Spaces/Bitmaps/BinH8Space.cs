@@ -168,7 +168,7 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Converts 'name' into an object
 		/// </summary>
-		public object Parse (string name, bool isquery)
+		public virtual object Parse (string name, bool isquery)
 		{
 			//Console.WriteLine ("Parsing '{0}', isquery: {1}", name, isquery);
 			if (name.StartsWith ("obj")) {
@@ -196,7 +196,7 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// The distance function
 		/// </summary>
-		public double Dist (object _a, object _b)
+		public virtual double Dist (object _a, object _b)
 		{
 			this.numdist++;
 			IList<byte> a = (IList<byte>) _a;

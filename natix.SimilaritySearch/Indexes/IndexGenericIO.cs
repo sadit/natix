@@ -57,6 +57,7 @@ namespace natix.SimilaritySearch
 		public static Index Load (string path, string indexclass = null, Action<Index> after_load_action = null)
 		{
 			Index I;
+            // Console.WriteLine ("=== loading index, path: {0}", path);
 			using (var Input = new BinaryReader(File.OpenRead(path))) {
 				I = Load (Input, indexclass, after_load_action);
 			}
@@ -70,6 +71,7 @@ namespace natix.SimilaritySearch
 			if (indexclass != null) {
 				typename = indexclass;
 			}
+            // Console.WriteLine ("=== loading index, type: {0}", typename);
 			var type = Type.GetType (typename);
 			I = (Index)Activator.CreateInstance (type);
 			I.Load (Input);

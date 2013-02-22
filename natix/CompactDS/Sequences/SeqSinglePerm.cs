@@ -96,9 +96,14 @@ namespace natix.CompactDS
 		{
 			
 			var inv = this.PERM.Inverse (pos);
-			var index = this.LENS.Select0 (inv+1);
-			var abs_symbol = this.LENS.Rank1 (index) - 1;
-			return abs_symbol;
+            // var index = this.LENS.Select0 (inv+1);
+			// var abs_symbol = this.LENS.Rank1 (index) - 1;
+            //return abs_symbol;
+            var rank0 = inv+1;
+            var seqpos = this.LENS.Select0(rank0);
+            // rank0 + rank1 = pos + 1, then: rank1 = pos + 1 - rank0
+            var rank1  = seqpos + 1 - rank0;
+            return rank1 - 1;
 		}
 		
 		public int Select (int symbol, int abs_rank)
@@ -111,7 +116,7 @@ namespace natix.CompactDS
 			var rank0 = pos + 1 - symbol;
 			return this.PERM [abs_rank + rank0 - 1];
 		}
-		
+
 		public int Rank (int symbol, int pos)
 		{
 			if (pos < 0) {
@@ -144,7 +149,7 @@ namespace natix.CompactDS
 		
 		public IRankSelect Unravel (int symbol)
 		{
-			return new UnraveledSymbol (this, symbol);
+			return new UnraveledSymbolSSP (this, symbol);
 		}
 		
 		public void Load (BinaryReader Input)
@@ -164,5 +169,28 @@ namespace natix.CompactDS
             return RankSelectSeqGenericIO.ToIntArray(this, false);
         }
 
+        public class UnraveledSymbolSSP : UnraveledSymbol
+        {
+            SeqSinglePerm SEQ;
+            int start_index;
+
+            public UnraveledSymbolSSP(SeqSinglePerm seq, int sym) : base(seq, sym)
+            {
+                this.SEQ = seq;
+                // this.symbol = sym;
+                ++sym;
+                var pos = seq.LENS.Select1 (sym);
+                var rank0 = pos + 1 - sym;
+                this.start_index = rank0 - 1;
+            }
+
+            public override int Select1(int abs_rank)
+            {
+                if (abs_rank < 1) {
+                    return -1;
+                }
+                return this.SEQ.PERM[abs_rank + this.start_index];
+            }           
+        }
 	}
 }

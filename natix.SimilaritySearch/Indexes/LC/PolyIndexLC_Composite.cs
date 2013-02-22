@@ -30,7 +30,7 @@ namespace natix.SimilaritySearch
 	public class PolyIndexLC_Composite : PolyIndexLC_Partial
 	{
         public IndexSingle IDX;
-
+ 
 		public PolyIndexLC_Composite ()
 		{
 		}
@@ -53,14 +53,6 @@ namespace natix.SimilaritySearch
             var poly_filter = new PolyIndexLC();
             poly_filter.Build(M, 0, null);
             this.Build(poly_filter, L);
-        }
-
-        public virtual void Build (PolyIndexLC_Composite original, int lambda_search, int lambda_filter, SequenceBuilder seq_builder = null)
-        {
-            base.Build (original.LC_LIST, lambda_search, seq_builder);
-            var pmi = new PolyIndexLC();
-            pmi.Build((original.IDX as PolyIndexLC).LC_LIST, lambda_filter, null);
-            this.IDX = pmi;
         }
 
         public void BuildLAESA (IList<LC_RNN> indexlist, int max_instances = 0, int num_pivs = 0, SequenceBuilder seq_builder = null)
@@ -104,7 +96,6 @@ namespace natix.SimilaritySearch
             this.IDX = (IndexSingle) IndexGenericIO.Load (Input);
 		}
 
-
 		public override IResult SearchRange (object q, double radius)
         {
             IResult R = this.DB.CreateResult (this.DB.Count, false);
@@ -117,7 +108,8 @@ namespace natix.SimilaritySearch
                     }
                 }
             };
-            return this.PartialSearchRange (q, radius, R, on_intersection);
+            var cache = new Dictionary<int, double>(this.LC_LIST[0].CENTERS.Count);
+            return this.PartialSearchRange (q, radius, R, this.LC_LIST.Count, cache, on_intersection);
         }
 
         public override IResult SearchKNN (object q, int K, IResult R)
@@ -131,8 +123,8 @@ namespace natix.SimilaritySearch
                     R.Push (item, dist);
                 }
             };
-            return this.PartialSearchKNN (q, K, R, on_intersection);
+            var cache = new Dictionary<int, double>(this.LC_LIST[0].CENTERS.Count);
+            return this.PartialSearchKNN (q, K, R, this.LC_LIST.Count, cache, on_intersection);
         }
-        
 	}
 }

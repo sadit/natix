@@ -88,20 +88,13 @@ namespace natix.CompactDS
 			this.N = (uint)(buffer.Count << 5);
 		}
 		
-		public BitStream32 (IList<byte> buffer)
-		{
-			//this.Offset = this.N = (uint)(buffer.Count << 3);
-			this.N = (uint)(buffer.Count << 3);
-			this.Buffer = new List<UInt32>((int)Math.Ceiling(buffer.Count * 1.0 / 4));
-			for (int i = 0, m = 0; i < this.Buffer.Count; m++) {
-				uint u = 0;
-				for (int j = 0; j < 4 && i < this.Buffer.Count; i++, j++) {
-					u |= ((uint)buffer[i + j]) << (8 * j);
-				}
-				this.Buffer.Add (u);
-			}
-		}
-		
+		public BitStream32 (IList<byte> buffer) : this((int)Math.Ceiling(buffer.Count/4.0))
+        {
+            for (int i = 0; i < buffer.Count; ++i) {
+                this.Write(buffer[i], 8);
+            }
+        }
+
 		public BitStream32 (BitStream32 bstream)
 		{
 			this.Buffer = bstream.Buffer;

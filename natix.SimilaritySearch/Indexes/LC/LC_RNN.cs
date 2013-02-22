@@ -57,6 +57,7 @@ namespace natix.SimilaritySearch
 			// PrimitiveIO<int>.ReadFromFile(Input, m, this.CENTERS);
 			PrimitiveIO<float>.ReadFromFile(Input, m, this.COV);
 			this.SEQ = RankSelectSeqGenericIO.Load(Input);
+            //Console.WriteLine ("XXXXX SEQ: {0}", this.SEQ);
 			var L = new SortedListRSCache(this.SEQ.Unravel(this.SEQ.Sigma - 1));
 			this.CENTERS = new List<int>(L);
 		}
@@ -132,7 +133,8 @@ namespace natix.SimilaritySearch
 				}
 			}
             if (seq_builder == null) {
-                seq_builder = SequenceBuilders.GetIISeq(BitmapBuilders.GetPlainSortedList());
+                seq_builder = SequenceBuilders.GetSeqSinglePermIFS(4);
+                // seq_builder = SequenceBuilders.GetIISeq(BitmapBuilders.GetPlainSortedList());
             }
 			this.SEQ = seq_builder(seq_lc, this.CENTERS.Count + 1);
 		}
@@ -164,7 +166,8 @@ namespace natix.SimilaritySearch
 			this.CENTERS = new List<int>(lc.CENTERS);
             var S = lc.SEQ.GetRawSeq();
 			if (seq_builder == null) {
-				seq_builder = SequenceBuilders.GetIISeq(BitmapBuilders.GetPlainSortedList());
+                seq_builder = SequenceBuilders.GetSeqSinglePermIFS(4);
+                // seq_builder = SequenceBuilders.GetIISeq(BitmapBuilders.GetPlainSortedList());
 			}
 			this.SEQ = seq_builder(S, lc.SEQ.Sigma);
 		}
@@ -175,10 +178,21 @@ namespace natix.SimilaritySearch
             return new Dictionary<int, double>();
         }
 
-        public bool MustReviewItem (object q, int item, double radius, object _ctx)
+        public void GetContainerCenter (int item, out int centerID, out int centerID_objID, out float cov)
+        {
+            centerID = this.SEQ.Access (item);
+            cov = -1;
+            centerID_objID = -1;
+            if (centerID != this.CENTERS.Count) {
+                centerID_objID = this.CENTERS[ centerID ];
+                cov = this.COV [centerID];
+            }
+        }
+
+        public bool MustReviewItem (object q, int item, double radius, object _ctx, out int centerID)
         {
             var cache_dcq = _ctx as Dictionary<int, double>;
-            var centerID = this.SEQ.Access (item);
+            centerID = this.SEQ.Access (item);
             if (centerID == this.CENTERS.Count) {
                 // Console.WriteLine ("Item is center");
                 return true;
@@ -194,6 +208,12 @@ namespace natix.SimilaritySearch
             var review = ( dcq <= radius + cov);
             //Console.WriteLine ("internal_lc review: {0}, dqc: {1}, radius: {2}, cov: {3}", review, dcq, radius, cov);
             return review;
+        }
+
+        public bool MustReviewItem (object q, int item, double radius, object _ctx)
+        {
+            int centerID;
+            return this.MustReviewItem(q, item, radius, _ctx, out centerID);
         }
  
 		/// <summary>
@@ -260,8 +280,7 @@ namespace natix.SimilaritySearch
 			return R;
 		}
 
-        // public virtual void PartialSearchKNN_Adaptive (object q, int K, IResult R, IDictionary<int,double> cache, TopK<IRankSelect> queue)
-        public virtual void PartialSearchKNN_Adaptive (object q, int K, IResult R, IDictionary<int,double> cache, List<double> queue_dist, List<IRankSelect> queue_list)
+        public virtual void PartialSearchKNN (object q, int K, IResult R, IDictionary<int,double> cache, List<double> queue_dist, List<IRankSelect> queue_list)
         {
             var sp = this.DB;
             int numcenters = this.CENTERS.Count;
@@ -275,13 +294,12 @@ namespace natix.SimilaritySearch
                     cache [oid] = dcq;
                     R.Push (oid, dcq);
                 }
-                // it could be negative!, it's a mathematical
-                // expression independent of the metric properties
-                var dcq_cov = dcq - cov;
-                // if (dcq <= R.CoveringRadius + this.COV [center]) {
-                if (dcq_cov <= R.CoveringRadius) {
+                if (dcq <= R.CoveringRadius + cov) {
+                    // if (dcq_cov <= R.CoveringRadius) {
                     var list = this.SEQ.Unravel(center);
-                    queue_dist.Add(dcq_cov);
+                    if (queue_dist != null) {
+                        queue_dist.Add(dcq - cov);
+                    }
                     queue_list.Add(list);
                 }
             }

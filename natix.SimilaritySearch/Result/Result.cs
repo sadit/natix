@@ -27,7 +27,7 @@ namespace natix.SimilaritySearch
 	/// </summary>
 	public class Result : IResult
 	{
-		bool ceilingKNN;
+		bool ceiling_knn;
 		double dmax;
 		/// <summary>
 		/// The maximum number of items to be stored
@@ -43,7 +43,7 @@ namespace natix.SimilaritySearch
 		/// True if this result is performing ceiling KNN
 		/// </summary>
 		public bool Ceiling {
-			get { return this.ceilingKNN; }
+			get { return this.ceiling_knn; }
 		}
 		/// <summary>
 		/// Gets the number of objects of this result.
@@ -56,7 +56,7 @@ namespace natix.SimilaritySearch
 		/// </summary>
 		public int Count {
 			get {
-				if (this.ceilingKNN) {
+				if (this.ceiling_knn) {
 					return this.pairset.Count + this.overflow.Count;
 				} else {
 					return this.pairset.Count;
@@ -161,8 +161,8 @@ namespace natix.SimilaritySearch
 		public Result (int k, bool ceiling)
 		{
 			this.kmax = k;
-			this.ceilingKNN = ceiling;
-			if (this.ceilingKNN) {
+			this.ceiling_knn = ceiling;
+			if (this.ceiling_knn) {
 				this.overflow = new List<ResultPair> ();
 			}
 			this.dmax = MaxValue;
@@ -193,7 +193,7 @@ namespace natix.SimilaritySearch
 		/// The radius of the knn item (or double.MaxValue if we have less items than k)
 		/// </summary>
 		
-		public double CoveringRadius {
+		public virtual double CoveringRadius {
 			get {
 				if (this.Count < this.kmax) {
 					return MaxValue;
@@ -202,7 +202,8 @@ namespace natix.SimilaritySearch
 				}
 			}
 		}
-		double InnerRadius ()
+		
+        public double InnerRadius ()
 		{
 			return this.pairset.GetLast ().dist;
 		}
@@ -214,7 +215,7 @@ namespace natix.SimilaritySearch
 		/// </returns>
 		public IEnumerator<ResultPair> GetEnumerator ()
 		{
-			if (this.ceilingKNN) {
+			if (this.ceiling_knn) {
 				var L = new List<ResultPair> ();
 				foreach (var m in this.pairset.Traverse()) {
 					L.Add (m);
@@ -240,7 +241,7 @@ namespace natix.SimilaritySearch
 		{
 			double covering = this.CoveringRadius;
 			if (d == covering) {
-				if (this.ceilingKNN) {
+				if (this.ceiling_knn) {
 					this.overflow.Add (new ResultPair (docid, d));
 					return true;
 				}
@@ -261,7 +262,7 @@ namespace natix.SimilaritySearch
 			this.pairset.Add (r, this.AdaptiveContext);
 			if (removedLast || this.pairset.Count == this.kmax) {
 				this.dmax = this.InnerRadius ();
-				if (this.ceilingKNN) {
+				if (this.ceiling_knn) {
 					if (last.dist == this.dmax) {
 						if (this.overflow.Count == 0 || this.overflow [0].dist == last.dist) {
 							this.overflow.Add (last);

@@ -23,6 +23,7 @@ using NDesk.Options;
 using natix.Sets;
 using natix.CompactDS;
 using natix.SortingSearching;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
@@ -90,16 +91,17 @@ namespace natix.SimilaritySearch
 			// this.UI_ALG = new FastUIArray8 (this.DB.Count);
 		}
 
-		protected virtual IResult PartialSearchRange (object q, double radius, IResult R, Action<int> on_intersection)
+        protected virtual IResult PartialSearchRange (object q, double radius, IResult R, int max, Dictionary<int,double> cache, Action<int> on_intersection)
 		{
-			var cache = new Dictionary<int,double> (this.LC_LIST[0].CENTERS.Count);
             var queue_list = new List<IRankSelect>(64);
-			foreach (var I in this.LC_LIST) {
-				I.PartialSearchRange (q, radius, R, cache, queue_list);
+            for (int i = 0; i < max; ++i) {
+                //foreach (var I in this.LC_LIST) {
+                var lc = this.LC_LIST[i];
+				lc.PartialSearchRange (q, radius, R, cache, queue_list);
 			}
             // var C = this.UI_ALG.ComputeUI (M);
             byte[] A = new byte[ this.DB.Count ];
-            var max = this.LC_LIST.Count;
+            // var max = this.LC_LIST.Count;
             foreach (var rs in queue_list) {
                 var count1 = rs.Count1;
                 for (int i = 1; i <= count1; ++i) {
@@ -117,24 +119,24 @@ namespace natix.SimilaritySearch
 			return R;
 		}
 
-        protected virtual IResult PartialSearchKNN (object q, int K, IResult R, Action<int> on_intersection)
+        protected virtual IResult PartialSearchKNN (object q, int K, IResult R, int max, Dictionary<int,double> cache, Action<int> on_intersection)
         {
             var queue_dist = new List<double>();
             var queue_list = new List<IRankSelect>();
-            var cache = new Dictionary<int,double> ();
-            foreach (var lc in this.LC_LIST) {
-                lc.PartialSearchKNN_Adaptive (q, K, R, cache, queue_dist, queue_list);
+            for (int i = 0; i < max; ++i) {
+                var lc = this.LC_LIST[i];
+                lc.PartialSearchKNN (q, K, R, cache, queue_dist, queue_list);
             }
             byte[] A = new byte[ this.DB.Count ];
-            int max = this.LC_LIST.Count;
+            // int max = this.LC_LIST.Count;
             Sorting.Sort<double, IRankSelect>(queue_dist, queue_list);
             for (int x = 0; x < queue_dist.Count; ++x) {
                 var rs = queue_list[x];
                 var dcq_cov = queue_dist[x];
                 var count1 = rs.Count1;
-                if (dcq_cov > R.CoveringRadius) {
+                /*if (dcq_cov > R.CoveringRadius) {
                     break;
-                }
+                }*/
                 for (int i = 1; i <= count1; ++i) {
                     var item = rs.Select1 (i);
                     A [item]++;
@@ -156,11 +158,16 @@ namespace natix.SimilaritySearch
             }
             return ctx;
         }
-
+       
         public virtual bool MustReviewItem (object q, int item, double radius, object ctx)
         {
+            return this.MustReviewItem(0, q, item, radius, ctx);
+        }
+
+        public virtual bool MustReviewItem (int start_index_lambda, object q, int item, double radius, object ctx)
+        {
             var ctx_list = (ctx as ArrayList);
-            for (int i = 0; i < this.LC_LIST.Count; ++i) {
+            for (int i = start_index_lambda; i < this.LC_LIST.Count; ++i) {
                 var lc = this.LC_LIST[i];
                 var ctx_lc = ctx_list[i];
                 var review = lc.MustReviewItem(q, item, radius, ctx_lc);
@@ -170,5 +177,6 @@ namespace natix.SimilaritySearch
             }
             return true;
         }
+
 	}
 }

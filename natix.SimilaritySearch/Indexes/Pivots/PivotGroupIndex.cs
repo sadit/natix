@@ -156,8 +156,8 @@ namespace natix.SimilaritySearch
                 }                
                 for (int group_id = 0; group_id < l; ++group_id) {
                     var g = this.GROUPS[group_id];
-                    var pivID = g.pivots_idx[ docid ];
-                    var dpu = g.pivots_dist[ docid ];
+                    var pivID = g.PIVS[ docid ];
+                    var dpu = g.DIST[ docid ];
                     double dqp;
                     if (!dqp_cache.TryGetValue(pivID, out dqp)) {
                         dqp = this.DB.Dist(q, this.DB[pivID]);
@@ -210,8 +210,8 @@ namespace natix.SimilaritySearch
 				}
 				for (int groupID = 0; groupID < l; ++groupID) {
 					var g = this.GROUPS[groupID];
-					var pivID = g.pivots_idx[ docID ];
-					var dpu = g.pivots_dist[ docID ];
+					var pivID = g.PIVS[ docID ];
+					var dpu = g.DIST[ docID ];
                     double dqp;
                     if (!dqp_cache.TryGetValue(pivID, out dqp)) {
                         dqp = this.DB.Dist(q, this.DB[pivID]);

@@ -19,17 +19,19 @@ using System.Collections.Generic;
 
 namespace  natix.SimilaritySearch
 {
-	public class BinQGram : ListGenerator<byte>
+	public class BinQGramLarger : ListGenerator<byte>
 	{
 		int StartIndex;
 		int Len;
 		IList<byte> Data;
-		
-		public BinQGram (IList<byte> Data, int startIndex, int Len)
+        byte FillChar;
+
+		public BinQGramLarger (IList<byte> Data, int startIndex, int Len, byte fillchar)
 		{
 			this.StartIndex = startIndex;
 			this.Data = Data;
 			this.Len = Len;
+            this.FillChar = fillchar;
 		}
 		
 		public override int Count {
@@ -39,8 +41,13 @@ namespace  natix.SimilaritySearch
 		}
 		
 		public override byte GetItem (int index)
-		{
-			return this.Data[this.StartIndex + index];
+        {
+            var i = this.StartIndex + index;
+            if (i < this.Data.Count) {
+                return this.Data [i];
+            } else {
+                return this.FillChar;
+            }
 		}
 		
 		public override void SetItem (int index, byte u)

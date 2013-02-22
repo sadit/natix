@@ -25,8 +25,8 @@ namespace natix.CompactDS
 	/// </summary>
 	public class UnraveledSymbol : RankSelectBase
 	{
-		IRankSelectSeq seqindex;
-		int symbol;
+		public IRankSelectSeq seqindex;
+		public int symbol;
 	
 		/// <summary>
 		/// Asserts the equality.

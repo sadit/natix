@@ -28,9 +28,9 @@ namespace natix.SimilaritySearch
 {
 	public class PivotGroup : ILoadSave
 	{
-		public IList<int> pivots_list;
-		public int[] pivots_idx;
-		public float[] pivots_dist;
+		public IList<int> PIVLIST;
+		public int[] PIVS;
+		public float[] DIST;
 
 		public PivotGroup ()
 		{
@@ -38,18 +38,18 @@ namespace natix.SimilaritySearch
 
 		public void Load(BinaryReader Input)
 		{
-			this.pivots_list = ListIGenericIO.Load (Input);
+			this.PIVLIST = ListIGenericIO.Load (Input);
 			var len = Input.ReadInt32 ();
-			this.pivots_idx = (int[])PrimitiveIO<int>.ReadFromFile(Input, len, null);
-			this.pivots_dist = (float[])PrimitiveIO<float>.ReadFromFile(Input, len, null);
+			this.PIVS = (int[])PrimitiveIO<int>.ReadFromFile(Input, len, null);
+			this.DIST = (float[])PrimitiveIO<float>.ReadFromFile(Input, len, null);
 		}
 
 		public void Save(BinaryWriter Output)
 		{
-			ListIGenericIO.Save(Output, this.pivots_list);
-			Output.Write(this.pivots_idx.Length);
-			PrimitiveIO<int>.WriteVector(Output, this.pivots_idx);
-			PrimitiveIO<float>.WriteVector(Output, this.pivots_dist);
+			ListIGenericIO.Save(Output, this.PIVLIST);
+			Output.Write(this.PIVS.Length);
+			PrimitiveIO<int>.WriteVector(Output, this.PIVS);
+			PrimitiveIO<float>.WriteVector(Output, this.DIST);
 		}
 
 		public void Build (MetricDB DB, double alpha_stddev, int min_bs, int seed)
@@ -57,9 +57,9 @@ namespace natix.SimilaritySearch
 			DynamicSequential idxDynamic;
 			idxDynamic = new DynamicSequential (seed);
 			idxDynamic.Build (DB);
-			this.pivots_list = new List<int>();
-			this.pivots_idx = new int[DB.Count];
-			this.pivots_dist = new float[DB.Count];
+			this.PIVLIST = new List<int>();
+			this.PIVS = new int[DB.Count];
+			this.DIST = new float[DB.Count];
 			// PivotGroup g = new PivotGroup(DB.Count);
 			//Console.WriteLine ("Number of objects: {0}",idxDynamic.DOCS.Count);
 			int I = 0;
@@ -67,19 +67,19 @@ namespace natix.SimilaritySearch
 				var pidx = idxDynamic.GetRandom();
 				object piv = DB[pidx];
 				idxDynamic.Remove(pidx);
-				this.pivots_list.Add(pidx);
-				this.pivots_dist[pidx] = 0;
-				this.pivots_idx[pidx] = pidx;
+				this.PIVLIST.Add(pidx);
+				this.DIST[pidx] = 0;
+				this.PIVS[pidx] = pidx;
 				double mean, stddev;
 				IResult near, far;
 				idxDynamic.SearchExtremesRange(piv, alpha_stddev, min_bs, out near, out far, out mean, out stddev);
 				foreach (var pair in near){
-					this.pivots_idx[pair.docid] = pidx; 
-					this.pivots_dist[pair.docid] = (float)pair.dist;
+					this.PIVS[pair.docid] = pidx; 
+					this.DIST[pair.docid] = (float)pair.dist;
 				}
 				foreach (var pair in far){
-					this.pivots_idx[pair.docid] = pidx;
-					this.pivots_dist[pair.docid] = (float)-pair.dist;
+					this.PIVS[pair.docid] = pidx;
+					this.DIST[pair.docid] = (float)-pair.dist;
 				}
 				if (I % 10 == 0) {
 					Console.WriteLine("--- I {0}> remains: {1}, alpha_stddev: {2}, mean: {3}, stddev: {4}, pivot: {5}",
@@ -109,7 +109,7 @@ namespace natix.SimilaritySearch
 				idxDynamic.Remove(far);
 				//Console.WriteLine("Number of objects after: {0}",idxDynamic.DOCS.Count);
 			}
-			Console.WriteLine("Number of pivots per group: {0}", this.pivots_list.Count);
+			Console.WriteLine("Number of pivots per group: {0}", this.PIVLIST.Count);
 		}
 
 	}

@@ -36,13 +36,19 @@ namespace natix.CompactDS
 			return GetSeqSinglePerm(pbuilder, null);
 		}
 
+        public static SequenceBuilder GetSeqSinglePermIFS (short t, BitmapFromBitStream bitmap_builder = null)
+        {
+            var pbuilder = PermutationBuilders.GetCyclicPermsListIFS(t);
+            return GetSeqSinglePerm(pbuilder, bitmap_builder);
+        }
+
 		public static SequenceBuilder GetSeqSinglePerm (PermutationBuilder perm_builder = null, BitmapFromBitStream bitmap_builder = null)
 		{
 			if (perm_builder == null) {
 				perm_builder = PermutationBuilders.GetCyclicPermsListIDiffs (16, 63);
 			}
 			if (bitmap_builder == null) {
-				bitmap_builder = BitmapBuilders.GetGGMN_wt(16);
+				bitmap_builder = BitmapBuilders.GetGGMN_wt(8);
 			}
 			return delegate (IList<int> seq, int sigma) {
 				var S = new SeqSinglePerm ();

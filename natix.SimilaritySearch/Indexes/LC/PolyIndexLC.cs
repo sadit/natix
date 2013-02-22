@@ -19,10 +19,10 @@ using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-using NDesk.Options;
 using natix.Sets;
 using natix.CompactDS;
 using natix.SortingSearching;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
@@ -34,21 +34,9 @@ namespace natix.SimilaritySearch
 		{
 		}
 
-        public virtual void Build (PolyIndexLC_Composite pmi, int lambda, SequenceBuilder seq_builder = null)
+        public virtual void Build (PolyIndexLC pmi, int lambda = 0, SequenceBuilder seq_builder = null)
         {
-            var list = new List<LC_RNN> ();
-            foreach (var lc in pmi.LC_LIST) {
-                list.Add (lc);
-            }
-            var as_pmi = pmi.IDX as PolyIndexLC;
-            if (as_pmi != null) { 
-                foreach (var lc in as_pmi.LC_LIST) {
-                    var _lc = new LC();
-                    _lc.Build(lc, SequenceBuilders.GetIISeq(BitmapBuilders.GetPlainSortedList()));
-                    list.Add(_lc);
-                }
-            }
-            this.Build(list, lambda, seq_builder);
+            this.Build(pmi.LC_LIST, lambda, seq_builder);
         }
 
         public virtual void Build (MetricDB db, int numcenters, int lambda, SequenceBuilder seq_builder = null)
@@ -83,7 +71,8 @@ namespace natix.SimilaritySearch
                     R.Push (item, dist);
                 }
             };
-            return this.PartialSearchRange (q, radius, R, on_intersection);
+            var cache = new Dictionary<int, double>(this.LC_LIST[0].CENTERS.Count);
+            return this.PartialSearchRange (q, radius, R, this.LC_LIST.Count, cache, on_intersection);
         }
 
         public override IResult SearchKNN (object q, int K, IResult R)
@@ -92,7 +81,8 @@ namespace natix.SimilaritySearch
                 var dist = this.DB.Dist (q, this.DB [item]);
                 R.Push (item, dist);
             };
-            return this.PartialSearchKNN (q, K, R, on_intersection);
+            var cache = new Dictionary<int, double>(this.LC_LIST[0].CENTERS.Count);
+            return this.PartialSearchKNN (q, K, R, this.LC_LIST.Count, cache, on_intersection);
         }
 	}
 }
