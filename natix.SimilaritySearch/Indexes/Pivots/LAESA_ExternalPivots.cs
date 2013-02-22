@@ -50,7 +50,7 @@ namespace natix.SimilaritySearch
 			}
 		}
 
-        public void Build (LAESA idx)
+        public void Build (LAESA_ExternalPivots idx)
         {
             this.DB = idx.DB;
             var num_pivs = this.PIVS.Count;
@@ -74,6 +74,8 @@ namespace natix.SimilaritySearch
 			laesa.BuildLazy(db, pivs);
             this.DB = db;
             this.PIVS = pivs;
+            this.Build(laesa);
+
 		}
 
 		IList<float> GetLazyDIST (int piv)

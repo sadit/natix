@@ -94,61 +94,12 @@ namespace natix.SimilaritySearch
 			}
 		}
 
-		// static object LOCK = new object();
-
-/*
- public override IResult SearchKNN (object q, int K, IResult res)
-		{		
-			var l = this.GROUPS.Length;
-			var n = this.DB.Count;
-			var DIST = new Dictionary<int, double>();
-			for (int group_id = 0; group_id < l; ++group_id) {
-				foreach (var pivID in this.GROUPS[group_id].pivots_list) {
-					var d = this.DB.Dist(this.DB[pivID], q);
-					res.Push(pivID, d);
-					DIST[pivID] = d;
-                    ++this.internal_numdists;
-				}
-			}
-
-			for(int docid=0; docid<n; ++docid){
-				bool check_object = true;
-				if(DIST.ContainsKey(docid)){
-					continue;
-				}
-
-				for (int group_id = 0; group_id < l; ++group_id) {
-					var g = this.GROUPS[group_id];
-					var pivID = g.pivots_idx[ docid ];
-					var dpu = g.pivots_dist[ docid ];
-					var dqp = DIST[pivID];
-					if (Math.Abs (dqp - dpu) > res.CoveringRadius) {
-						check_object = false;
-						break;
-					}
-				}
-				if (check_object) {
-					res.Push(docid, this.DB.Dist(q, this.DB[docid]));
-				}
-			}
-
-			return res;
-		}
-*/
         public override IResult SearchKNN (object q, int K, IResult res)
         {       
             var l = this.GROUPS.Length;
             var n = this.DB.Count;
             var dqp_cache = new Dictionary<int, double>();
-//            for (int group_id = 0; group_id < l; ++group_id) {
-//                foreach (var pivID in this.GROUPS[group_id].pivots_list) {
-//                    var d = this.DB.Dist(this.DB[pivID], q);
-//                    res.Push(pivID, d);
-//                    DIST[pivID] = d;
-//                    ++this.internal_numdists;
-//                }
-//            }
-            
+
             for(int docid=0; docid<n; ++docid){
                 bool check_object = true;
                 if(dqp_cache.ContainsKey(docid)){
@@ -190,18 +141,6 @@ namespace natix.SimilaritySearch
 			var n = this.DB.Count;
 			var res = new Result(this.DB.Count, false);
 			var dqp_cache = new Dictionary<int, double>();
-			/*for (int group_id = 0; group_id < l; ++group_id) {
-				foreach (var pivID in this.GROUPS[group_id].pivots_list) {
-					//if (!DIST.ContainsKey(pivID)) {
-                        ++this.internal_numdists;
-						var d = this.DB.Dist(this.DB[pivID], q);
-						if (d <= radius) {
-							res.Push(pivID, d);
-						}
-						DIST[pivID] = d;
-					//}
-				}
-			}*/
 
 			for (int docID = 0; docID < n; ++docID) {
 				bool check_object = true;

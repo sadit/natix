@@ -113,15 +113,12 @@
     <Compile Include="Indexes\LC\PolyIndexLC_Partial.cs" />
     <Compile Include="Indexes\IndexSingle.cs" />
     <Compile Include="Indexes\LC\PolyIndexLC_Composite.cs" />
-    <Compile Include="Indexes\LC\PolyIndexLC_Old.cs" />
     <Compile Include="Indexes\LC\PolyIndexLC.cs" />
     <Compile Include="Result\ResultRange.cs" />
-    <Compile Include="Indexes\LC\PolyIndexLC_Adaptive %28otra copia%29.cs" />
     <Compile Include="Indexes\LC\PolyIndexLC_Adaptive2.cs" />
     <Compile Include="Indexes\LC\PolyIndexLC_AdaptiveProb.cs" />
     <Compile Include="Spaces\Bitmaps\BinQGramLarger.cs" />
     <Compile Include="DistanceHistogram.cs" />
-    <Compile Include="Indexes\LC\PolyIndexLC_ApproxOLD.cs" />
     <Compile Include="Indexes\LC\PolyIndexLC_ApproxGraph.cs" />
     <Compile Include="Spaces\Bitmaps\QGramH1.cs" />
     <Compile Include="Indexes\LC\PolyIndexLC_ApproxGraphEager.cs" />

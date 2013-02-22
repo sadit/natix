@@ -97,13 +97,9 @@ namespace natix.SimilaritySearch
                             res_global.Push(pos, d);
                         }
                     }
-                    /*if (res_inner.CoveringRadius == prev_radius) { // R.Count == 0 
-                        break;
-                    }*/
                 }
             }
             return res_global;
         }
     }
 }
-
