@@ -28,7 +28,7 @@ namespace testcftdb
 		{
 			var outname = "db.test";
 			if (!File.Exists(outname)) {
-				Tokenizer tokenizer = new Tokenizer ('\t', '\n', (char)0x0);
+				BasicTokenizer tokenizer = new BasicTokenizer ('\t', '\n', (char)0x0);
 				//Tokenizer tokenizer = new Tokenizer ('/', '\n', (char)0x0);
 				Table table = new Table ();
 				table.Build (args [0], int.Parse (args [1]), tokenizer, SequenceBuilders.GetSeqXLB_DiffSet64 (16, 31));
