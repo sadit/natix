@@ -26,9 +26,9 @@ namespace natix.InformationRetrieval
 {	
 	public abstract class BasicParser
 	{
-		public Tokenizer InputTokenizer;
+		public BasicTokenizer InputTokenizer;
 		
-		public BasicParser (Tokenizer t)
+		public BasicParser (BasicTokenizer t)
 		{
 			this.InputTokenizer = t;
 		}
