@@ -23,15 +23,41 @@ using System.Runtime.InteropServices;
 
 namespace natix
 {
-    public class MemoryMappedList<T> : ListGenerator<T>, IDisposable where T : struct
+    public class MemoryMappedList<T> : ListGenerator<T>, IDisposable, ILoadSave where T : struct
     {
+        int count = 0;
+        int max_capacity = 0;
+
+        int block_size;
+        short sizeOfT;
         string filename;
         MemoryMappedFile data = null;
         MemoryMappedViewAccessor view = null;
-        int count = 0;
-        int max_capacity = 0;
-        int block_size;
-        int sizeOfT;
+
+        public string FileName {
+            get {
+                return this.filename;
+            }
+        }
+
+        // header and data should be placed in different files, because of technical convenience.
+        public void Load (BinaryReader Input)
+        {
+            this.count = Input.ReadInt32 ();
+            this.max_capacity = Input.ReadInt32 ();
+            this.block_size = Input.ReadInt16 ();
+            this.filename = Input.ReadString();
+            this.sizeOfT = (short)Marshal.SizeOf(typeof(T));
+            this.OpenAndGrow();
+        }
+
+        public void Save (BinaryWriter Output)
+        {
+            Output.Write (this.count);
+            Output.Write (this.max_capacity);
+            Output.Write (this.block_size);
+            Output.Write (this.filename);
+        }
 
         public void Dispose()
         {
@@ -39,24 +65,34 @@ namespace natix
             if (this.data != null) this.data.Dispose();
         }
 
+        public void DeleteFile ()
+        {
+            this.Dispose();
+            File.Delete(this.FileName);
+        }
+
         protected void OpenAndGrow ()
         { 
-            this.Dispose();
+            this.Dispose ();
             var V = new byte[ this.block_size * this.sizeOfT];
             long num_bytes;
-            if (File.Exists (this.filename)) {
-                using (var f = new BinaryWriter(File.OpenWrite(this.filename))) {
-                    f.Seek(0, SeekOrigin.End);
-                    f.Write (V);
-                    num_bytes = f.BaseStream.Length;
+            if (this.count == this.max_capacity) {
+                if (File.Exists (this.filename)) {
+                    using (var f = new BinaryWriter(File.OpenWrite(this.filename))) {
+                        f.Seek (0, SeekOrigin.End);
+                        f.Write (V);
+                        num_bytes = f.BaseStream.Length;
+                    }
+                } else {
+                    using (var f = new BinaryWriter(File.Create(this.filename))) {
+                        f.Write (V);
+                        num_bytes = f.BaseStream.Length;
+                    }
                 }
+                this.max_capacity += this.block_size;
             } else {
-                using (var f = new BinaryWriter(File.Create(this.filename))) {
-                    f.Write (V);
-                    num_bytes = f.BaseStream.Length;
-                }
+                num_bytes = this.max_capacity * this.sizeOfT;
             }
-            this.max_capacity += this.block_size;
             this.data = MemoryMappedFile.CreateOrOpen (this.filename, num_bytes);
             this.view = this.data.CreateViewAccessor ();
         }
@@ -65,7 +101,7 @@ namespace natix
         {
             this.filename = name;
             this.block_size = block_size;
-            this.sizeOfT = Marshal.SizeOf(typeof(T));
+            this.sizeOfT = (short)Marshal.SizeOf(typeof(T));
             this.OpenAndGrow();
         }
 

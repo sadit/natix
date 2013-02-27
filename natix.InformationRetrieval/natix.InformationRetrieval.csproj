@@ -51,7 +51,4 @@
       <Name>natix</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Parsers\Parser\" />
-  </ItemGroup>
 </Project>

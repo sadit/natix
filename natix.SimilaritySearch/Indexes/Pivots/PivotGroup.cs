@@ -111,7 +111,6 @@ namespace natix.SimilaritySearch
 			}
 			Console.WriteLine("Number of pivots per group: {0}", this.PIVLIST.Count);
 		}
-
 	}
 }
 
