@@ -35,13 +35,16 @@ namespace natix.InformationRetrieval
 		/// <summary>
 		/// The new text (replacing each word by an identifier to the vocabulary)
 		/// </summary>
-		public List<int> Seq;
+		public IList<int> Seq;
 		
-		public TextParser (Tokenizer t) : base(t)
-		{
-			this.Voc = new Dictionary<string, int> ();
-			//this.InvIndex = new List<IList<int>> ();
-			this.Seq = new List<int> ();
+		public TextParser (Tokenizer t, IList<int> seq_container = null) : base(t)
+        {
+            this.Voc = new Dictionary<string, int> ();
+            //this.InvIndex = new List<IList<int>> ();
+            if (seq_container == null) {
+                seq_container = new List<int>();
+            }
+			this.Seq = seq_container;
 		}
 		
 		public override void AddPlainString (string u)

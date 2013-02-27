@@ -86,11 +86,15 @@ namespace testir
 				var seq_builder = SequenceBuilders.GetSeqXLB_DiffSetRL64 (12, 31, new EliasDelta64 ());
 				//var seq_builder = SequenceBuilders.GetSeqXLB_DiffSetRL2_64 (12, 31, new EliasDelta64 ());
 				Console.WriteLine ("*** building SeqTextIR instance over {0} | filter {1}", inputdir, extension);
-				if (listfiles == null) {
-					seq.Build (GetFilenames (inputdir, extension), seq_builder);
-				} else {
-					seq.Build (File.ReadAllLines (listfiles), seq_builder);
-				}
+                //var seq_container = new List<int>();
+                using (var seq_container = new MemoryMappedList<int>(basename + ".memdata", 1<<12)) {
+                    //var seq_container = new MemoryMappedList<int>("H", false); // false);
+                    if (listfiles == null) {
+                        seq.Build (GetFilenames (inputdir, extension), seq_builder, seq_container);
+                    } else {
+                        seq.Build (File.ReadAllLines (listfiles), seq_builder, seq_container);
+                    }
+                }
 				Console.WriteLine ("*** saving");
 				seq.Save (basename);
 				/*{

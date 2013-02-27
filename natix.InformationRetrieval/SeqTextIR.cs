@@ -48,12 +48,12 @@ namespace natix.InformationRetrieval
 			}
 		}
 		
-		public virtual void Build (IEnumerable<string> list, SequenceBuilder seq_builder)
+		public virtual void Build (IEnumerable<string> list, SequenceBuilder seq_builder, IList<int> seq_container)
 		{
 			this.FileNames = new List<string> ();
 			int docid = 0;
 			this.InputTokenizer = new Tokenizer('\0', '\0', '\0');
-			var parser = new TextParser(this.InputTokenizer);
+			var parser = new TextParser(this.InputTokenizer, seq_container);
 			foreach (var filename in list) {
 				this.FileNames.Add (filename);
 				parser.AddPlainString(parser.GetFileSeparator());

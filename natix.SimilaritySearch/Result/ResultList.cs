@@ -65,8 +65,8 @@ namespace natix.SimilaritySearch
 		/// The result filename
 		/// </summary>
 		public string Name = "";
-		int avg_result_size = 0;
-		int avg_basis_size = 0;
+        double avg_result_size = 0;
+		double avg_basis_size = 0;
 		double avg_recall_by_name = 0;
 		
 		public ResultList () : base()

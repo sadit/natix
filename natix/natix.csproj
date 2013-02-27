@@ -244,6 +244,7 @@
     <Compile Include="CompactDS\Bitmaps\NullBitmap.cs" />
     <Compile Include="CompactDS\Sequences\SeqPlainCopyOnUnravel.cs" />
     <Compile Include="CompactDS\Text\SuffixSearch\SA.cs" />
+    <Compile Include="FunLists\MemoryMappedList.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

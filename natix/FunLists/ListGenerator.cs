@@ -22,7 +22,7 @@ using System.Collections.Generic;
 namespace natix
 {
 	/// <summary>
-	///  A read only, not caching, list generator
+	/// A read only, not caching, list generator
 	/// </summary>
 	public abstract class ListGenerator<T> : IList<T>
 	{				
@@ -48,7 +48,7 @@ namespace natix
 			int pos = -1;
 			int hitem = item.GetHashCode ();
 			for (int i = 0, L = this.Count; i < L; i++) {
-				if (hitem == this[i].GetHashCode ()) {
+                if (hitem.Equals(this[i])) {
 					return i;
 				}
 			}

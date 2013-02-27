@@ -123,6 +123,9 @@
     <Compile Include="Spaces\Bitmaps\QGramH1.cs" />
     <Compile Include="Indexes\LC\PolyIndexLC_ApproxGraphEager.cs" />
     <Compile Include="Indexes\Pivots\LAESA_ExternalPivots.cs" />
+    <Compile Include="Indexes\KNR\KnrLSH.cs" />
+    <Compile Include="Indexes\KNR\MKnrLSH.cs" />
+    <Compile Include="Indexes\LC\PolyIndexLC_ApproxGraphRevLC.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
