@@ -27,13 +27,13 @@ namespace cftdb
 	public class Table
 	{
 		public Column[] Columns;
-		public Tokenizer InputTokenizer;
+		public BasicTokenizer InputTokenizer;
 
 		public Table ()
 		{
 		}
 
-		public void Build (string path, int _num_cols, Tokenizer tokenizer, SequenceBuilder seq_builder)
+		public void Build (string path, int _num_cols, BasicTokenizer tokenizer, SequenceBuilder seq_builder)
 		{
 			Console.WriteLine ("*** building Table: '{0}', with {1} columns", path, _num_cols);
 			var input = new StreamReader (File.OpenRead (path));
@@ -82,7 +82,7 @@ namespace cftdb
 
 		public void Load(BinaryReader Input)
 		{
-			this.InputTokenizer = new Tokenizer();
+			this.InputTokenizer = new BasicTokenizer();
 			this.InputTokenizer.Load(Input);
 			int len = Input.ReadInt32();
 			this.Columns = new Column[len];

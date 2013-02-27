@@ -20,31 +20,31 @@ using System.Collections.Generic;
 
 namespace natix.InformationRetrieval
 {
-	public class Tokenizer
+	public class BasicTokenizer
 	{
 		public char FieldSeparator;
 		public char RecordSeparator;
 		public char ScapeChar;
 
-		public Tokenizer ()
+		public BasicTokenizer ()
 		{
 		}
 
-		public Tokenizer (char field_sep, char record_sep, char scape_char)
+		public BasicTokenizer (char field_sep, char record_sep, char scape_char)
 		{
 			this.FieldSeparator = field_sep;
 			this.RecordSeparator = record_sep;
 			this.ScapeChar = scape_char;
 		}
 
-		public void Load(BinaryReader Input)
+		public virtual void Load(BinaryReader Input)
 		{
 			this.FieldSeparator = Input.ReadChar();
 			this.RecordSeparator = Input.ReadChar();
 			this.ScapeChar = Input.ReadChar();
 		}
 
-		public void Save(BinaryWriter Output)
+		public virtual void Save(BinaryWriter Output)
 		{
 			Output.Write((char)this.FieldSeparator);
 			Output.Write((char)this.RecordSeparator);
@@ -52,31 +52,31 @@ namespace natix.InformationRetrieval
 		}
 
 
-		public IEnumerable<int> ReadInputStream (StreamReader Input)
+		public virtual IEnumerable<int> ReadInputStream (StreamReader Input)
 		{
 			while (!Input.EndOfStream) {
 				yield return Input.Read();
 			}
 		}
 
-		public IEnumerable<int> ReadInputString (string Input)
+		public virtual IEnumerable<int> ReadInputString (string Input)
 		{
 			for (int i = 0; i < Input.Length; ++i) {
 				yield return Input[i];
 			}
 		}
 
-		public IEnumerable<Token> Parse (StreamReader Input, bool parsing_query)
+		public virtual IEnumerable<Token> Parse (StreamReader Input, bool parsing_query)
 		{
 			return this.Parse(this.ReadInputStream(Input), parsing_query);
 		}
 
-		public IEnumerable<Token> Parse (string Input, bool parsing_query)
+		public virtual IEnumerable<Token> Parse (string Input, bool parsing_query)
 		{
 			return this.Parse(this.ReadInputString(Input), parsing_query);
 		}
 
-		public IEnumerable<Token> Parse (IEnumerable<int> Input, bool parsing_query)
+		public virtual IEnumerable<Token> Parse (IEnumerable<int> Input, bool parsing_query)
 		{
 			StringBuilder w = new StringBuilder ();
 			bool check_control = true;

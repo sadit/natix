@@ -29,7 +29,7 @@ namespace natix.InformationRetrieval
 		public IList<string> FileNames;
 		public IList<string> Voc;
 		public IRankSelectSeq Seq;
-		public Tokenizer InputTokenizer;
+		public BasicTokenizer InputTokenizer;
 		protected int sep_symbol;
 		
 		public SeqTextIR ()
@@ -52,7 +52,7 @@ namespace natix.InformationRetrieval
 		{
 			this.FileNames = new List<string> ();
 			int docid = 0;
-			this.InputTokenizer = new Tokenizer('\0', '\0', '\0');
+			this.InputTokenizer = new BasicTokenizer('\0', '\0', '\0');
 			var parser = new TextParser(this.InputTokenizer, seq_container);
 			foreach (var filename in list) {
 				this.FileNames.Add (filename);
@@ -82,7 +82,7 @@ namespace natix.InformationRetrieval
 		public virtual void Load (string basename)
 		{
 			using (var input = new BinaryReader(File.OpenRead(basename))) {
-				this.InputTokenizer = new Tokenizer();
+				this.InputTokenizer = new BasicTokenizer();
 				this.InputTokenizer.Load(input);
 			}
 			this.FileNames = File.ReadAllLines (basename + ".names");
