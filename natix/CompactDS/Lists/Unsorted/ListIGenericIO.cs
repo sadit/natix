@@ -47,7 +47,9 @@ namespace natix.CompactDS
 			typeof(ListEqRL),
 			typeof(ListIFS8),
 			typeof(ListIFS4),
-			typeof(ListRankSelectSeq)
+			typeof(ListRankSelectSeq),
+            typeof(MemoryMappedList<int>),
+            typeof(SegmentedList<int>)
 		};
 	
 		/// <summary>

@@ -48,7 +48,7 @@ namespace natix
             this.block_size = Input.ReadInt16 ();
             this.filename = Input.ReadString();
             this.sizeOfT = (short)Marshal.SizeOf(typeof(T));
-            this.OpenAndGrow();
+            this.OpenAndGrow(false);
         }
 
         public void Save (BinaryWriter Output)
@@ -71,17 +71,19 @@ namespace natix
             File.Delete(this.FileName);
         }
 
-        protected void OpenAndGrow ()
+        protected void OpenAndGrow (bool grow)
         { 
             this.Dispose ();
             var V = new byte[ this.block_size * this.sizeOfT];
-            long num_bytes;
+            long num_bytes = 0;
             if (this.count == this.max_capacity) {
                 if (File.Exists (this.filename)) {
-                    using (var f = new BinaryWriter(File.OpenWrite(this.filename))) {
-                        f.Seek (0, SeekOrigin.End);
-                        f.Write (V);
-                        num_bytes = f.BaseStream.Length;
+                    if (grow) {
+                        using (var f = new BinaryWriter(File.OpenWrite(this.filename))) {
+                            f.Seek (0, SeekOrigin.End);
+                            f.Write (V);
+                            num_bytes = f.BaseStream.Length;
+                        }
                     }
                 } else {
                     using (var f = new BinaryWriter(File.Create(this.filename))) {
@@ -102,7 +104,12 @@ namespace natix
             this.filename = name;
             this.block_size = block_size;
             this.sizeOfT = (short)Marshal.SizeOf(typeof(T));
-            this.OpenAndGrow();
+            this.OpenAndGrow(false);
+        }
+
+        ~MemoryMappedList()
+        {
+            this.Dispose();
         }
 
         public override T GetItem (int index)
@@ -120,7 +127,7 @@ namespace natix
         public override void Add (T item)
         {
             if (this.count == this.max_capacity) {
-                this.OpenAndGrow();
+                this.OpenAndGrow(true);
             }
             this [this.count] = item;
             ++this.count;
