@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -38,6 +38,10 @@
     <Compile Include="MapVocSeq.cs" />
     <Compile Include="SeqTextIR.cs" />
     <Compile Include="Parsers\Token.cs" />
+<<<<<<< HEAD
+=======
+    <Compile Include="Parsers\BasicTokenizer.cs" />
+>>>>>>> 6fae8e852936f1b54a2966f58339224106c1663d
     <Compile Include="Parsers\TokenType.cs" />
     <Compile Include="Parsers\TextParser.cs" />
     <Compile Include="Parsers\BasicParser.cs" />

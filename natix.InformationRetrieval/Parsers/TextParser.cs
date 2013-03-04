@@ -37,6 +37,7 @@ namespace natix.InformationRetrieval
 		/// </summary>
 		public IList<int> Seq;
 		
+<<<<<<< HEAD
 		public TextParser (BasicTokenizer t, IList<int> seq_container = null) : base(t)
         {
             this.Voc = new Dictionary<string, int> ();
@@ -45,6 +46,13 @@ namespace natix.InformationRetrieval
                 seq_container = new List<int>();
             }
 			this.Seq = seq_container;
+=======
+		public TextParser (BasicTokenizer t) : base(t)
+		{
+			this.Voc = new Dictionary<string, int> ();
+			//this.InvIndex = new List<IList<int>> ();
+			this.Seq = new List<int> ();
+>>>>>>> 6fae8e852936f1b54a2966f58339224106c1663d
 		}
 		
 		public override void AddPlainString (string u)
