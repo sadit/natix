@@ -53,11 +53,7 @@ namespace natix.InformationRetrieval
 			this.FileNames = new List<string> ();
 			int docid = 0;
 			this.InputTokenizer = new BasicTokenizer('\0', '\0', '\0');
-<<<<<<< HEAD
 			var parser = new TextParser(this.InputTokenizer, seq_container);
-=======
-			var parser = new TextParser(this.InputTokenizer);
->>>>>>> 6fae8e852936f1b54a2966f58339224106c1663d
 			foreach (var filename in list) {
 				this.FileNames.Add (filename);
 				parser.AddPlainString(parser.GetFileSeparator());
