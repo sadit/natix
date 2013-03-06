@@ -126,6 +126,7 @@
     <Compile Include="Indexes\KNR\KnrLSH.cs" />
     <Compile Include="Indexes\KNR\MKnrLSH.cs" />
     <Compile Include="Indexes\LC\PolyIndexLC_ApproxGraphRevLC.cs" />
+    <Compile Include="Indexes\DynamicSequentialHash.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
