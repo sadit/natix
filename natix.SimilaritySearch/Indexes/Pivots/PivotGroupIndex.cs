@@ -67,13 +67,17 @@ namespace natix.SimilaritySearch
 		{
 			this.DB = db;
 			this.GROUPS = new PivotGroup[num_groups];
+            var seeds = new int[ num_groups ];
+            for (int i = 0; i < num_groups; ++i) {
+                seeds[i] = RandomSets.GetRandomInt();
+            }
 			ParallelOptions ops = new ParallelOptions ();
 			ops.MaxDegreeOfParallelism = num_build_processors;
 			// Parallel.For (0, num_groups, ops, (i) => this.GROUPS[i] = this.GetGroup(percentil));
 			int I = 0;
 			var build_one_group = new Action<int> (delegate(int i) {
 				this.GROUPS[i] = new PivotGroup();
-				this.GROUPS[i].Build(this.DB, alpha_stddev, min_bs, RandomSets.GetRandomInt());
+				this.GROUPS[i].Build(this.DB, alpha_stddev, min_bs, seeds[i]);
 				// this.GROUPS [i] = this.GetGroup (alpha_stddev, min_bs);
 				Console.WriteLine ("Advance {0}/{1} (alpha_stddev={2}, db={3}, timestamp={4})",
 				                   I, num_groups, alpha_stddev, db.Name, DateTime.Now);
@@ -107,22 +111,21 @@ namespace natix.SimilaritySearch
                 }                
                 for (int group_id = 0; group_id < l; ++group_id) {
                     var g = this.GROUPS[group_id];
-                    var pivID = g.PIVS[ docid ];
-                    var dpu = g.DIST[ docid ];
+                    var item = g.Items[ docid ];
                     double dqp;
-                    if (!dqp_cache.TryGetValue(pivID, out dqp)) {
-                        dqp = this.DB.Dist(q, this.DB[pivID]);
-                        dqp_cache[pivID] = dqp;
-                        if (pivID > docid) {
-                            res.Push(pivID, dqp);
-                            if (pivID == docid) {
+                    if (!dqp_cache.TryGetValue(item.pivID, out dqp)) {
+                        dqp = this.DB.Dist(q, this.DB[item.pivID]);
+                        dqp_cache[item.pivID] = dqp;
+                        if (item.pivID > docid) {
+                            res.Push(item.pivID, dqp);
+                            if (item.pivID == docid) {
                                 check_object = false;
                                 break;
                             }
                         }
                         ++this.internal_numdists;
                     }
-                    if (Math.Abs (dqp - dpu) > res.CoveringRadius) {
+                    if (Math.Abs (dqp - item.dist) > res.CoveringRadius) {
                         check_object = false;
                         break;
                     }
@@ -149,28 +152,27 @@ namespace natix.SimilaritySearch
 				}
 				for (int groupID = 0; groupID < l; ++groupID) {
 					var g = this.GROUPS[groupID];
-					var pivID = g.PIVS[ docID ];
-					var dpu = g.DIST[ docID ];
+                    var item = g.Items[ docID ];
                     double dqp;
-                    if (!dqp_cache.TryGetValue(pivID, out dqp)) {
-                        dqp = this.DB.Dist(q, this.DB[pivID]);
-                        dqp_cache[pivID] = dqp;
-                        if (pivID >= docID) {
+                    if (!dqp_cache.TryGetValue(item.pivID, out dqp)) {
+                        dqp = this.DB.Dist(q, this.DB[item.pivID]);
+                        dqp_cache[item.pivID] = dqp;
+                        if (item.pivID >= docID) {
                             if (dqp <= radius) {
-                                res.Push(pivID, dqp);
+                                res.Push(item.pivID, dqp);
                             }
-                            if (pivID == docID) {
+                            if (item.pivID == docID) {
                                 check_object = false;
                                 break;
                             }
                         }
                         ++this.internal_numdists;
+                    }                    
+                    if (Math.Abs (dqp - item.dist) > radius) {
+                        check_object = false;
+                        break;
                     }
-					if (Math.Abs (dqp - dpu) > radius) {
-						check_object = false;
-						break;
-					}
-				}
+                }
 				if (check_object) {
 					var d = this.DB.Dist(this.DB[docID], q);
 					if (d <= radius) {

@@ -62,7 +62,6 @@
     <Compile Include="SortingSearching\SkipList.cs" />
     <Compile Include="Util\RandomSets.cs" />
     <Compile Include="ILoadSave.cs" />
-    <Compile Include="Util\PrimitiveIO.cs" />
     <Compile Include="Util\Assertions.cs" />
     <Compile Include="FunLists\ListGen.cs" />
     <Compile Include="FunLists\ListGenerator.cs" />
@@ -246,6 +245,8 @@
     <Compile Include="CompactDS\Text\SuffixSearch\SA.cs" />
     <Compile Include="FunLists\MemoryMappedList.cs" />
     <Compile Include="FunLists\SegmentedList.cs" />
+    <Compile Include="Util\PrimitiveIO.cs" />
+    <Compile Include="Util\CompositeIO.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

@@ -40,7 +40,7 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Query object in string representation
 		/// </summary>
-		public string QRaw;		
+        public string QRaw;
 		/// <summary>
 		/// Constructor
 		/// </summary>
