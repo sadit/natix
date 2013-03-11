@@ -29,27 +29,56 @@ namespace natix.SimilaritySearch
 	/// <summary>
 	/// The sequential index
 	/// </summary>
-	public class DynamicSequential : BasicIndex
-	{
-		public SkipList2<int> DOCS;
-		public Random rand;
+	public abstract class DynamicSequential : BasicIndex
+	{        
+        public struct Item : ILoadSave
+        {
+            public int objID;
+            public float dist;
+
+            public Item (int objID, double dist)
+            {
+                this.objID = objID;
+                this.dist = (float)dist;
+            }
+            
+            public void Load(BinaryReader Input)
+            {
+                this.objID = Input.ReadInt32 ();
+                this.dist = Input.ReadSingle();
+            }
+            
+            public void Save (BinaryWriter Output)
+            {
+                Output.Write (this.objID);
+                Output.Write (this.dist);
+            }
+        }
+
+        public struct Stats
+        {
+            public float min;
+            public float max;
+            public float mean;
+            public float stddev;
+
+            public Stats (double min, double max, double mean, double stddev)
+            {
+                this.min = (float) min;
+                this.max = (float) max;
+                this.mean = (float) mean;
+                this.stddev = (float) stddev;
+            }
+        }
+
 		/// <summary>
 		/// Constructor
 		/// </summary>
 		public DynamicSequential ()
 		{
-			this.rand = new Random();
 		}
 
-		public DynamicSequential (int random_seed)
-		{
-			this.rand = new Random(random_seed);
-		}
-
-		public void Remove (int docid)
-		{
-			this.DOCS.Remove(docid, null);
-		}
+        public abstract void Remove (int docid);
 
 		public void Remove (IEnumerable<int> docs)
 		{	
@@ -65,46 +94,13 @@ namespace natix.SimilaritySearch
 			}
 		}
 
-		public int GetRandom ()
-		{
-			if (this.DOCS.Count == 0) {
-				throw new KeyNotFoundException ("GetRandom cannot select an item from an empty set");
-			}
-			var docid = this.rand.Next (0, this.DB.Count);
-			var node = this.DOCS.FindNode (docid, null);
-			//Console.WriteLine ("RANDOM {0}, FIRST: {1}, LAST: {2}", docid, this.DOCS.GetFirst(), this.DOCS.GetLast());
-			if (node == this.DOCS.TAIL) {
-				return this.DOCS.GetLast ();
-			}
-			if (node == this.DOCS.HEAD) {
-				return this.DOCS.GetFirst();
-			}
-			return node.data;
-		}
-
-		/// <summary>
-		/// API build command
-		/// </summary>
-		public virtual void Build (MetricDB db, IList<int> sample = null)
-		{
-			this.DB = db;
-			if (sample == null) {
-				sample = RandomSets.GetExpandedRange (this.DB.Count);
-			}
-			this.DOCS = new SkipList2<int> (0.5, (x,y) => x.CompareTo (y));
-			var ctx = new SkipList2<int>.AdaptiveContext(true, this.DOCS.HEAD);
-			foreach (var s in sample) {
-				this.DOCS.Add(s, ctx);
-			}
-		}
-
 		/// <summary>
 		/// Search by range
 		/// </summary>
 		public override IResult SearchRange (object q, double radius)
 		{
-			var r = new Result (this.DOCS.Count);
-			foreach (var docid in this.DOCS.Traverse()) {
+			var r = new Result (this.Count);
+			foreach (var docid in this.Iterate()) {
 				double d = this.DB.Dist (q, this.DB[docid]);
 				if (d <= radius) {
 					r.Push (docid, d);
@@ -118,110 +114,87 @@ namespace natix.SimilaritySearch
 		/// </summary>
 		public override IResult SearchKNN (object q, int k, IResult R)
 		{
-			foreach (var docid in this.DOCS.Traverse()) {
+			foreach (var docid in this.Iterate()) {
 				double d = this.DB.Dist (q, this.DB[docid]);
 				R.Push (docid, d);
 			}
 			return R;
 		}
 
+        public abstract IEnumerable<int> Iterate ();
+        public abstract int Count {
+            get;
+        }
+
+        public List<Item> ComputeDistances (object piv, List<Item> output, out Stats stats)
+        {
+            if (output == null) {
+                output = new List<Item>(this.Count);
+            }
+            //var L = new Item[this.DOCS.Count];
+            stats = default(Stats);
+            stats.min = float.MaxValue;
+            stats.max = 0;
+            double mean = 0;
+            foreach (var objID in this.Iterate()) {
+                var dist = (float)this.DB.Dist(piv, this.DB[objID]);
+                mean += dist;
+                output.Add( new Item(objID, dist) );
+                stats.min = Math.Min (dist, stats.min);
+                stats.max = Math.Max (dist, stats.max);
+            }
+            stats.mean = (float)(mean / this.Count);
+            double stddev = 0;
+            foreach (var item in output) {
+                var m = item.dist - stats.mean;
+                stddev += m * m;
+            }
+            stats.stddev = (float)Math.Sqrt(stddev / this.Count);
+            return output;
+        }
+
+        public void SortByDistance (List<Item> output)
+        {
+            output.Sort( (Item x, Item y) => x.dist.CompareTo(y.dist) );
+        }
+
 		public void SearchExtremes (object q, IResult near, IResult far)
-		{
-			foreach (var docid in this.DOCS.Traverse()) {
-				double d = this.DB.Dist (q, this.DB[docid]);
-				if (!near.Push (docid, d)) {
-					far.Push (docid, -d);
-				}
-			}
+        {
+            var _far = new Result (this.Count);
+            foreach (var docid in this.Iterate()) {
+                double d = this.DB.Dist (q, this.DB [docid]);
+                if (!near.Push (docid, d)) {
+                    _far.Push (docid, -d);
+                }
+            }
+            foreach (var p in _far) {
+                far.Push (p.docid, -p.dist);
+            }
 		}
 
-		public void SearchExtremesKNN (object q, IResult near, IResult far, out double mean, out double stddev)
-		{
-			var L = new double[ this.DOCS.Count ];
-			mean = 0;
-			int i = 0;
-			foreach (var docid in this.DOCS.Traverse()) {
-				double d = this.DB.Dist (q, this.DB[docid]);
-				L[i] = d;
-				mean += d;
-				++i;
-			}
-			mean /= i;
-			stddev = 0;
-			i = 0;
-			foreach (var docid in this.DOCS.Traverse()) {
-				double m = L[i] - mean;
-				stddev += m * m;
-				if (!near.Push (docid, L[i])) {
-					far.Push (docid, -L[i]);
-				}
-				++i;
-			}
-			stddev = Math.Sqrt(stddev / L.Length);
-		}
 
-		public void SearchExtremesRange (object q, double alpha_stddev, int min_bs, out IResult near, out IResult far, out double mean, out double stddev)
-		{
-			var L = new double[ this.DOCS.Count ];
-			mean = 0;
-			int i = 0;
-			var fixed_near = new Result (min_bs, false);
-			var fixed_far = new Result (min_bs, false);
-			double min = double.MaxValue;
-			double max = double.MinValue;
-			foreach (var docid in this.DOCS.Traverse()) {
-				double d = this.DB.Dist (q, this.DB [docid]);
-				L [i] = d;
-				mean += d;
-				++i;
-				min = Math.Min (min, d);
-				max = Math.Max (max, d);
-			}
-			mean /= L.Length;
-			stddev = 0;
-			i = 0;
-			foreach (var docid in this.DOCS.Traverse()) {
-				var d = L [i];
-				double m = d - mean;
-				stddev += m * m;
-				++i;
-			}
-			stddev = Math.Sqrt (stddev / L.Length);
-			var __alpha_stddev = alpha_stddev;
-			if (alpha_stddev < 0) {
-				// this is a value describing the frontier between discarding and not discarding
-				// using the given pivot but using a query following the same distribution
-				__alpha_stddev = (max - 3 * min) / (2 * stddev);
-				if (__alpha_stddev < 0) {
-					// it cannot be smaller than 0
-					__alpha_stddev = 0;
-				} else {
-					// alpha_stddev has the negative value of the scaling of the dynamically
-					// computed __alpha_stddev
-					__alpha_stddev = Math.Abs( alpha_stddev * __alpha_stddev );
-				}
-			}
-			var radius = stddev * __alpha_stddev;
-			// Console.WriteLine ("read alpha_stddev: {0}, stddev: {1}, radius: {2}, min: {3}, max: {4}, raw alpha: {5}, n: {6}", __alpha_stddev, stddev, radius, min, max, (max-3*min)/stddev, this.DOCS.Count);
-			near = new Result(L.Length, false);
-			far = new Result(L.Length, false);
-			i = 0;
-			foreach (var docid in this.DOCS.Traverse()) {
-				var d = L[i];
-				if (d <= min + radius) {
-					near.Push(docid, d);
-				} else if (d >= max - radius) {
-					far.Push (docid, -d);
-				}
-				if (!fixed_near.Push (docid, d)) {
-					fixed_far.Push (docid, -d);
-				}
-				++i;
-			}
-			if (near.Count < fixed_near.Count && far.Count < fixed_far.Count) {
-				near = fixed_near;
-				far = fixed_far;
-			}
-		}
+        public void DropCloseToMean (double near_radius, double far_radius, IResult near, IResult far, List<Item> items)
+        {
+            foreach (var item in items) {
+                if (item.dist <= near_radius) {
+                    near.Push (item.objID, item.dist);
+                } else if (item.dist >= far_radius) {
+                    far.Push (item.objID, item.dist);
+                }
+            }
+        }
+
+        public void AppendKExtremes (int K, IResult near, IResult far, List<Item> items)
+        {
+            var _far = new Result (this.Count);
+            foreach (var item in items) {
+                if (!near.Push (item.objID, item.dist)) {
+                    _far.Push (item.objID, item.dist);
+                }
+            }
+            foreach (var p in _far) {
+                far.Push (p.docid, -p.dist);
+            }
+        }
 	}
 }

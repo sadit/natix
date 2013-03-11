@@ -28,35 +28,36 @@ namespace natix.SimilaritySearch
 {
 	public class PivotGroup : ILoadSave
 	{
+        #region STRUCTS
         public struct Pivot : ILoadSave
         {
             public float stddev;
             public float mean;
-            public float cov_near;
-            public float cov_far;
+            public float last_near;
+            public float first_far;
 
             public Pivot(float stddev, float mean, float cov_near, float cov_far)
             {
                 this.stddev = stddev;
                 this.mean = mean;
-                this.cov_near = cov_near;
-                this.cov_far = cov_far;
+                this.last_near = cov_near;
+                this.first_far = cov_far;
             }
 
             public void Load(BinaryReader Input)
             {
                 this.stddev = Input.ReadSingle();
                 this.mean = Input.ReadSingle();
-                this.cov_near = Input.ReadSingle();
-                this.cov_far = Input.ReadSingle();
+                this.last_near = Input.ReadSingle();
+                this.first_far = Input.ReadSingle();
             }
             
             public void Save (BinaryWriter Output)
             {
                 Output.Write (this.stddev);
                 Output.Write (this.mean);
-                Output.Write (this.cov_near);
-                Output.Write (this.cov_far);
+                Output.Write (this.last_near);
+                Output.Write (this.first_far);
             }
         }
 
@@ -83,6 +84,7 @@ namespace natix.SimilaritySearch
                 Output.Write (this.dist);
             }
         }
+        #endregion
 
         public Item[] Items;
         public Dictionary<int,Pivot> Pivs;
@@ -98,9 +100,9 @@ namespace natix.SimilaritySearch
             len = Input.ReadInt32 ();
             this.Pivs = new Dictionary<int, Pivot>(len);
             for (int i = 0; i < len; ++i) {
+                var pivID = Input.ReadInt32 ();
                 var u = default(Pivot);
                 u.Load (Input);
-                var pivID = Input.ReadInt32 ();
                 this.Pivs.Add(pivID, u);
             }
 		}
@@ -116,63 +118,78 @@ namespace natix.SimilaritySearch
             }
 		}
 
-		public void Build (MetricDB DB, double alpha_stddev, int min_bs, int seed)
-		{
-			DynamicSequential idxDynamic;
-			idxDynamic = new DynamicSequential (seed);
-			idxDynamic.Build (DB);
+        protected virtual void SearchExtremes (DynamicSequential idx, List<DynamicSequential.Item> items, object piv, double alpha_stddev, int min_bs, out IResult near, out IResult far, out DynamicSequential.Stats stats)
+        {
+            items.Clear();
+            idx.ComputeDistances (piv, items, out stats);
+            var radius = stats.stddev * alpha_stddev;
+            near = new Result(idx.Count);
+            far = new Result(idx.Count);
+            idx.DropCloseToMean(stats.min + radius, stats.max - radius, near, far, items);
+            if (near.Count == 0 && far.Count == 0 & min_bs > 0) {
+                idx.AppendKExtremes(min_bs, near, far, items);
+            }
+        }
+
+        public virtual void Build (MetricDB DB, double alpha_stddev, int min_bs, int seed)
+        {
+            var idxDynamic = new DynamicSequentialRandom (seed);
+            idxDynamic.Build (DB);
             this.Items = new Item[DB.Count];
             this.Pivs = new Dictionary<int, Pivot>();
-			int I = 0;
-
-			while(idxDynamic.DOCS.Count > 0){
-				var pidx = idxDynamic.GetRandom();
-				object piv = DB[pidx];
-				idxDynamic.Remove(pidx);
+            int I = 0;
+            var items = new List<DynamicSequential.Item>(idxDynamic.Count);
+            while(idxDynamic.DOCS.Count > 0){
+                var pidx = idxDynamic.GetRandom();
+                object piv = DB[pidx];
+                idxDynamic.Remove(pidx);
                 this.Items[pidx] = new Item(pidx, 0);
-				double mean, stddev;
-				IResult near, far;
-				idxDynamic.SearchExtremesRange(piv, alpha_stddev, min_bs, out near, out far, out mean, out stddev);
-				foreach (var pair in near) {
+                IResult near, far;
+                DynamicSequential.Stats stats;
+                this.SearchExtremes(idxDynamic, items, piv, alpha_stddev, min_bs, out near, out far, out stats);
+                foreach (var pair in near) {
                     this.Items[pair.docid] = new Item (pidx, (float) pair.dist);
-				}
-				foreach (var pair in far) {
-                    this.Items[pair.docid] = new Item (pidx, (float)-pair.dist);
-				}
-                var piv_data = new Pivot((float)mean, (float)stddev, 0, float.MaxValue);
-                if (near.Count > 0) piv_data.cov_near = (float)near.Last.dist;
-                if (far.Count > 0) piv_data.cov_far = (float)far.Last.dist;
+                }
+                foreach (var pair in far) {
+                    this.Items[pair.docid] = new Item (pidx, (float) pair.dist);
+                }
+                var piv_data = new Pivot(stats.mean, stats.stddev, 0, float.MaxValue);
+                if (near.Count > 0) piv_data.last_near = (float)near.Last.dist;
+                if (far.Count > 0) piv_data.first_far = (float)far.First.dist;
                 this.Pivs.Add (pidx, piv_data);
-				if (I % 10 == 0) {
-					Console.WriteLine("-- I {0}> remains: {1}, alpha_stddev: {2}, mean: {3}, stddev: {4}, pivot: {5}",
-					                  I, idxDynamic.DOCS.Count, alpha_stddev, mean, stddev, pidx);
-					double near_first, near_last, far_first, far_last;
-					if (near.Count == 0) {
-						near_first = near_last = -1;
-					} else {
-						near_first = near.First.dist;
-						near_last = near.Last.dist;
-					}
-					if (far.Count == 0) {
-						far_last = far_first = -1;
-					} else {
-						far_first = -far.Last.dist;
-						far_last = -far.First.dist;
-					}
-					Console.WriteLine("--    first-near: {0}, last-near: {1}, first-far: {2}, last-far: {3}, near-count: {4}, far-count: {5}",
-					                  near_first, near_last, far_first, far_last, near.Count, far.Count);
-					Console.WriteLine("      normalized first-near: {0}, last-near: {1}, first-far: {2}, last-far: {3}, mean: {4}, stddev: {5}",
-					                  near_first/far_last, near_last/far_last, far_first/far_last, far_last/far_last, mean/far_last, stddev/far_last);
-                    Console.WriteLine("      mean_to_last_near: {0} sigmas, mean_to_first_far: {1} sigmas, first: {2} sigmas", (mean - near_last)/stddev, -(mean-far_first)/stddev, near_first / stddev);
-					//}
-				}
-				++I;
-				idxDynamic.Remove(near);
-				idxDynamic.Remove(far);
-				//Console.WriteLine("Number of objects after: {0}",idxDynamic.DOCS.Count);
-			}
-			Console.WriteLine("Number of pivots per group: {0}", I);
-		}
+                if (I % 10 == 0) {
+                    Console.WriteLine("-- I {0}> remains: {1}, alpha_stddev: {2}, mean: {3}, stddev: {4}, pivot: {5}",
+                                      I, idxDynamic.DOCS.Count, alpha_stddev, stats.mean, stats.stddev, pidx);
+                    double near_first, near_last, far_first, far_last;
+                    if (near.Count > 0) {
+                        near_first = near.First.dist;
+                        near_last = near.Last.dist;
+                        Console.WriteLine("-- (ABSVAL)  first-near: {0}, last-near: {1}, near-count: {2}",
+                                          near_first, near_last, near.Count);
+                        Console.WriteLine("-- (NORMVAL) first-near: {0}, last-near: {1}",
+                                          near_first / stats.max, near_last / stats.max);
+                        Console.WriteLine("-- (SIGMAS)  first-near: {0}, last-near: {1}",
+                                          near_first / stats.stddev, near_last / stats.stddev);
+                        
+                    }
+                    if (far.Count > 0) {
+                        far_first = far.First.dist;
+                        far_last = far.Last.dist;
+                        Console.WriteLine("++ (ABSVAL)  first-far: {0}, last-far: {1}, far-count: {2}",
+                                          far_first, far_last, far.Count);
+                        Console.WriteLine("++ (NORMVAL) first-far: {0}, last-far: {1}",
+                                          far_first / stats.max, far_last / stats.max);
+                        Console.WriteLine("++ (SIGMAS)  first-far: {0}, last-far: {1}",
+                                          far_first / stats.stddev, far_last / stats.stddev);
+                    }
+                }
+                ++I;
+                idxDynamic.Remove(near);
+                idxDynamic.Remove(far);
+                //Console.WriteLine("Number of objects after: {0}",idxDynamic.DOCS.Count);
+            }
+            Console.WriteLine("Number of pivots per group: {0}", I);
+        }
 	}
 }
 

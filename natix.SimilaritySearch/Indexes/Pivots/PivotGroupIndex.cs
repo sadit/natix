@@ -63,7 +63,7 @@ namespace natix.SimilaritySearch
 			}
 		}
 
-		public void Build (MetricDB db, int num_groups, double alpha_stddev, int min_bs, int num_build_processors = -1)
+		public void Build (MetricDB db, int num_groups, double alpha_stddev, int min_bs, int num_build_processors = -1, Func<PivotGroup> new_pivot_group = null)
 		{
 			this.DB = db;
 			this.GROUPS = new PivotGroup[num_groups];
@@ -76,7 +76,11 @@ namespace natix.SimilaritySearch
 			// Parallel.For (0, num_groups, ops, (i) => this.GROUPS[i] = this.GetGroup(percentil));
 			int I = 0;
 			var build_one_group = new Action<int> (delegate(int i) {
-				this.GROUPS[i] = new PivotGroup();
+                if (new_pivot_group == null) {
+                    this.GROUPS[i] = new PivotGroup();
+                } else {
+                    this.GROUPS[i] = new_pivot_group();
+                }
 				this.GROUPS[i].Build(this.DB, alpha_stddev, min_bs, seeds[i]);
 				// this.GROUPS [i] = this.GetGroup (alpha_stddev, min_bs);
 				Console.WriteLine ("Advance {0}/{1} (alpha_stddev={2}, db={3}, timestamp={4})",
