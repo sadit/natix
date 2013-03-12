@@ -189,7 +189,7 @@ namespace natix.SimilaritySearch
             var _far = new Result (this.Count);
             foreach (var item in items) {
                 if (!near.Push (item.objID, item.dist)) {
-                    _far.Push (item.objID, item.dist);
+                    _far.Push (item.objID, -item.dist);
                 }
             }
             foreach (var p in _far) {
