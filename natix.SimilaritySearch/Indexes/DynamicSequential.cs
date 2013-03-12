@@ -186,7 +186,7 @@ namespace natix.SimilaritySearch
 
         public void AppendKExtremes (IResult near, IResult far, List<Item> items)
         {
-            var _far = new Result (this.Count);
+            var _far = new Result (far.K);
             foreach (var item in items) {
                 if (!near.Push (item.objID, item.dist)) {
                     _far.Push (item.objID, -item.dist);
