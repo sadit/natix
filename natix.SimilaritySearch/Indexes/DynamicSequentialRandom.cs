@@ -52,7 +52,7 @@ namespace natix.SimilaritySearch
 			this.DOCS.Remove(docid, null);
 		}
 
-		public int GetRandom ()
+		public override int GetAnyItem ()
 		{
 			if (this.DOCS.Count == 0) {
 				throw new KeyNotFoundException ("GetRandom cannot select an item from an empty set");

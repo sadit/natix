@@ -132,7 +132,7 @@ namespace natix.SimilaritySearch
             int I = 0;
             var items = new List<DynamicSequential.Item>(idxDynamic.Count);
             while(idxDynamic.DOCS.Count > 0){
-                var pidx = idxDynamic.GetRandom();
+                var pidx = idxDynamic.GetAnyItem();
                 object piv = DB[pidx];
                 idxDynamic.Remove(pidx);
                 this.Items[pidx] = new Item(pidx, 0);

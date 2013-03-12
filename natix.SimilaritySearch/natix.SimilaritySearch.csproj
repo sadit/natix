@@ -126,19 +126,21 @@
     <Compile Include="Indexes\KNR\KnrLSH.cs" />
     <Compile Include="Indexes\KNR\MKnrLSH.cs" />
     <Compile Include="Indexes\LC\PolyIndexLC_ApproxGraphRevLC.cs" />
-    <Compile Include="Indexes\DynamicSequentialHash.cs" />
     <Compile Include="Indexes\DynamicSequentialRandom.cs" />
     <Compile Include="Indexes\Pivots\PivotGroupDiscardMeanNNRadius.cs" />
     <Compile Include="Indexes\Pivots\PivotGroupDiscardMeanSigmaRadius.cs" />
     <Compile Include="Indexes\Pivots\PivotGroupAcceptExtremesSigmaRadius.cs" />
     <Compile Include="Indexes\Pivots\PivotGroupAcceptExtremesFixedBucket.cs" />
     <Compile Include="Indexes\Pivots\PivotGroupAcceptExtremesQuantile.cs" />
+    <Compile Include="Indexes\SAT\SAT.cs" />
+    <Compile Include="Indexes\DynamicSequentialFixedOrder.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Indexes\PI\" />
     <Folder Include="Indexes\Pivots\" />
     <Folder Include="Spaces\QString\" />
+    <Folder Include="Indexes\SAT\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\natix\natix.csproj">

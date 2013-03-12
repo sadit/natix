@@ -23,7 +23,7 @@ namespace natix.SortingSearching
 	public class GenericSearch
 	{
 		/// <summary>
-		/// Given a sorted array, it finds the last entry u where u <= query.
+		/// Given a sorted array L, it finds the last entry u where L[u] <= query.
 		/// It returns min-1 if query < L[u]for every L[u] in the array.
 		/// </summary>
 		public static int FindLast<T> (T query, IList<T> data) where T: IComparable

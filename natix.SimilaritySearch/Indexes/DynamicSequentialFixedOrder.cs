@@ -23,51 +23,77 @@ using System.Reflection;
 using NDesk.Options;
 using natix;
 using natix.SortingSearching;
+using natix.CompactDS;
 
 namespace natix.SimilaritySearch
 {
 	/// <summary>
 	/// The sequential index
 	/// </summary>
-	public class DynamicSequentialHash : DynamicSequential
+	public class DynamicSequentialFixedOrder : DynamicSequential
 	{
-		public HashSet<int> DOCS;
+		protected HashSet<int> docs;
+        protected int[] order;
+        protected BitStream32 removed;
+        protected int start_pos;
+
 		/// <summary>
 		/// Constructor
 		/// </summary>
-		public DynamicSequentialHash ()
+		public DynamicSequentialFixedOrder ()
 		{
 		}
 
-		public override void Remove (int docid)
+		public override void Remove (int objID)
         {
-            this.DOCS.Remove(docid);
+            this.docs.Remove(objID);
+            this.removed[objID] = true;
 		}
+
+        public override int GetAnyItem ()
+        {
+            while (this.start_pos < this.order.Length) {
+                var objID = this.order [this.start_pos];
+                if (this.removed [objID]) {
+                    ++this.start_pos;
+                } else {
+                    return objID;
+                }
+            }
+            throw new IndexOutOfRangeException();
+        }
 
         public override int Count {
             get {
-                return this.DOCS.Count;
+                return this.docs.Count;
             }
         }
 
         public override IEnumerable<int> Iterate ()
         {
-            return this.DOCS;
+            return this.docs;
         }
 
 		/// <summary>
 		/// API build command
 		/// </summary>
 		public virtual void Build (MetricDB db, IList<int> sample = null)
-		{
-			this.DB = db;
-			if (sample == null) {
-				sample = RandomSets.GetExpandedRange (this.DB.Count);
-			}
-            this.DOCS = new HashSet<int>();
+        {
+            this.DB = db;
+            this.start_pos = 0;
+            if (sample == null) {
+                this.order = RandomSets.GetRandomPermutation (this.DB.Count);
+            } else {
+                var nsample = sample.Count;
+                this.order = new int[nsample];
+                sample.CopyTo(this.order, 0);
+            }
+            this.docs = new HashSet<int>();
+            this.removed = new BitStream32();
+            this.removed.Write(false, this.DB.Count);
 			foreach (var s in sample) {
-				this.DOCS.Add(s);
+				this.docs.Add(s);
 			}
-		}       
+		}
 	}
 }

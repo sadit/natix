@@ -34,7 +34,7 @@ namespace natix.SimilaritySearch
             idx.ComputeDistances (piv, items, out stats);
             idx.SortByDistance(items);
             var n = idx.Count;
-            min_bs = (int)(quantile * n);
+            min_bs = Math.Max ((int)(quantile * n), min_bs);
             near = new Result (min_bs);
             far = new Result (min_bs);
             idx.AppendKExtremes(near, far, items);

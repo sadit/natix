@@ -126,6 +126,8 @@ namespace natix.SimilaritySearch
             get;
         }
 
+        public abstract int GetAnyItem ();
+
         public List<Item> ComputeDistances (object piv, List<Item> output, out Stats stats)
         {
             if (output == null) {
