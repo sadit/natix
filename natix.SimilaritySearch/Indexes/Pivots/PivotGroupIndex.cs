@@ -14,7 +14,10 @@
 //    limitations under the License.
 // 
 // Francisco Santoyo 
-// Adaptation of the KNN searching algorithm of LAESA
+// - Adaptation of the KNN searching algorithm of LAESA
+// Eric Sadit
+// - Parallel building
+// - SearchRange SearchKNN optimizations
 
 using System;
 using System.IO;

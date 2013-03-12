@@ -127,9 +127,12 @@
     <Compile Include="Indexes\KNR\MKnrLSH.cs" />
     <Compile Include="Indexes\LC\PolyIndexLC_ApproxGraphRevLC.cs" />
     <Compile Include="Indexes\DynamicSequentialHash.cs" />
-    <Compile Include="Indexes\Pivots\PivotGroupV2.cs" />
-    <Compile Include="Indexes\Pivots\PivotGroupV3.cs" />
     <Compile Include="Indexes\DynamicSequentialRandom.cs" />
+    <Compile Include="Indexes\Pivots\PivotGroupDiscardMeanNNRadius.cs" />
+    <Compile Include="Indexes\Pivots\PivotGroupDiscardMeanSigmaRadius.cs" />
+    <Compile Include="Indexes\Pivots\PivotGroupAcceptExtremesSigmaRadius.cs" />
+    <Compile Include="Indexes\Pivots\PivotGroupAcceptExtremesFixedBucket.cs" />
+    <Compile Include="Indexes\Pivots\PivotGroupAcceptExtremesQuantile.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

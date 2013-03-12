@@ -120,15 +120,7 @@ namespace natix.SimilaritySearch
 
         protected virtual void SearchExtremes (DynamicSequential idx, List<DynamicSequential.Item> items, object piv, double alpha_stddev, int min_bs, out IResult near, out IResult far, out DynamicSequential.Stats stats)
         {
-            items.Clear();
-            idx.ComputeDistances (piv, items, out stats);
-            var radius = stats.stddev * alpha_stddev;
-            near = new Result(idx.Count);
-            far = new Result(idx.Count);
-            idx.DropCloseToMean(stats.min + radius, stats.max - radius, near, far, items);
-            if (near.Count == 0 && far.Count == 0 & min_bs > 0) {
-                idx.AppendKExtremes(min_bs, near, far, items);
-            }
+            throw new NotSupportedException();
         }
 
         public virtual void Build (MetricDB DB, double alpha_stddev, int min_bs, int seed)
@@ -158,6 +150,8 @@ namespace natix.SimilaritySearch
                 if (far.Count > 0) piv_data.first_far = (float)far.First.dist;
                 this.Pivs.Add (pidx, piv_data);
                 if (I % 10 == 0) {
+                    Console.WriteLine ("");
+                    Console.WriteLine (this.ToString());
                     Console.WriteLine("-- I {0}> remains: {1}, alpha_stddev: {2}, mean: {3}, stddev: {4}, pivot: {5}",
                                       I, idxDynamic.DOCS.Count, alpha_stddev, stats.mean, stats.stddev, pidx);
                     double near_first, near_last, far_first, far_last;

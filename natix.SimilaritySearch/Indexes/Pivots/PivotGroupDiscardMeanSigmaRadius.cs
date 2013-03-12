@@ -22,9 +22,9 @@ using System.Collections.Generic;
 
 namespace natix.SimilaritySearch
 {
-	public class PivotGroupV3 : PivotGroup
+	public class PivotGroupDiscardMeanSigmaRadius : PivotGroup
 	{
-		public PivotGroupV3 () : base()
+		public PivotGroupDiscardMeanSigmaRadius () : base()
 		{
 		}
 
@@ -32,7 +32,7 @@ namespace natix.SimilaritySearch
         {
             items.Clear();
             idx.ComputeDistances (piv, items, out stats);
-            var radius = stats.min; // stats.stddev * alpha_stddev;
+            var radius = stats.stddev * alpha_stddev;
             near = new Result (idx.Count);
             far = new Result (idx.Count);
             idx.DropCloseToMean (stats.mean - radius, stats.mean + radius, near, far, items);

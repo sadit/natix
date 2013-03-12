@@ -33,6 +33,7 @@ namespace natix.SimilaritySearch
 	{        
 		public SkipList2<int> DOCS;
 		public Random rand;
+
 		/// <summary>
 		/// Constructor
 		/// </summary>
