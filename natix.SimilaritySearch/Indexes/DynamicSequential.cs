@@ -184,7 +184,7 @@ namespace natix.SimilaritySearch
             }
         }
 
-        public void AppendKExtremes (int K, IResult near, IResult far, List<Item> items)
+        public void AppendKExtremes (IResult near, IResult far, List<Item> items)
         {
             var _far = new Result (this.Count);
             foreach (var item in items) {

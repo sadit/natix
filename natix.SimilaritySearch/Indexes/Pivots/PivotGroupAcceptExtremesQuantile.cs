@@ -35,9 +35,9 @@ namespace natix.SimilaritySearch
             idx.SortByDistance(items);
             var n = idx.Count;
             min_bs = (int)(quantile * n);
-            near = new Result (idx.Count);
-            far = new Result (idx.Count);
-            idx.AppendKExtremes(min_bs, near, far, items);
+            near = new Result (min_bs);
+            far = new Result (min_bs);
+            idx.AppendKExtremes(near, far, items);
         }
 	}
 }

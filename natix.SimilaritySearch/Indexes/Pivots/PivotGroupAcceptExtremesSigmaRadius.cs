@@ -42,7 +42,9 @@ namespace natix.SimilaritySearch
             far = new Result(idx.Count);
             idx.DropCloseToMean(stats.min + radius, stats.max - radius, near, far, items);
             if (near.Count == 0 && far.Count == 0 & min_bs > 0) {
-                idx.AppendKExtremes(min_bs, near, far, items);
+                near = new Result (min_bs);
+                far = new Result (min_bs);
+                idx.AppendKExtremes(near, far, items);
             }
         }
 	}
