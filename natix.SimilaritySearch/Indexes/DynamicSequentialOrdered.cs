@@ -33,7 +33,7 @@ namespace natix.SimilaritySearch
 	public class DynamicSequentialFixedOrder : DynamicSequential
 	{
 		protected HashSet<int> docs;
-        protected int[] order;
+        public int[] order;
         protected BitStream32 removed;
         protected int start_pos;
 
