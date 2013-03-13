@@ -25,7 +25,7 @@ namespace natix
 	/// <summary>
 	/// Simple I/O output for objects implementing the ILoadSave interafce
 	/// </summary>
-	public class CompositeIO<T> where T: ILoadSave
+	public class CompositeIO<T> where T: ILoadSave, new()
     {		
 		/// <summary>
 		/// Reads "numitems" vectors from rfile, store items in "output" (array or list)
@@ -37,14 +37,16 @@ namespace natix
 			}            
             if (output.Count > 0) {
                 for (int i = 0; i < output.Count; i++) {
-                    var u = default(T);
+                    //var u = default(T);
+                    var u = new T();
                     u.Load(Input);
                     output [i] = u;
                 }
                 numitems -= output.Count;
             }
             for (int i = 0; i < numitems; i++) {
-                var u = default(T);
+                //var u = default(T);
+                var u = new T();
                 u.Load(Input);
                 output.Add (u);
             }

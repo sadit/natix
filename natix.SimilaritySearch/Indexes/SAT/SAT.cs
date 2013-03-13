@@ -44,17 +44,22 @@ namespace natix.SimilaritySearch
             public void Load (BinaryReader Input)
             {
                 this.objID = Input.ReadInt32 ();
-                this.cov = Input.ReadSingle();
-                this.Children = new Node[Input.ReadInt32 ()];
-                CompositeIO<Node>.LoadVector(Input, this.Children.Count, this.Children);
+                this.cov = Input.ReadSingle ();
+                var len = Input.ReadInt32 ();
+                this.Children = new Node[len];
+                if (len > 0) {
+                    CompositeIO<Node>.LoadVector (Input, this.Children.Count, this.Children);
+                }
             }
 
             public void Save (BinaryWriter Output)
             {
-                Output.Write(this.objID);
-                Output.Write(this.cov);
+                Output.Write (this.objID);
+                Output.Write (this.cov);
                 Output.Write (this.Children.Count);
-                CompositeIO<Node>.SaveVector(Output, this.Children);
+                if (this.Children.Count > 0) {
+                    CompositeIO<Node>.SaveVector (Output, this.Children);
+                }
             }
         }
 
@@ -67,7 +72,7 @@ namespace natix.SimilaritySearch
         public override void Load (BinaryReader Input)
         {
             base.Load (Input);
-            this.root = default(Node);
+            this.root = new Node();
             this.root.Load(Input);
         }
 
@@ -79,7 +84,18 @@ namespace natix.SimilaritySearch
 
         public override IResult SearchKNN (object q, int K, IResult res)
         {
-            throw new System.NotImplementedException ();
+            if (this.root == null) {
+                return res;
+            }
+            var rand = new Random();
+            double min = double.MaxValue;
+            for (int i = 0; i < 128; ++i) {
+                ++this.internal_numdists;
+                var obj = this.DB[ rand.Next(0, this.DB.Count) ];
+                min = Math.Min(this.DB.Dist(q, obj), min);
+            }
+            this.SearchRangeNode (this.DB.Dist(q, this.DB[this.root.objID]), this.root, q, min, res);
+            return res;
         }
 
 
@@ -96,7 +112,7 @@ namespace natix.SimilaritySearch
 
         //int SEARCH_COUNT = 0;
 
-        protected void SearchRangeNode (double dist, Node node, object q, double radius, Result res)
+        protected void SearchRangeNode (double dist, Node node, object q, double radius, IResult res)
         {
             // var dist = this.DB.Dist (this.DB [node.objID], q);
 //            Console.WriteLine ("dist: {0}, node: {1}, res: {2}", dist, node, res);
@@ -131,18 +147,27 @@ namespace natix.SimilaritySearch
             var sets = new Dictionary< int, IList<int> >();
             this.root = new Node( 0 );
             sets[0] = RandomSets.GetExpandedRange(1, this.DB.Count);
-            this.BuildNode(this.root, sets);
+            int count_step = 0;
+            this.BuildNode(this.root, sets, ref count_step);
         }
 
-        protected virtual void BuildNode (Node node, Dictionary<int, IList<int> > sets)
+        protected virtual void SortItems (List<DynamicSequential.Item> items)
+        {
+            DynamicSequential.SortByDistance (items);
+        }
+
+        protected virtual void BuildNode (Node node, Dictionary<int, IList<int> > sets, ref int count_step)
         {
             //Console.WriteLine("======== BUILD NODE: {0}", node.objID);
-            var idxseq = new DynamicSequentialOrdered ();
-            idxseq.Build (this.DB, sets [node.objID]);
-            sets.Remove(node.objID);
+            ++count_step;
+            if (count_step < 100 || count_step % 100 == 0) {
+                Console.WriteLine ("======== SAT build_node: {0}, count_step: {1}/{2}", node.objID, count_step, this.DB.Count);
+            }
             DynamicSequential.Stats stats;
-            var items = idxseq.ComputeDistances (this.DB [node.objID], null, out stats);
-            idxseq.SortByDistance (items);
+            var items = DynamicSequential.ComputeDistances(this.DB, sets[node.objID], this.DB[node.objID], null, out stats);
+            sets.Remove(node.objID);
+            //var items = idxseq.ComputeDistances (this.DB [node.objID], null, out stats);
+            this.SortItems(items);
             foreach (var item in items) {
                 node.cov = Math.Max (node.cov, item.dist);
                 var currOBJ = this.DB [item.objID];
@@ -166,7 +191,7 @@ namespace natix.SimilaritySearch
             }
             //Console.WriteLine("===== add children");
             foreach (var child in node.Children) {
-                this.BuildNode(child, sets);
+                this.BuildNode(child, sets, ref count_step);
             }
         }         
     }

@@ -128,34 +128,68 @@ namespace natix.SimilaritySearch
 
         public abstract int GetAnyItem ();
 
-        public List<Item> ComputeDistances (object piv, List<Item> output, out Stats stats)
+        public static List<Item> ComputeDistances (MetricDB db, IEnumerable<int> sample, object piv, List<Item> output, out Stats stats)
         {
             if (output == null) {
-                output = new List<Item>(this.Count);
+                output = new List<Item>();
             }
             //var L = new Item[this.DOCS.Count];
             stats = default(Stats);
             stats.min = float.MaxValue;
             stats.max = 0;
             double mean = 0;
-            foreach (var objID in this.Iterate()) {
-                var dist = (float)this.DB.Dist(piv, this.DB[objID]);
+            var count = 0;
+            foreach (var objID in sample) {
+                var dist = (float)db.Dist(piv, db[objID]);
                 mean += dist;
                 output.Add( new Item(objID, dist) );
                 stats.min = Math.Min (dist, stats.min);
                 stats.max = Math.Max (dist, stats.max);
+                ++count;
             }
-            stats.mean = (float)(mean / this.Count);
+            stats.mean = (float)(mean / count);
             double stddev = 0;
             foreach (var item in output) {
                 var m = item.dist - stats.mean;
                 stddev += m * m;
             }
-            stats.stddev = (float)Math.Sqrt(stddev / this.Count);
+            stats.stddev = (float)Math.Sqrt(stddev / count);
             return output;
         }
 
-        public void SortByDistance (List<Item> output)
+        public List<Item> ComputeDistances (object piv, List<Item> output, out Stats stats)
+        {
+            return DynamicSequential.ComputeDistances(this.DB, this.Iterate(), piv, output, out stats);
+        }
+
+//        public List<Item> ComputeDistances (object piv, List<Item> output, out Stats stats)
+//        {
+//            if (output == null) {
+//                output = new List<Item>(this.Count);
+//            }
+//            //var L = new Item[this.DOCS.Count];
+//            stats = default(Stats);
+//            stats.min = float.MaxValue;
+//            stats.max = 0;
+//            double mean = 0;
+//            foreach (var objID in this.Iterate()) {
+//                var dist = (float)this.DB.Dist(piv, this.DB[objID]);
+//                mean += dist;
+//                output.Add( new Item(objID, dist) );
+//                stats.min = Math.Min (dist, stats.min);
+//                stats.max = Math.Max (dist, stats.max);
+//            }
+//            stats.mean = (float)(mean / this.Count);
+//            double stddev = 0;
+//            foreach (var item in output) {
+//                var m = item.dist - stats.mean;
+//                stddev += m * m;
+//            }
+//            stats.stddev = (float)Math.Sqrt(stddev / this.Count);
+//            return output;
+//        }
+
+        public static void SortByDistance (List<Item> output)
         {
             output.Sort( (Item x, Item y) => x.dist.CompareTo(y.dist) );
         }

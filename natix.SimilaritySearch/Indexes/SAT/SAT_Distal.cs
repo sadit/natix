@@ -12,33 +12,27 @@
 //    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
-// 
-
 using System;
 using System.IO;
-using natix.CompactDS;
 using System.Collections;
 using System.Collections.Generic;
+using natix.CompactDS;
+using natix;
+using natix.SortingSearching;
 
 namespace natix.SimilaritySearch
 {
-	public class PivotGroupAcceptExtremesQuantile : PivotGroup
-	{
-		public PivotGroupAcceptExtremesQuantile () : base()
-		{
-		}
-
-        protected override void SearchExtremes (DynamicSequential idx, List<DynamicSequential.Item> items, object piv, double quantile, int min_bs, out IResult near, out IResult far, out DynamicSequential.Stats stats)
+    public class SAT_Distal : SAT
+    {
+        public SAT_Distal ()
         {
-            items.Clear();
-            idx.ComputeDistances (piv, items, out stats);
-            DynamicSequential.SortByDistance(items);
-            var n = idx.Count;
-            min_bs = Math.Max ((int)(quantile * n), min_bs);
-            near = new Result (min_bs);
-            far = new Result (min_bs);
-            idx.AppendKExtremes(near, far, items);
         }
-	}
+
+        protected override void SortItems (List<DynamicSequential.Item> items)
+        {
+            DynamicSequential.SortByDistance (items);
+            items.Reverse();
+        }
+    }
 }
 

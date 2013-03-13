@@ -53,7 +53,7 @@ namespace natix.SimilaritySearch
         {
             DynamicSequential.Stats stats;
             var items = this.ComputeDistances (piv, null, out stats);
-            this.SortByDistance (items);
+            DynamicSequential.SortByDistance (items);
             for (int i = 0; i < items.Count; ++i) {
                 this.order[i] = items[i].objID;
             }
