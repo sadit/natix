@@ -24,7 +24,7 @@ namespace natix.SimilaritySearch
 {
 	public class LAESA : BasicIndex, IndexSingle
 	{
-		public IList<float>[] DIST;
+		public IList<double>[] DIST;
 		public MetricDB PIVS;
 
 		public LAESA ()
@@ -35,14 +35,10 @@ namespace natix.SimilaritySearch
 		{
 			base.Load (Input);
 			this.PIVS = SpaceGenericIO.SmartLoad(Input, false);
-			this.DIST = new IList<float>[this.PIVS.Count];
+			this.DIST = new IList<double>[this.PIVS.Count];
 			for (int i = 0; i < this.PIVS.Count; ++i) {
-				this.DIST[i] = PrimitiveIO<float>.ReadFromFile(Input, this.DB.Count, null);
+				this.DIST[i] = PrimitiveIO<double>.ReadFromFile(Input, this.DB.Count, null);
 			}
-			// this.MEAN = new float[this.PIVS.Count];
-			// this.STDDEV = new float[this.PIVS.Count];
-			//PrimitiveIO<float>.ReadFromFile(Input, this.MEAN.Count, this.MEAN);
-			// PrimitiveIO<float>.ReadFromFile(Input, this.STDDEV.Count, this.STDDEV);
 		}
 
 		public override void Save (BinaryWriter Output)
@@ -50,7 +46,7 @@ namespace natix.SimilaritySearch
 			base.Save (Output);
 			SpaceGenericIO.SmartSave (Output, this.PIVS);
 			for (int i = 0; i < this.PIVS.Count; ++i) {
-				PrimitiveIO<float>.WriteVector(Output, this.DIST[i]);
+				PrimitiveIO<double>.WriteVector(Output, this.DIST[i]);
 			}
 		}
 
@@ -59,11 +55,11 @@ namespace natix.SimilaritySearch
 			this.DB = idx.DB;
 			var P = (idx.PIVS as SampleSpace);
 			var S = new int[num_pivs];
-			this.DIST = new IList<float>[num_pivs];
+			this.DIST = new IList<double>[num_pivs];
 			int I = 0;
 			Action<int> one_pivot = delegate (int i) {
 				S [i] = P.SAMPLE [i];
-				var L = new List<float>(idx.DIST[i]);
+				var L = new List<double>(idx.DIST[i]);
 				this.DIST[i] = L;
 				if (I % 10 == 0) {
 					Console.WriteLine("LAESA Build, advance {0}/{1} (approx.) ", I, num_pivs);
@@ -81,11 +77,11 @@ namespace natix.SimilaritySearch
 			this.Build(laesa, num_pivs);
 		}
 
-		IList<float> GetLazyDIST (int piv)
+		IList<double> GetLazyDIST (int piv)
 		{
-			var seq = new ListGen<float>((int index) => {
+			var seq = new ListGen<double>((int index) => {
 				var d = this.DB.Dist (this.PIVS[piv], this.DB [index]);
-				return (float)d;
+				return d;
 			}, this.DB.Count);
 			return seq;
 		}
@@ -94,7 +90,7 @@ namespace natix.SimilaritySearch
 		{
 			this.DB = db;
 			this.PIVS = new SampleSpace("", db, num_pivs);
-			this.DIST = new IList<float>[num_pivs];
+			this.DIST = new IList<double>[num_pivs];
 			for (int i = 0; i < num_pivs; ++i) {
 				this.DIST[i] = this.GetLazyDIST(i);
 			}
@@ -223,7 +219,9 @@ namespace natix.SimilaritySearch
                         ++this.internal_numdists;
                         dqp_cache[db_pivID] = dqp;
                         if (db_pivID >= docID) {
-                            res.Push(db_pivID, dqp);
+                            if (dqp <= radius) {
+                                res.Push(db_pivID, dqp);
+                            }
                             if (db_pivID == docID) {
                                 check_object = false;
                                 break;

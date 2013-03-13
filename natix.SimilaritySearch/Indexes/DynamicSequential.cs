@@ -34,18 +34,18 @@ namespace natix.SimilaritySearch
         public struct Item : ILoadSave
         {
             public int objID;
-            public float dist;
+            public double dist;
 
             public Item (int objID, double dist)
             {
                 this.objID = objID;
-                this.dist = (float)dist;
+                this.dist = dist;
             }
             
             public void Load(BinaryReader Input)
             {
                 this.objID = Input.ReadInt32 ();
-                this.dist = Input.ReadSingle();
+                this.dist = Input.ReadDouble();
             }
             
             public void Save (BinaryWriter Output)
@@ -53,21 +53,26 @@ namespace natix.SimilaritySearch
                 Output.Write (this.objID);
                 Output.Write (this.dist);
             }
+
+            public override string ToString ()
+            {
+                return string.Format ("[Item (objID={0},dist={1})]", this.objID, this.dist);
+            }
         }
 
         public struct Stats
         {
-            public float min;
-            public float max;
-            public float mean;
-            public float stddev;
+            public double min;
+            public double max;
+            public double mean;
+            public double stddev;
 
             public Stats (double min, double max, double mean, double stddev)
             {
-                this.min = (float) min;
-                this.max = (float) max;
-                this.mean = (float) mean;
-                this.stddev = (float) stddev;
+                this.min = min;
+                this.max = max;
+                this.mean = mean;
+                this.stddev = stddev;
             }
         }
 
@@ -135,25 +140,25 @@ namespace natix.SimilaritySearch
             }
             //var L = new Item[this.DOCS.Count];
             stats = default(Stats);
-            stats.min = float.MaxValue;
+            stats.min = double.MaxValue;
             stats.max = 0;
             double mean = 0;
             var count = 0;
             foreach (var objID in sample) {
-                var dist = (float)db.Dist(piv, db[objID]);
+                var dist = db.Dist(piv, db[objID]);
                 mean += dist;
                 output.Add( new Item(objID, dist) );
                 stats.min = Math.Min (dist, stats.min);
                 stats.max = Math.Max (dist, stats.max);
                 ++count;
             }
-            stats.mean = (float)(mean / count);
+            stats.mean = mean / count;
             double stddev = 0;
             foreach (var item in output) {
                 var m = item.dist - stats.mean;
                 stddev += m * m;
             }
-            stats.stddev = (float)Math.Sqrt(stddev / count);
+            stats.stddev = Math.Sqrt(stddev / count);
             return output;
         }
 
@@ -162,36 +167,10 @@ namespace natix.SimilaritySearch
             return DynamicSequential.ComputeDistances(this.DB, this.Iterate(), piv, output, out stats);
         }
 
-//        public List<Item> ComputeDistances (object piv, List<Item> output, out Stats stats)
-//        {
-//            if (output == null) {
-//                output = new List<Item>(this.Count);
-//            }
-//            //var L = new Item[this.DOCS.Count];
-//            stats = default(Stats);
-//            stats.min = float.MaxValue;
-//            stats.max = 0;
-//            double mean = 0;
-//            foreach (var objID in this.Iterate()) {
-//                var dist = (float)this.DB.Dist(piv, this.DB[objID]);
-//                mean += dist;
-//                output.Add( new Item(objID, dist) );
-//                stats.min = Math.Min (dist, stats.min);
-//                stats.max = Math.Max (dist, stats.max);
-//            }
-//            stats.mean = (float)(mean / this.Count);
-//            double stddev = 0;
-//            foreach (var item in output) {
-//                var m = item.dist - stats.mean;
-//                stddev += m * m;
-//            }
-//            stats.stddev = (float)Math.Sqrt(stddev / this.Count);
-//            return output;
-//        }
-
         public static void SortByDistance (List<Item> output)
         {
-            output.Sort( (Item x, Item y) => x.dist.CompareTo(y.dist) );
+            //output.Sort( (Item x, Item y) => x.dist.CompareTo(y.dist) );
+            Sorting.Sort<Item>(output, (Item x, Item y) => x.dist.CompareTo(y.dist));            
         }
 
 		public void SearchExtremes (object q, IResult near, IResult far)

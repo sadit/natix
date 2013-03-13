@@ -27,7 +27,7 @@ namespace natix.SimilaritySearch
         {
             public IList<Node> Children;
             public int objID;
-            public float cov;
+            public double cov;
 
             public Node()
             {
@@ -44,7 +44,7 @@ namespace natix.SimilaritySearch
             public void Load (BinaryReader Input)
             {
                 this.objID = Input.ReadInt32 ();
-                this.cov = Input.ReadSingle ();
+                this.cov = Input.ReadDouble ();
                 var len = Input.ReadInt32 ();
                 this.Children = new Node[len];
                 if (len > 0) {
@@ -144,11 +144,12 @@ namespace natix.SimilaritySearch
         public virtual void Build (MetricDB db)
         {
             this.DB = db;
-            var sets = new Dictionary< int, IList<int> >();
             this.root = new Node( 0 );
-            sets[0] = RandomSets.GetExpandedRange(1, this.DB.Count);
+            var _items = RandomSets.GetExpandedRange(1, this.DB.Count);
+            DynamicSequential.Stats stats;
+            var items = DynamicSequential.ComputeDistances(this.DB, _items, this.DB[0], null, out stats);
             int count_step = 0;
-            this.BuildNode(this.root, sets, ref count_step);
+            this.BuildNode(this.root, items, ref count_step);
         }
 
         protected virtual void SortItems (List<DynamicSequential.Item> items)
@@ -156,42 +157,43 @@ namespace natix.SimilaritySearch
             DynamicSequential.SortByDistance (items);
         }
 
-        protected virtual void BuildNode (Node node, Dictionary<int, IList<int> > sets, ref int count_step)
+        protected virtual void BuildNode (Node node, List<DynamicSequential.Item> items, ref int count_step)
         {
             //Console.WriteLine("======== BUILD NODE: {0}", node.objID);
             ++count_step;
             if (count_step < 100 || count_step % 100 == 0) {
                 Console.WriteLine ("======== SAT build_node: {0}, count_step: {1}/{2}", node.objID, count_step, this.DB.Count);
             }
-            DynamicSequential.Stats stats;
-            var items = DynamicSequential.ComputeDistances(this.DB, sets[node.objID], this.DB[node.objID], null, out stats);
-            sets.Remove(node.objID);
-            //var items = idxseq.ComputeDistances (this.DB [node.objID], null, out stats);
-            this.SortItems(items);
+            var partition = new List< List< DynamicSequential.Item > > ();
+            this.SortItems (items);
             foreach (var item in items) {
                 node.cov = Math.Max (node.cov, item.dist);
-                var currOBJ = this.DB [item.objID];
-                TopK<Node> closer = new TopK<Node> (1);
-                closer.Push (item.dist, node);
-                foreach (var child in node.Children) {
+                object currOBJ;
+                currOBJ = this.DB [item.objID];
+                var closer = new Result (1);
+                closer.Push (-1, item.dist);
+                for (int child_ID = 0; child_ID < node.Children.Count; ++child_ID) {
+                    var child = node.Children [child_ID];
                     var childOBJ = this.DB [child.objID];
                     var d_child_curr = this.DB.Dist (childOBJ, currOBJ); 
-                    closer.Push (d_child_curr, child);
+                    closer.Push (child_ID, d_child_curr);
                 }
-                var p = closer.Items.GetFirst ();
-                var closer_node = p.Value;
-                if (closer_node.objID == node.objID) {
-                    var new_node = new Node (item.objID);
-                    node.Children.Add (new_node);
-                   // Console.WriteLine("** add: {0}", new_node.objID);
-                    sets.Add(new_node.objID, new List<int>());
-                } else {
-                    sets[closer_node.objID].Add(item.objID);
+                {
+                    var child_ID = closer.First.docid;
+                    var closer_dist = closer.First.dist;
+                    if (child_ID == -1) {
+                        var new_node = new Node (item.objID);
+                        node.Children.Add (new_node);
+                        partition.Add (new List<DynamicSequential.Item> ());
+                    } else {
+                        partition [child_ID].Add (new DynamicSequential.Item (item.objID, closer_dist));
+                    }
                 }
             }
             //Console.WriteLine("===== add children");
-            foreach (var child in node.Children) {
-                this.BuildNode(child, sets, ref count_step);
+            for (int child_ID = 0; child_ID < node.Children.Count; ++child_ID) {
+                this.BuildNode ( node.Children[child_ID], partition[child_ID], ref count_step );
+                partition[child_ID] = null;
             }
         }         
     }

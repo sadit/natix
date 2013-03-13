@@ -98,7 +98,7 @@ namespace natix.SimilaritySearch
 			int I = 0;
 			Action<int> build_one_pivot = delegate(int p) {
 				S [p] = P.SAMPLE [p];
-				var D = new List<float>(idx.DIST[p]);
+				var D = new List<double>(idx.DIST[p]);
 				this.ComputeStats(D, p);
 				var stddev = this.STDDEV[p];
 				var mean = this.MEAN[p];
@@ -142,22 +142,22 @@ namespace natix.SimilaritySearch
 			return (int)sym;
 		}
 
-		protected void ComputeStats(IList<float> seq, int p)
+		protected void ComputeStats(IList<double> seq, int p)
 		{
-			float mean = 0;
-			float stddev = 0;
+			double mean = 0;
+			double stddev = 0;
 			int n = seq.Count;
 			for (int i = 0; i < n; ++i) {
 				mean += seq[i];
 			}
 			mean = mean / n;
 			for (int i = 0; i < n; ++i) {
-				float x = seq[i] - mean;
+                var x = seq[i] - mean;
 				stddev += x * x;
 			}
-			stddev = (float)Math.Sqrt(stddev / n);
-			this.MEAN[p] = mean;
-			this.STDDEV[p] = stddev;
+			stddev = Math.Sqrt(stddev / n);
+			this.MEAN[p] = (float)mean;
+			this.STDDEV[p] = (float)stddev;
 		}
 
 

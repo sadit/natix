@@ -31,7 +31,14 @@ namespace natix.SimilaritySearch
         protected override void SortItems (List<DynamicSequential.Item> items)
         {
             DynamicSequential.SortByDistance (items);
-            items.Reverse();
+            var middle = items.Count >> 1;
+            for (int left = 0; left < middle; ++left) {
+                var right = items.Count - 1 - left;
+                var tmp = items[left];
+                items[left] = items[right];
+                items[right] = tmp;
+            }
+            //items.Reverse(); // mono's implementation has a weird bug, it change the values
         }
     }
 }

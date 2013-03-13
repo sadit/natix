@@ -31,12 +31,12 @@ namespace natix.SimilaritySearch
         #region STRUCTS
         public struct Pivot : ILoadSave
         {
-            public float stddev;
-            public float mean;
-            public float last_near;
-            public float first_far;
+            public double stddev;
+            public double mean;
+            public double last_near;
+            public double first_far;
 
-            public Pivot(float stddev, float mean, float cov_near, float cov_far)
+            public Pivot(double stddev, double mean, double cov_near, double cov_far)
             {
                 this.stddev = stddev;
                 this.mean = mean;
@@ -46,10 +46,10 @@ namespace natix.SimilaritySearch
 
             public void Load(BinaryReader Input)
             {
-                this.stddev = Input.ReadSingle();
-                this.mean = Input.ReadSingle();
-                this.last_near = Input.ReadSingle();
-                this.first_far = Input.ReadSingle();
+                this.stddev = Input.ReadDouble();
+                this.mean = Input.ReadDouble();
+                this.last_near = Input.ReadDouble();
+                this.first_far = Input.ReadDouble();
             }
             
             public void Save (BinaryWriter Output)
