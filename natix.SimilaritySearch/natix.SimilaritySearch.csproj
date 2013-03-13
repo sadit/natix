@@ -133,7 +133,7 @@
     <Compile Include="Indexes\Pivots\PivotGroupAcceptExtremesFixedBucket.cs" />
     <Compile Include="Indexes\Pivots\PivotGroupAcceptExtremesQuantile.cs" />
     <Compile Include="Indexes\SAT\SAT.cs" />
-    <Compile Include="Indexes\DynamicSequentialFixedOrder.cs" />
+    <Compile Include="Indexes\DynamicSequentialOrdered.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

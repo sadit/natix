@@ -30,17 +30,16 @@ namespace natix.SimilaritySearch
 	/// <summary>
 	/// The sequential index
 	/// </summary>
-	public class DynamicSequentialFixedOrder : DynamicSequential
+	public class DynamicSequentialOrdered : DynamicSequential
 	{
 		protected HashSet<int> docs;
-        public int[] order;
+        public List<int> order;
         protected BitStream32 removed;
-        protected int start_pos;
 
 		/// <summary>
 		/// Constructor
 		/// </summary>
-		public DynamicSequentialFixedOrder ()
+		public DynamicSequentialOrdered ()
 		{
 		}
 
@@ -50,12 +49,23 @@ namespace natix.SimilaritySearch
             this.removed[objID] = true;
 		}
 
+        public void SortByPivot (object piv)
+        {
+            DynamicSequential.Stats stats;
+            var items = this.ComputeDistances (piv, null, out stats);
+            this.SortByDistance (items);
+            for (int i = 0; i < items.Count; ++i) {
+                this.order[i] = items[i].objID;
+            }
+        }
+
         public override int GetAnyItem ()
         {
-            while (this.start_pos < this.order.Length) {
-                var objID = this.order [this.start_pos];
+            while (this.order.Count > 0) {
+                var last = this.order.Count - 1;
+                var objID = this.order [last];
                 if (this.removed [objID]) {
-                    ++this.start_pos;
+                    this.order.RemoveAt (last);
                 } else {
                     return objID;
                 }
@@ -80,13 +90,13 @@ namespace natix.SimilaritySearch
 		public virtual void Build (MetricDB db, IList<int> sample = null)
         {
             this.DB = db;
-            this.start_pos = 0;
             if (sample == null) {
-                this.order = RandomSets.GetRandomPermutation (this.DB.Count);
-            } else {
-                var nsample = sample.Count;
-                this.order = new int[nsample];
-                sample.CopyTo(this.order, 0);
+                sample = RandomSets.GetRandomPermutation (this.DB.Count);
+            } 
+            var nsample = sample.Count;
+            this.order = new List<int>(nsample);
+            for (int i = nsample - 1; i >= 0; --i) {
+                this.order.Add(sample[i]);
             }
             this.docs = new HashSet<int>();
             this.removed = new BitStream32();
