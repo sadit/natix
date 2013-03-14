@@ -43,15 +43,15 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Build the index 
 		/// </summary>
-        public override void Build (MetricDB db, int num_centers, SequenceBuilder seq_builder = null)
+        public override void Build (MetricDB db, int num_centers, int random_seed = -1, SequenceBuilder seq_builder = null)
         {
-            this.Build(db, num_centers, null, seq_builder);
+            this.Build(db, num_centers, random_seed, null, seq_builder);
         }
 
-        public void Build (MetricDB db, int num_centers, Func<MetricDB,int,Index> create_internal_index, SequenceBuilder seq_builder = null)
+        public void Build (MetricDB db, int num_centers, int random_seed, Func<MetricDB,int,Index> create_internal_index, SequenceBuilder seq_builder = null)
         {
             this.DB = db;
-            this.CENTERS = RandomSets.GetRandomSubSet (num_centers, this.DB.Count);
+            this.CENTERS = RandomSets.GetRandomSubSet (num_centers, this.DB.Count, random_seed);
             this.COV = new float[num_centers];
             Sorting.Sort<int> (this.CENTERS);
             MetricDB sample = new SampleSpace (db.Name + ".sample-centers", db, this.CENTERS);
@@ -61,7 +61,7 @@ namespace natix.SimilaritySearch
                 ratio = Math.Max (ratio, 0.01);
                 var child_num_centers = (int)Math.Ceiling (num_centers * ratio);
                 Console.WriteLine ("XXXXXX requested num_centers: {0}, actual num_centers: {1}", num_centers, this.CENTERS.Count);
-                lcbuild.Build (sample, child_num_centers);
+                lcbuild.Build (sample, child_num_centers, -1);
                 this.build_index = lcbuild;
             } else {
                 Console.WriteLine ("XXXXXX construction with a custom index: requested num_centers: {0}, actual num_centers: {1}", num_centers, this.CENTERS.Count);

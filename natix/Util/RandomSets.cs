@@ -74,9 +74,9 @@ namespace natix
 		/// <summary>
 		/// Select "samplesize" items randomly from "list"
 		/// </summary>
-		public static T[] GetRandomSubSet<T> (int count, IList<T> list)
+		public static T[] GetRandomSubSet<T> (int count, IList<T> list, int random_seed = -1)
 		{
-			var I = GetRandomSubSet(count, list.Count);
+			var I = GetRandomSubSet(count, list.Count, random_seed);
 			T[] R = new T[count];
 			for (int i = 0; i < count; i++) {
 				R [i] = list [I [i]];
@@ -87,9 +87,9 @@ namespace natix
 		/// <summary>
 		/// Takes "count" items from the range [0,n-1]. Only useful for count << n
 		/// </summary>
-		public static int[] GetRandomSubSet (int count, int n)
+		public static int[] GetRandomSubSet (int count, int n, int random_seed = -1)
 		{
-			var rand = GetRandom();
+			var rand = GetRandom(random_seed);
 			var D = new HashSet<int>();
 			int[] L = new int[count];
 			while (D.Count < count) {
@@ -106,10 +106,10 @@ namespace natix
 		/// <summary>
 		/// Shuffles the list, using a random permutation (Knuth's Fisher-Yates shuffle)
 		/// </summary>
-		public static void RandomShuffle<T> (IList<T> list)
+		public static void RandomShuffle<T> (IList<T> list, int random_seed = -1)
 		{
 			int n = list.Count;
-			Random rand = GetRandom();
+			Random rand = GetRandom(random_seed);
 			for (int i = 0; i < n; i++) {
 				int j = rand.Next (i, n); // the range is [i,n)
 				var tmp = list [i];
@@ -127,13 +127,13 @@ namespace natix
 		/// <param name='n'>
 		/// N.
 		/// </param>
-		public static int[] GetRandomPermutation (int n)
+		public static int[] GetRandomPermutation (int n, int random_seed = -1)
 		{
 			int[] P = new int[n];
 			for (int i = 0; i < n; i++) {
 				P [i] = i;
 			}
-			RandomShuffle<int> (P);
+			RandomShuffle<int> (P, random_seed);
 			return P;
 		}
 		
@@ -152,16 +152,20 @@ namespace natix
 
 		static Random _SeedGenerator = new Random();
 		// static object _SeedMonitor = new object();
-		public static Random GetRandom()
-		{
-			return new Random(GetRandomInt());
+		public static Random GetRandom (int random_seed)
+        {
+            if (random_seed < 0) {
+                return new Random (GetRandomInt ());
+            } else {
+                return new Random (random_seed);
+            }
 		}
 
 		public static int GetRandomInt()
 		{
 			int seed;
 			//lock (_SeedMonitor) {
-				seed = _SeedGenerator.Next();
+            seed = _SeedGenerator.Next();
 			// }
 			return seed;
 		}

@@ -32,11 +32,11 @@ namespace natix.SimilaritySearch
         {
         }
 
-        protected override Action BuildOneClosure (IList<LC_RNN> output, int i, MetricDB db, int numcenters, SequenceBuilder seq_builder)
+        protected override Action BuildOneClosure (IList<LC_RNN> output, int i, MetricDB db, int numcenters, int random_seed, SequenceBuilder seq_builder)
         {
             var action = new Action(delegate () {
                 var lc = new LC_IRNN();
-                lc.Build (db, numcenters, seq_builder);
+                lc.Build (db, numcenters, random_seed, seq_builder);
                 output[i] = lc;
             });
             return action;

@@ -142,10 +142,10 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Build the index
 		/// </summary>
-		public virtual void Build (MetricDB db, int num_centers, SequenceBuilder seq_builder = null)
+		public virtual void Build (MetricDB db, int num_centers, int random_seed = -1, SequenceBuilder seq_builder = null)
 		{
 			this.DB = db;
-			this.CENTERS = RandomSets.GetRandomSubSet (num_centers, this.DB.Count);
+			this.CENTERS = RandomSets.GetRandomSubSet (num_centers, this.DB.Count, random_seed);
 			Sorting.Sort<int> (this.CENTERS);
 			BitStream32 IsCenter = new BitStream32 ();
 			IsCenter.Write (false, db.Count);

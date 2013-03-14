@@ -19,6 +19,7 @@ using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using natix;
 using natix.Sets;
 using natix.CompactDS;
 using natix.SortingSearching;
@@ -39,12 +40,19 @@ namespace natix.SimilaritySearch
             this.Build(pmi.LC_LIST, lambda, seq_builder);
         }
 
-        public virtual void Build (MetricDB db, int numcenters, int lambda, SequenceBuilder seq_builder = null)
+        public virtual void Build (MetricDB db, int numcenters, int lambda, IList<int> random_seeds, SequenceBuilder seq_builder = null)
         {
-            var A = new List<Action>();
+            var A = new List<Action> ();
             this.LC_LIST = new LC_RNN[lambda];
+            if (random_seeds == null) {
+                random_seeds = new int[lambda];
+                var rand = RandomSets.GetRandom(-1);
+                for (int i = 0; i < lambda; ++i) {
+                    random_seeds[i] = rand.Next();
+                }
+            }
             for (int i = 0; i < lambda; ++i) {
-                A.Add(this.BuildOneClosure(this.LC_LIST, i, db, numcenters, seq_builder));
+                A.Add(this.BuildOneClosure(this.LC_LIST, i, db, numcenters, random_seeds[i], seq_builder));
             }
             var ops = new ParallelOptions();
             ops.MaxDegreeOfParallelism = -1;
