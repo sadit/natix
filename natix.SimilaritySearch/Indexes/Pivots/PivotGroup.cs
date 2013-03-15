@@ -31,13 +31,15 @@ namespace natix.SimilaritySearch
         #region STRUCTS
         public struct Pivot : ILoadSave
         {
+            public int rank;
             public double stddev;
             public double mean;
             public double last_near;
             public double first_far;
 
-            public Pivot(double stddev, double mean, double cov_near, double cov_far)
+            public Pivot(int rank, double stddev, double mean, double cov_near, double cov_far)
             {
+                this.rank = rank;
                 this.stddev = stddev;
                 this.mean = mean;
                 this.last_near = cov_near;
@@ -46,6 +48,7 @@ namespace natix.SimilaritySearch
 
             public void Load(BinaryReader Input)
             {
+                this.rank = Input.ReadInt32 ();
                 this.stddev = Input.ReadDouble();
                 this.mean = Input.ReadDouble();
                 this.last_near = Input.ReadDouble();
@@ -54,6 +57,7 @@ namespace natix.SimilaritySearch
             
             public void Save (BinaryWriter Output)
             {
+                Output.Write (this.rank);
                 Output.Write (this.stddev);
                 Output.Write (this.mean);
                 Output.Write (this.last_near);
@@ -64,9 +68,9 @@ namespace natix.SimilaritySearch
         public struct Item : ILoadSave
         {
             public int pivID;
-            public float dist;
+            public double dist;
 
-            public Item (int pivID, float dist)
+            public Item (int pivID, double dist)
             {
                 this.pivID = pivID;
                 this.dist = dist;
@@ -75,7 +79,7 @@ namespace natix.SimilaritySearch
             public void Load(BinaryReader Input)
             {
                 this.pivID = Input.ReadInt32 ();
-                this.dist = Input.ReadSingle();
+                this.dist = Input.ReadDouble();
             }
 
             public void Save (BinaryWriter Output)
@@ -140,14 +144,14 @@ namespace natix.SimilaritySearch
                 DynamicSequential.Stats stats;
                 this.SearchExtremes(idxDynamic, items, piv, alpha_stddev, min_bs, out near, out far, out stats);
                 foreach (var pair in near) {
-                    this.Items[pair.docid] = new Item (pidx, (float) pair.dist);
+                    this.Items[pair.docid] = new Item (pidx, pair.dist);
                 }
                 foreach (var pair in far) {
-                    this.Items[pair.docid] = new Item (pidx, (float) pair.dist);
+                    this.Items[pair.docid] = new Item (pidx, pair.dist);
                 }
-                var piv_data = new Pivot(stats.mean, stats.stddev, 0, float.MaxValue);
-                if (near.Count > 0) piv_data.last_near = (float)near.Last.dist;
-                if (far.Count > 0) piv_data.first_far = (float)far.First.dist;
+                var piv_data = new Pivot(this.Pivs.Count, stats.mean, stats.stddev, 0, double.MaxValue);
+                if (near.Count > 0) piv_data.last_near = near.Last.dist;
+                if (far.Count > 0) piv_data.first_far = far.First.dist;
                 this.Pivs.Add (pidx, piv_data);
                 if (I % 10 == 0) {
                     Console.WriteLine ("");
