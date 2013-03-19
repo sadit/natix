@@ -40,19 +40,19 @@ namespace natix.SimilaritySearch
             this.Build(pmi.LC_LIST, lambda, seq_builder);
         }
 
-        public virtual void Build (MetricDB db, int numcenters, int lambda, IList<int> random_seeds, SequenceBuilder seq_builder = null)
+        public virtual void Build (MetricDB db, int numcenters, int lambda, IList<Random> rand_list, SequenceBuilder seq_builder = null)
         {
             var A = new List<Action> ();
             this.LC_LIST = new LC_RNN[lambda];
-            if (random_seeds == null) {
-                random_seeds = new int[lambda];
-                var rand = RandomSets.GetRandom(-1);
+            if (rand_list == null) {
+                rand_list = new Random[lambda];
+                var seed = RandomSets.GetRandomInt();
                 for (int i = 0; i < lambda; ++i) {
-                    random_seeds[i] = rand.Next();
+                    rand_list[i] = RandomSets.GetRandom(seed+i);
                 }
             }
             for (int i = 0; i < lambda; ++i) {
-                A.Add(this.BuildOneClosure(this.LC_LIST, i, db, numcenters, random_seeds[i], seq_builder));
+                A.Add(this.BuildOneClosure(this.LC_LIST, i, db, numcenters, rand_list[i], seq_builder));
             }
             var ops = new ParallelOptions();
             ops.MaxDegreeOfParallelism = -1;

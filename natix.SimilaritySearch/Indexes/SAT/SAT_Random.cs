@@ -24,14 +24,21 @@ namespace natix.SimilaritySearch
 {
     public class SAT_Random : SAT
     {
-        public SAT_Random ()
+        Random rand;
+
+        public SAT_Random () : base()
         {
+        }       
+
+        public override void Build (MetricDB db, Random rand)
+        {
+            this.rand = rand;
+            base.Build (db, rand);
         }
 
         protected override void SortItems (List<DynamicSequential.Item> items)
         {
-            RandomSets.RandomShuffle<DynamicSequential.Item>(items);
+            RandomSets.RandomShuffle<DynamicSequential.Item>(items, rand);
         }
     }
 }
-

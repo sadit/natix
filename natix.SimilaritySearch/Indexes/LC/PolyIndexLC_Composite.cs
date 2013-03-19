@@ -34,18 +34,18 @@ namespace natix.SimilaritySearch
 		{
 		}
 
-        public virtual void Build (MetricDB db, int numcenters, int lambda_search, int lambda_filter, int random_seed, SequenceBuilder seq_builder = null)
+        public virtual void Build (MetricDB db, int numcenters, int lambda_search, int lambda_filter, Random rand, SequenceBuilder seq_builder = null)
         {
             var L = new LC_RNN[lambda_search];
             var M = new LC_RNN[lambda_filter];
             var builder = SequenceBuilders.GetSeqPlain (short.MaxValue, ListIBuilders.GetListIFS (), null, true);
             var A = new List<Action>();
-            var rand = RandomSets.GetRandom(random_seed);
+            int seed = rand.Next();
             for (int i = 0; i < lambda_search; ++i) {
-                A.Add(this.BuildOneClosure(L, i, db, numcenters, rand.Next(), seq_builder));
+                A.Add(this.BuildOneClosure(L, i, db, numcenters, RandomSets.GetRandom(++seed), seq_builder));
             }
             for (int i = 0; i < lambda_filter; ++i) {
-                A.Add(this.BuildOneClosure(M, i, db, numcenters, rand.Next(), builder));
+                A.Add(this.BuildOneClosure(M, i, db, numcenters, RandomSets.GetRandom(++seed), builder));
             }
             var ops = new ParallelOptions();
             ops.MaxDegreeOfParallelism = -1;

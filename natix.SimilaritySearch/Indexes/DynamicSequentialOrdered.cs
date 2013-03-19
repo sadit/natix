@@ -91,7 +91,7 @@ namespace natix.SimilaritySearch
         {
             this.DB = db;
             if (sample == null) {
-                sample = RandomSets.GetRandomPermutation (this.DB.Count);
+                sample = RandomSets.GetRandomPermutation (this.DB.Count, RandomSets.GetRandom(-1));
             } 
             var nsample = sample.Count;
             this.order = new List<int>(nsample);

@@ -37,12 +37,12 @@ namespace natix.SimilaritySearch
 		{
 		}
 
-        protected virtual Action BuildOneClosure (IList<LC_RNN> output, int i, MetricDB db, int numcenters, int random_seed, SequenceBuilder seq_builder)
+        protected virtual Action BuildOneClosure (IList<LC_RNN> output, int i, MetricDB db, int numcenters, Random rand, SequenceBuilder seq_builder)
         {
             var action = new Action(delegate () {
                 var lc = new LC ();
                 //var lc = new LC_RNN();
-                lc.Build (db, numcenters, random_seed, seq_builder);
+                lc.Build (db, numcenters, rand, seq_builder);
                 output[i] = lc;
             });
             return action;

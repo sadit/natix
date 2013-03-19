@@ -87,7 +87,7 @@ namespace natix.SimilaritySearch
             if (this.root == null) {
                 return res;
             }
-            var rand = new Random();
+            /*var rand = new Random();
             double min = double.MaxValue;
             for (int i = 0; i < 128; ++i) {
                 ++this.internal_numdists;
@@ -95,6 +95,9 @@ namespace natix.SimilaritySearch
                 min = Math.Min(this.DB.Dist(q, obj), min);
             }
             this.SearchRangeNode (this.DB.Dist(q, this.DB[this.root.objID]), this.root, q, min, res);
+            return res;
+            */
+            this.SearchKNNNode (this.DB.Dist(q, this.DB[this.root.objID]), this.root, q, res);
             return res;
         }
 
@@ -112,11 +115,38 @@ namespace natix.SimilaritySearch
 
         //int SEARCH_COUNT = 0;
 
-        protected void SearchRangeNode (double dist, Node node, object q, double radius, IResult res)
+        protected virtual void SearchKNNNode (double dist, Node node, object q, IResult res)
         {
             // var dist = this.DB.Dist (this.DB [node.objID], q);
 //            Console.WriteLine ("dist: {0}, node: {1}, res: {2}", dist, node, res);
 //            Console.WriteLine ("num-children: {0}, cov: {1}", node.Children.Count, node.cov);
+            res.Push (node.objID, dist);
+            if (node.Children.Count > 0 && dist <= res.CoveringRadius + node.cov) {
+                var D = new double[node.Children.Count];
+                var closer_child = node.Children[0];
+                var closer_dist = this.DB.Dist(q, this.DB[closer_child.objID]);
+                D[0] = closer_dist;
+                for (int i = 1; i < D.Length; ++i) {
+                    var child = node.Children[i];
+                    D[i] = this.DB.Dist(q, this.DB[child.objID]);
+                    if (D[i] < closer_dist) {
+                        closer_dist = D[i];
+                        closer_child = child;
+                    }
+                }
+                for (int i = 0; i < D.Length; ++i) {
+                    if (D[i] <= closer_dist + 2 * res.CoveringRadius) {
+                        this.SearchKNNNode(D[i], node.Children[i], q, res);
+                    }
+                }
+            }
+        }
+
+        protected virtual void SearchRangeNode (double dist, Node node, object q, double radius, IResult res)
+        {
+            // var dist = this.DB.Dist (this.DB [node.objID], q);
+            //            Console.WriteLine ("dist: {0}, node: {1}, res: {2}", dist, node, res);
+            //            Console.WriteLine ("num-children: {0}, cov: {1}", node.Children.Count, node.cov);
             if (dist <= radius) {
                 res.Push (node.objID, dist);
             }
@@ -141,11 +171,14 @@ namespace natix.SimilaritySearch
             }
         }
 
-        public virtual void Build (MetricDB db)
+        public virtual void Build (MetricDB db, Random rand)
         {
             this.DB = db;
-            this.root = new Node( 0 );
-            var _items = RandomSets.GetExpandedRange(1, this.DB.Count);
+            var root_objID = rand.Next (0, this.DB.Count);
+            this.root = new Node (root_objID);
+            var _items = new List<int>();
+            for (int i = 0; i < root_objID; ++i) _items.Add(i);
+            for (int i = 1 + root_objID; i < this.DB.Count; ++i) _items.Add(i);
             DynamicSequential.Stats stats;
             var items = DynamicSequential.ComputeDistances(this.DB, _items, this.DB[0], null, out stats);
             int count_step = 0;
@@ -162,10 +195,12 @@ namespace natix.SimilaritySearch
             //Console.WriteLine("======== BUILD NODE: {0}", node.objID);
             ++count_step;
             if (count_step < 100 || count_step % 100 == 0) {
-                Console.WriteLine ("======== SAT build_node: {0}, count_step: {1}/{2}", node.objID, count_step, this.DB.Count);
+                Console.WriteLine ("======== SAT build_node: {0}, count_step: {1}/{2}, items_count: {3}", node.objID, count_step, this.DB.Count, items.Count);
             }
             var partition = new List< List< DynamicSequential.Item > > ();
+            //var cache = new Dictionary<int,double> (items.Count);
             this.SortItems (items);
+            var pool = new List<int> (items.Count);
             foreach (var item in items) {
                 node.cov = Math.Max (node.cov, item.dist);
                 object currOBJ;
@@ -175,21 +210,38 @@ namespace natix.SimilaritySearch
                 for (int child_ID = 0; child_ID < node.Children.Count; ++child_ID) {
                     var child = node.Children [child_ID];
                     var childOBJ = this.DB [child.objID];
-                    var d_child_curr = this.DB.Dist (childOBJ, currOBJ); 
+                    var d_child_curr = this.DB.Dist (childOBJ, currOBJ);
                     closer.Push (child_ID, d_child_curr);
                 }
                 {
                     var child_ID = closer.First.docid;
-                    var closer_dist = closer.First.dist;
+                    // var closer_dist = closer.First.dist;
                     if (child_ID == -1) {
                         var new_node = new Node (item.objID);
                         node.Children.Add (new_node);
                         partition.Add (new List<DynamicSequential.Item> ());
                     } else {
-                        partition [child_ID].Add (new DynamicSequential.Item (item.objID, closer_dist));
+//                        partition [child_ID].Add (new DynamicSequential.Item (item.objID, closer_dist));
+                        pool.Add (item.objID);
                     }
                 }
             }
+
+            foreach (var objID in pool) {
+                var closer = new Result (1);
+                for (int child_ID = 0; child_ID < node.Children.Count; ++child_ID) {
+                    var child = node.Children [child_ID];
+                    var childOBJ = this.DB [child.objID];
+                    var d_child_curr = this.DB.Dist (childOBJ, this.DB[objID]);
+                    closer.Push (child_ID, d_child_curr);
+                }
+                {
+                    var child_ID = closer.First.docid;
+                    var closer_dist = closer.First.dist;
+                    partition[child_ID].Add (new DynamicSequential.Item(objID, closer_dist));
+                }
+            }
+            pool = null;
             //Console.WriteLine("===== add children");
             for (int child_ID = 0; child_ID < node.Children.Count; ++child_ID) {
                 this.BuildNode ( node.Children[child_ID], partition[child_ID], ref count_step );

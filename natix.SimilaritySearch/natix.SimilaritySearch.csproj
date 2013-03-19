@@ -137,6 +137,10 @@
     <Compile Include="Indexes\SAT\SAT_Distal.cs" />
     <Compile Include="Indexes\SAT\SAT_Randomized.cs" />
     <Compile Include="Indexes\SAT\SAT_Random.cs" />
+    <Compile Include="Indexes\SAT\SAT_ApproxSearch.cs" />
+    <Compile Include="Indexes\SAT\SAT_Forest.cs" />
+    <Compile Include="Result\ResultCheckDuplicates.cs" />
+    <Compile Include="Indexes\LC\LC_VorRNN.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

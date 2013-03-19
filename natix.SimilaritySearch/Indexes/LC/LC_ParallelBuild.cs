@@ -113,11 +113,10 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Builds the LC with fixed bucket size (static version).
 		/// </summary>
-		public void _Build (int[] seq, int bsize, int random_seed)
+		public void _Build (int[] seq, int bsize, Random rand)
 		{
 			int iteration = 0;
 			int numiterations = this.build_rest_list.Count / bsize + 1;
-            var rand = RandomSets.GetRandom(random_seed);
 			Console.WriteLine ("XXX BEGIN Parallel-BuildFixedM rest_list.Count: {0}", this.build_rest_list.Count);
 			int max_t = 16;
 			object[] null_locks = new object[max_t];
@@ -154,7 +153,7 @@ namespace natix.SimilaritySearch
 		/// Build the LC_FixedM
 		/// </summary>
 
-		public override void Build (MetricDB db, int num_centers, int random_seed, SequenceBuilder seq_builder)
+		public override void Build (MetricDB db, int num_centers, Random rand, SequenceBuilder seq_builder)
 		{
 			int bsize = (db.Count - num_centers) / num_centers;
 			this.DB = db;
@@ -166,7 +165,7 @@ namespace natix.SimilaritySearch
 				this.build_rest_list.Add (i);
 			}
 			var seq = new int[n];
-			this._Build (seq, bsize, random_seed);
+			this._Build (seq, bsize, rand);
 			foreach (var c in this.CENTERS) {
 				seq[c] = this.CENTERS.Count;
 			}

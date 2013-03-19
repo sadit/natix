@@ -124,7 +124,7 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Build the LC_FixedM
 		/// </summary>
-		public override void Build (MetricDB db, int num_centers, int random_seed = -1, SequenceBuilder seq_builder = null)
+		public override void Build (MetricDB db, int num_centers, Random rand, SequenceBuilder seq_builder = null)
 		{
 			int bsize = (db.Count - num_centers) / num_centers;
 			this.DB = db;
@@ -135,7 +135,7 @@ namespace natix.SimilaritySearch
 			for (int i = 0; i < n; ++i) {
 				rest_list.Add (i);
 			}
-			var seq = this.InternalBuild (ref rest_list, bsize, RandomSets.GetRandom(random_seed));
+			var seq = this.InternalBuild (ref rest_list, bsize, rand);
 			foreach (var c in this.CENTERS) {
 				seq[c] = this.CENTERS.Count;
 			}

@@ -60,7 +60,7 @@ namespace natix.SimilaritySearch
 		{
 			this.Name = name;
 			this.DB = db;
-			this.SAMPLE = RandomSets.GetRandomSubSet(samplesize, db.Count);
+			this.SAMPLE = RandomSets.GetRandomSubSet(samplesize, db.Count, RandomSets.GetRandom(-1));
 		}
 
 		public SampleSpace (string name, MetricDB db, IList<int> sample)

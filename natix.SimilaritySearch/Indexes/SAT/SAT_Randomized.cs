@@ -24,22 +24,27 @@ namespace natix.SimilaritySearch
 {
     public class SAT_Randomized : SAT
     {
+        Random rand;
         public SAT_Randomized ()
         {
         }
 
-        public override void Build (MetricDB db)
+        public override void Build (MetricDB db, Random rand)
         {
-            this.Build(db, 32);
+            this.Build (db, rand, 32);
         }
 
-        public void Build (MetricDB db, int arity)
+        public void Build (MetricDB db, Random rand, int arity)
         {
             this.DB = db;
-            this.root = new Node( 0 );
-            var sample = RandomSets.GetExpandedRange(1, this.DB.Count);
+            var root_objID = rand.Next (0, this.DB.Count);
+            this.root = new Node (root_objID);
+            var _items = new List<int>();
+            for (int i = 0; i < root_objID; ++i) _items.Add(i);
+            for (int i = 1 + root_objID; i < this.DB.Count; ++i) _items.Add(i);
+            this.rand = rand;
             DynamicSequential.Stats stats;
-            var items = DynamicSequential.ComputeDistances(this.DB, sample, this.DB[0], null, out stats);
+            var items = DynamicSequential.ComputeDistances(this.DB, _items, this.DB[0], null, out stats);
             int count_step = 0;
             this.BuildNodeRandom(this.root, items, arity, ref count_step);
         }
@@ -52,9 +57,8 @@ namespace natix.SimilaritySearch
             }
             var partition = new List< IList<DynamicSequential.Item> > ();
             int count_arity;
-            var rand = new Random ();
             for (count_arity = 0; count_arity < arity && count_arity < input_collection.Count; ++count_arity) {
-                var i = rand.Next (count_arity, input_collection.Count);
+                var i = this.rand.Next (count_arity, input_collection.Count);
                 // swap
                 var child_item = input_collection [i];
                 input_collection [i] = input_collection [count_arity];

@@ -171,7 +171,7 @@ namespace testsimsearch
 					var sample = RandomSets.GetRandomSubSet (num_refs, db.Count);
 					var refsdb = new SampleSpace ("", db, sample);
 					var refsidx = new LC ();
-					refsidx.Build (refsdb, refsdb.Count / 10);
+					refsidx.Build (refsdb, refsdb.Count / 10, RandomSets.GetRandom());
 					knr.Build (db, refsidx, 7);
 					IndexGenericIO.Save (idxname, knr);
 					idx = knr;
