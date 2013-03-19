@@ -141,6 +141,7 @@
     <Compile Include="Indexes\SAT\SAT_Forest.cs" />
     <Compile Include="Result\ResultCheckDuplicates.cs" />
     <Compile Include="Indexes\LC\LC_VorRNN.cs" />
+    <Compile Include="ItemPair.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

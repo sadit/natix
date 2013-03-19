@@ -185,19 +185,19 @@ namespace natix.SimilaritySearch
             this.BuildNode(this.root, items, ref count_step);
         }
 
-        protected virtual void SortItems (List<DynamicSequential.Item> items)
+        protected virtual void SortItems (List<ItemPair> items)
         {
             DynamicSequential.SortByDistance (items);
         }
 
-        protected virtual void BuildNode (Node node, List<DynamicSequential.Item> items, ref int count_step)
+        protected virtual void BuildNode (Node node, List<ItemPair> items, ref int count_step)
         {
             //Console.WriteLine("======== BUILD NODE: {0}", node.objID);
             ++count_step;
             if (count_step < 100 || count_step % 100 == 0) {
                 Console.WriteLine ("======== SAT build_node: {0}, count_step: {1}/{2}, items_count: {3}", node.objID, count_step, this.DB.Count, items.Count);
             }
-            var partition = new List< List< DynamicSequential.Item > > ();
+            var partition = new List< List< ItemPair > > ();
             //var cache = new Dictionary<int,double> (items.Count);
             this.SortItems (items);
             var pool = new List<int> (items.Count);
@@ -219,7 +219,7 @@ namespace natix.SimilaritySearch
                     if (child_ID == -1) {
                         var new_node = new Node (item.objID);
                         node.Children.Add (new_node);
-                        partition.Add (new List<DynamicSequential.Item> ());
+                        partition.Add (new List<ItemPair> ());
                     } else {
 //                        partition [child_ID].Add (new DynamicSequential.Item (item.objID, closer_dist));
                         pool.Add (item.objID);
@@ -238,7 +238,7 @@ namespace natix.SimilaritySearch
                 {
                     var child_ID = closer.First.docid;
                     var closer_dist = closer.First.dist;
-                    partition[child_ID].Add (new DynamicSequential.Item(objID, closer_dist));
+                    partition[child_ID].Add (new ItemPair(objID, closer_dist));
                 }
             }
             pool = null;

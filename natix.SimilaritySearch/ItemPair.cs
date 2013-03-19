@@ -14,31 +14,37 @@
 //    limitations under the License.
 using System;
 using System.IO;
-using System.Collections;
-using System.Collections.Generic;
-using natix.CompactDS;
-using natix;
-using natix.SortingSearching;
 
 namespace natix.SimilaritySearch
 {
-    public class SAT_Random : SAT
+    public struct ItemPair : ILoadSave
     {
-        Random rand;
-
-        public SAT_Random () : base()
+        public int objID;
+        public double dist;
+        
+        public ItemPair (int objID, double dist)
         {
-        }       
-
-        public override void Build (MetricDB db, Random rand)
-        {
-            this.rand = rand;
-            base.Build (db, rand);
+            this.objID = objID;
+            this.dist = dist;
         }
-
-        protected override void SortItems (List<ItemPair> items)
+        
+        public void Load(BinaryReader Input)
         {
-            RandomSets.RandomShuffle<ItemPair>(items, rand);
+            this.objID = Input.ReadInt32 ();
+            this.dist = Input.ReadDouble();
+        }
+        
+        public void Save (BinaryWriter Output)
+        {
+            Output.Write (this.objID);
+            Output.Write (this.dist);
+        }
+        
+        public override string ToString ()
+        {
+            return string.Format ("[Item (objID={0},dist={1})]", this.objID, this.dist);
         }
     }
+
 }
+

@@ -28,7 +28,7 @@ namespace natix.SimilaritySearch
 		{
 		}
 
-        protected override void SearchExtremes (DynamicSequential idx, List<DynamicSequential.Item> items, object piv, double quantile, int min_bs, out IResult near, out IResult far, out DynamicSequential.Stats stats)
+        protected override void SearchExtremes (DynamicSequential idx, List<ItemPair> items, object piv, double quantile, int min_bs, out IResult near, out IResult far, out DynamicSequential.Stats stats)
         {
             items.Clear();
             idx.ComputeDistances (piv, items, out stats);

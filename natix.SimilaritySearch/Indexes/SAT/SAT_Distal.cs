@@ -28,7 +28,7 @@ namespace natix.SimilaritySearch
         {
         }
 
-        protected override void SortItems (List<DynamicSequential.Item> items)
+        protected override void SortItems (List<ItemPair> items)
         {
             DynamicSequential.SortByDistance (items);
             var middle = items.Count >> 1;

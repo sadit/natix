@@ -122,7 +122,7 @@ namespace natix.SimilaritySearch
             }
 		}
 
-        protected virtual void SearchExtremes (DynamicSequential idx, List<DynamicSequential.Item> items, object piv, double alpha_stddev, int min_bs, out IResult near, out IResult far, out DynamicSequential.Stats stats)
+        protected virtual void SearchExtremes (DynamicSequential idx, List<ItemPair> items, object piv, double alpha_stddev, int min_bs, out IResult near, out IResult far, out DynamicSequential.Stats stats)
         {
             throw new NotSupportedException();
         }
@@ -134,7 +134,7 @@ namespace natix.SimilaritySearch
             this.Items = new Item[DB.Count];
             this.Pivs = new Dictionary<int, Pivot>();
             int I = 0;
-            var items = new List<DynamicSequential.Item>(idxDynamic.Count);
+            var items = new List<ItemPair>(idxDynamic.Count);
             while(idxDynamic.DOCS.Count > 0){
                 var pidx = idxDynamic.GetAnyItem();
                 object piv = DB[pidx];

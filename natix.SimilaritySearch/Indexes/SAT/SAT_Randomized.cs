@@ -49,13 +49,13 @@ namespace natix.SimilaritySearch
             this.BuildNodeRandom(this.root, items, arity, ref count_step);
         }
 
-        protected void BuildNodeRandom (Node node, IList<DynamicSequential.Item> input_collection, int arity, ref int count_step)
+        protected void BuildNodeRandom (Node node, IList<ItemPair> input_collection, int arity, ref int count_step)
         {
             ++count_step;
             if (count_step < 100 || count_step % 100 == 0) {
                 Console.WriteLine ("======== SAT_Randomized build_node: {0}, arity: {1}, part-size: {2}, advance: {3}/{4}", node.objID, arity, input_collection.Count, count_step, this.DB.Count);
             }
-            var partition = new List< IList<DynamicSequential.Item> > ();
+            var partition = new List< IList<ItemPair> > ();
             int count_arity;
             for (count_arity = 0; count_arity < arity && count_arity < input_collection.Count; ++count_arity) {
                 var i = this.rand.Next (count_arity, input_collection.Count);
@@ -65,7 +65,7 @@ namespace natix.SimilaritySearch
                 input_collection [count_arity] = child_item;
                 node.cov = Math.Max (node.cov, child_item.dist);
                 node.Children.Add( new Node(child_item.objID) );
-                partition.Add ( new List<DynamicSequential.Item> () );
+                partition.Add ( new List<ItemPair> () );
             }
             for (int i = count_arity; i < input_collection.Count; ++i) {
                 var curr_item = input_collection[i];
@@ -81,7 +81,7 @@ namespace natix.SimilaritySearch
                 var closer_child_ID = p.Value;
                 // var closer_child_objID = node.Children[closer_child_ID].objID;
                 //Console.WriteLine("<X {0},{1}>", closer_child_ID, closer_child_objID);
-                partition[closer_child_ID].Add(new DynamicSequential.Item(curr_item.objID, p.Key));
+                partition[closer_child_ID].Add(new ItemPair(curr_item.objID, p.Key));
             }
             for (int child_ID = 0; child_ID < node.Children.Count; ++child_ID) {
                 //Console.WriteLine ("=== child objID: {0}, child_ID: {1}", node.Children[child_ID].objID, child_ID);

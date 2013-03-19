@@ -30,36 +30,7 @@ namespace natix.SimilaritySearch
 	/// The sequential index
 	/// </summary>
 	public abstract class DynamicSequential : BasicIndex
-	{        
-        public struct Item : ILoadSave
-        {
-            public int objID;
-            public double dist;
-
-            public Item (int objID, double dist)
-            {
-                this.objID = objID;
-                this.dist = dist;
-            }
-            
-            public void Load(BinaryReader Input)
-            {
-                this.objID = Input.ReadInt32 ();
-                this.dist = Input.ReadDouble();
-            }
-            
-            public void Save (BinaryWriter Output)
-            {
-                Output.Write (this.objID);
-                Output.Write (this.dist);
-            }
-
-            public override string ToString ()
-            {
-                return string.Format ("[Item (objID={0},dist={1})]", this.objID, this.dist);
-            }
-        }
-
+	{
         public struct Stats
         {
             public double min;
@@ -133,10 +104,16 @@ namespace natix.SimilaritySearch
 
         public abstract int GetAnyItem ();
 
-        public static List<Item> ComputeDistances (MetricDB db, IEnumerable<int> sample, object piv, List<Item> output, out Stats stats)
+        public static List<ItemPair> ComputeDistances (MetricDB db, IEnumerable<int> sample, object piv, List<ItemPair> output)
+        {
+            Stats stats;
+            return ComputeDistances (db, sample, piv, output, out stats);
+        }
+
+        public static List<ItemPair> ComputeDistances (MetricDB db, IEnumerable<int> sample, object piv, List<ItemPair> output, out Stats stats)
         {
             if (output == null) {
-                output = new List<Item>();
+                output = new List<ItemPair>();
             }
             //var L = new Item[this.DOCS.Count];
             stats = default(Stats);
@@ -147,7 +124,7 @@ namespace natix.SimilaritySearch
             foreach (var objID in sample) {
                 var dist = db.Dist(piv, db[objID]);
                 mean += dist;
-                output.Add( new Item(objID, dist) );
+                output.Add( new ItemPair(objID, dist) );
                 stats.min = Math.Min (dist, stats.min);
                 stats.max = Math.Max (dist, stats.max);
                 ++count;
@@ -162,15 +139,21 @@ namespace natix.SimilaritySearch
             return output;
         }
 
-        public List<Item> ComputeDistances (object piv, List<Item> output, out Stats stats)
+        public List<ItemPair> ComputeDistances (object piv, List<ItemPair> output, out Stats stats)
         {
             return DynamicSequential.ComputeDistances(this.DB, this.Iterate(), piv, output, out stats);
         }
 
-        public static void SortByDistance (List<Item> output)
+        public List<ItemPair> ComputeDistances (object piv, List<ItemPair> output)
+        {
+            Stats stats;
+            return DynamicSequential.ComputeDistances(this.DB, this.Iterate(), piv, output, out stats);
+        }
+
+        public static void SortByDistance (List<ItemPair> output)
         {
             //output.Sort( (Item x, Item y) => x.dist.CompareTo(y.dist) );
-            Sorting.Sort<Item>(output, (Item x, Item y) => x.dist.CompareTo(y.dist));            
+            Sorting.Sort<ItemPair>(output, (ItemPair x, ItemPair y) => x.dist.CompareTo(y.dist));            
         }
 
 		public void SearchExtremes (object q, IResult near, IResult far)
@@ -188,7 +171,7 @@ namespace natix.SimilaritySearch
 		}
 
 
-        public void DropCloseToMean (double near_radius, double far_radius, IResult near, IResult far, List<Item> items)
+        public void DropCloseToMean (double near_radius, double far_radius, IResult near, IResult far, List<ItemPair> items)
         {
             foreach (var item in items) {
                 if (item.dist <= near_radius) {
@@ -199,7 +182,7 @@ namespace natix.SimilaritySearch
             }
         }
 
-        public void AppendKExtremes (IResult near, IResult far, List<Item> items)
+        public void AppendKExtremes (IResult near, IResult far, List<ItemPair> items)
         {
             var _far = new Result (far.K);
             foreach (var item in items) {
