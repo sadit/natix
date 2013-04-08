@@ -46,8 +46,8 @@ namespace testsimsearch
 			MetricDB original = null;
 			if (!File.Exists (name)) {
 				Console.WriteLine ("compiling the database '{0}' -> '{1}'", sourcename, name);
-				var db0 = new MinkowskiVectorSpace<float> ();
-				db0.Build (sourcename);
+				var db0 = new MinkowskiVectorDB<float> ();
+				db0.Build (sourcename, name + ".vecs");
 				SpaceGenericIO.Save (name, db0, false);
 				original = db0;
 			}
@@ -66,8 +66,8 @@ namespace testsimsearch
 			MetricDB original = null;
 			if (!File.Exists (name)) {
 				Console.WriteLine ("compiling the database '{0}' -> '{1}'", sourcename, name);
-				var db0 = new MinkowskiVectorSpace<float> ();
-				db0.Build (sourcename);
+				var db0 = new MinkowskiVectorDB<float> ();
+				db0.Build (sourcename, name + ".vecs");
 				SpaceGenericIO.Save (name, db0, false);
 				original = db0;
 			}

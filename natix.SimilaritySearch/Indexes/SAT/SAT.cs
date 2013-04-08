@@ -25,7 +25,7 @@ namespace natix.SimilaritySearch
     {
         public class Node : ILoadSave
         {
-            public IList<Node> Children;
+            public List<Node> Children;
             public int objID;
             public double cov;
 
@@ -41,18 +41,18 @@ namespace natix.SimilaritySearch
                 this.Children = new List<Node>();
             }
 
-            public void Load (BinaryReader Input)
+            public virtual void Load (BinaryReader Input)
             {
                 this.objID = Input.ReadInt32 ();
                 this.cov = Input.ReadDouble ();
                 var len = Input.ReadInt32 ();
-                this.Children = new Node[len];
+                this.Children = new List<Node>(len);
                 if (len > 0) {
-                    CompositeIO<Node>.LoadVector (Input, this.Children.Count, this.Children);
+                    CompositeIO<Node>.LoadVector (Input, len, this.Children);
                 }
             }
 
-            public void Save (BinaryWriter Output)
+            public virtual void Save (BinaryWriter Output)
             {
                 Output.Write (this.objID);
                 Output.Write (this.cov);
@@ -97,90 +97,115 @@ namespace natix.SimilaritySearch
             this.SearchRangeNode (this.DB.Dist(q, this.DB[this.root.objID]), this.root, q, min, res);
             return res;
             */
-            this.SearchKNNNode (this.DB.Dist(q, this.DB[this.root.objID]), this.root, q, res);
+
+			var dist = this.DB.Dist(q, this.DB[this.root.objID]);
+			res.Push (this.root.objID, dist);
+//			Console.WriteLine ("CHILDREN-count: {0}", this.root.Children.Count);
+			if (this.root.Children.Count > 0 && dist <= res.CoveringRadius + this.root.cov) {
+				this.SearchKNNNode (this.root, q, res);
+			}
+//			Console.WriteLine ("\n ROOT: {0}", this.root.objID);
+//			if (this.S == null) { 
+//				this.S = new Sequential ();
+//				S.Build (this.DB);
+//			}
+//			var R = S.SearchKNN (q, K);
+//			if (R.First.docid != res.First.docid) {
+//				Console.WriteLine ("XXXXX seq {0} != sat {1} XXXXXX", R, res);
+//			}
             return res;
         }
-
+//		Sequential S;
 
         public override IResult SearchRange (object q, double radius)
         {
-            var res = new Result (this.DB.Count);
-            if (this.root != null) {
-                this.SearchRangeNode (this.DB.Dist(q, this.DB[this.root.objID]), this.root, q, radius, res);
-            }
-            //this.SEARCH_COUNT++;
-            //if (this.SEARCH_COUNT > 10) throw new Exception("PLEASE DEBUG IT");
-            return res;
+			//Console.WriteLine ("SearchRange {0},{1}", this.DB.Count, radius);
+			var res = new ResultRange (radius, this.DB.Count);
+			return this.SearchKNN (q, this.DB.Count, res);
+//            var res = new Result (this.DB.Count);
+//            if (this.roSeqot != null) {
+//				var dist = this.DB.Dist(q, this.DB[this.root.objID]);
+//				if (dist <= radius) {
+//					res.Push (this.root.objID, dist);
+//				}
+//				if (this.root.Children.Count > 0 && dist <= radius + this.root.cov) {
+//					this.SearchRangeNode (this.root, q, radius, res);
+//				}
+//            }
+//            return res;
         }
 
-        //int SEARCH_COUNT = 0;
-
-        protected virtual void SearchKNNNode (double dist, Node node, object q, IResult res)
+        protected virtual void SearchKNNNode (Node node, object q, IResult res)
         {
-            // var dist = this.DB.Dist (this.DB [node.objID], q);
-//            Console.WriteLine ("dist: {0}, node: {1}, res: {2}", dist, node, res);
-//            Console.WriteLine ("num-children: {0}, cov: {1}", node.Children.Count, node.cov);
-            res.Push (node.objID, dist);
-            if (node.Children.Count > 0 && dist <= res.CoveringRadius + node.cov) {
-                var D = new double[node.Children.Count];
-                var closer_child = node.Children[0];
-                var closer_dist = this.DB.Dist(q, this.DB[closer_child.objID]);
-                D[0] = closer_dist;
-                for (int i = 1; i < D.Length; ++i) {
-                    var child = node.Children[i];
-                    D[i] = this.DB.Dist(q, this.DB[child.objID]);
-                    if (D[i] < closer_dist) {
-                        closer_dist = D[i];
-                        closer_child = child;
-                    }
-                }
-                for (int i = 0; i < D.Length; ++i) {
-                    if (D[i] <= closer_dist + 2 * res.CoveringRadius) {
-                        this.SearchKNNNode(D[i], node.Children[i], q, res);
-                    }
+            // res.Push (node.objID, dist);
+			var D = new double[node.Children.Count];
+			var closer_child = node.Children[0];
+			var closer_dist = this.DB.Dist(q, this.DB[closer_child.objID]);
+			D[0] = closer_dist;
+			for (int i = 1; i < D.Length; ++i) {
+				var child = node.Children[i];
+				D[i] = this.DB.Dist(q, this.DB[child.objID]);
+				if (D[i] < closer_dist) {
+					closer_dist = D[i];
+					closer_child = child;
+				}
+			}
+			for (int i = 0; i < D.Length; ++i) { 
+				var child = node.Children[i];
+				res.Push(child.objID, D[i]);
+				var radius = res.CoveringRadius;
+				if (child.Children.Count > 0
+				    && D[i] <= radius + child.cov
+				    && D[i] <= closer_dist + radius + radius) {
+				   
+					this.SearchKNNNode(child, q, res);
                 }
             }
         }
 
-        protected virtual void SearchRangeNode (double dist, Node node, object q, double radius, IResult res)
-        {
-            // var dist = this.DB.Dist (this.DB [node.objID], q);
-            //            Console.WriteLine ("dist: {0}, node: {1}, res: {2}", dist, node, res);
-            //            Console.WriteLine ("num-children: {0}, cov: {1}", node.Children.Count, node.cov);
-            if (dist <= radius) {
-                res.Push (node.objID, dist);
-            }
-            if (node.Children.Count > 0 && dist <= radius + node.cov) {
-                var D = new double[node.Children.Count];
-                var closer_child = node.Children[0];
-                var closer_dist = this.DB.Dist(q, this.DB[closer_child.objID]);
-                D[0] = closer_dist;
-                for (int i = 1; i < D.Length; ++i) {
-                    var child = node.Children[i];
-                    D[i] = this.DB.Dist(q, this.DB[child.objID]);
-                    if (D[i] < closer_dist) {
-                        closer_dist = D[i];
-                        closer_child = child;
-                    }
-                }
-                for (int i = 0; i < D.Length; ++i) {
-                    if (D[i] <= closer_dist + 2 * radius) {
-                        this.SearchRangeNode(D[i], node.Children[i], q, radius, res);
-                    }
-                }
-            }
-        }
+//        protected virtual void SearchRangeNode (Node node, object q, double radius, IResult res)
+//        {
+//            // var dist = this.DB.Dist (this.DB [node.objID], q);
+//            //            Console.WriteLine ("dist: {0}, node: {1}, res: {2}", dist, node, res);
+//            //            Console.WriteLine ("num-children: {0}, cov: {1}", node.Children.Count, node.cov);
+//			var D = new double[node.Children.Count];
+//			var closer_child = node.Children[0];
+//			var closer_dist = this.DB.Dist(q, this.DB[closer_child.objID]);
+//			D[0] = closer_dist;
+//			for (int i = 1; i < D.Length; ++i) {
+//				var child = node.Children[i];
+//				D[i] = this.DB.Dist(q, this.DB[child.objID]);
+//				if (D[i] < closer_dist) {
+//					closer_dist = D[i];
+//					closer_child = child;
+//				}
+//			}
+//			for (int i = 0; i < D.Length; ++i) {
+//				var child = node.Children[i];
+//				if (D[i] <= radius) {
+//					res.Push (child.objID, D[i]);
+//				}
+//				if (child.Children.Count > 0
+//				    && D[i] <= closer_dist + 2 * radius
+//				    && D[i] <= radius + child.cov ) {
+//					this.SearchRangeNode(child, q, radius, res);
+//				}
+//			}
+//        }
 
         public virtual void Build (MetricDB db, Random rand)
         {
             this.DB = db;
             var root_objID = rand.Next (0, this.DB.Count);
             this.root = new Node (root_objID);
-            var _items = new List<int>();
-            for (int i = 0; i < root_objID; ++i) _items.Add(i);
-            for (int i = 1 + root_objID; i < this.DB.Count; ++i) _items.Add(i);
-            DynamicSequential.Stats stats;
-            var items = DynamicSequential.ComputeDistances(this.DB, _items, this.DB[0], null, out stats);
+            var _items = new List<int>(this.DB.Count - 1);
+            for (int docID = 0; docID < root_objID; ++docID) {
+				_items.Add (docID);
+			}
+            for (int docID = 1 + root_objID; docID < this.DB.Count; ++docID) {
+				_items.Add (docID);
+			}
+            var items = DynamicSequential.ComputeDistances(this.DB, _items, this.DB[root_objID], null);
             int count_step = 0;
             this.BuildNode(this.root, items, ref count_step);
         }
@@ -195,7 +220,7 @@ namespace natix.SimilaritySearch
             //Console.WriteLine("======== BUILD NODE: {0}", node.objID);
             ++count_step;
             if (count_step < 100 || count_step % 100 == 0) {
-                Console.WriteLine ("======== SAT build_node: {0}, count_step: {1}/{2}, items_count: {3}", node.objID, count_step, this.DB.Count, items.Count);
+                Console.WriteLine ("======== SAT {4} build_node: {0}, count_step: {1}/{2}, items_count: {3}", node.objID, count_step, this.DB.Count, items.Count, this);
             }
             var partition = new List< List< ItemPair > > ();
             //var cache = new Dictionary<int,double> (items.Count);

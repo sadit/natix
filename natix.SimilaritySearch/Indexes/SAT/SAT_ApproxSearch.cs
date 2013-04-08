@@ -21,7 +21,7 @@ using natix.SortingSearching;
 
 namespace natix.SimilaritySearch
 {
-    public class SAT_ApproxSearch : SAT
+    public class SAT_ApproxSearch : SAT_Distal
     {
 
         public SAT_ApproxSearch () : base()
@@ -41,7 +41,9 @@ namespace natix.SimilaritySearch
             }
             var dist_root = this.DB.Dist(q, this.DB[this.root.objID]);
             res.Push(this.root.objID, dist_root);
-            this.SearchKNNNode (dist_root, this.root, q, res);
+			if (this.root.Children.Count > 0) {
+				this.SearchKNNNode (this.root, q, res);
+			}
             return res;
         }
 
@@ -53,31 +55,32 @@ namespace natix.SimilaritySearch
             return res;
         }
 
-        protected override void SearchKNNNode (double dist, Node node, object q, IResult res)
+        protected override void SearchKNNNode (Node node, object q, IResult res)
         {
             // res.Push (node.objID, dist);
-            if (node.Children.Count > 0 && dist <= res.CoveringRadius + node.cov) {
-                var D = new double[node.Children.Count];
-                var closer_child = node.Children[0];
-                var closer_dist = this.DB.Dist(q, this.DB[closer_child.objID]);
-                res.Push(closer_child.objID, closer_dist);
-                D[0] = closer_dist;
-                for (int i = 1; i < D.Length; ++i) {
-                    var child = node.Children[i];
-                    D[i] = this.DB.Dist(q, this.DB[child.objID]);
-                    res.Push(child.objID, D[i]);
-                    if (D[i] < closer_dist) {
-                        closer_dist = D[i];
-                        closer_child = child;
-                    }
-                }
-                this.SearchKNNNode(closer_dist, closer_child,  q, res);
-//                for (int i = 0; i < D.Length; ++i) {
-//                    if (D[i] <= closer_dist + 2 * res.CoveringRadius) {
-//                        this.SearchKNNNode(D[i], node.Children[i], q, res);
-//                    }
-//                }
-            }
+			var D = new double[node.Children.Count];
+			var closer_child = node.Children[0];
+			var closer_dist = this.DB.Dist(q, this.DB[closer_child.objID]);
+			res.Push(closer_child.objID, closer_dist);
+			D[0] = closer_dist;
+			for (int i = 1; i < D.Length; ++i) {
+				var child = node.Children[i];
+				D[i] = this.DB.Dist(q, this.DB[child.objID]);
+				res.Push(child.objID, D[i]);
+				if (D[i] < closer_dist) {
+					closer_dist = D[i];
+					closer_child = child;
+				}
+			}
+			if (closer_child.Children.Count > 0) {
+				this.SearchKNNNode (closer_child, q, res);
+			}
+			//                for (int i = 0; i < D.Length; ++i) {
+			//                    if (D[i] <= closer_dist + 2 * res.CoveringRadius) {
+			//                        this.SearchKNNNode(D[i], node.Children[i], q, res);
+			//                    }
+			//                }
+            
         }
     }
 }

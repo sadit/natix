@@ -62,6 +62,13 @@ namespace natix
                 u.Save(Output);
 			}
 		}
+
+        public static T Load(BinaryReader Input)
+        {
+            var new_item = new T();
+            new_item.Load(Input);
+            return new_item;
+        }
 	}
 }
 

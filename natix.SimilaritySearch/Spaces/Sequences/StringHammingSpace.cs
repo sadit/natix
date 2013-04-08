@@ -24,7 +24,7 @@ namespace natix.SimilaritySearch
 	/// <summary>
 	/// String space
 	/// </summary>
-	public class StringHammingSpace<T> : StringSpace< T > where T : IComparable
+	public class StringHammingSpace<T> : StringSpace< T > where T : struct,IComparable
 	{
 		/// <summary>
 		/// Constructor
@@ -39,7 +39,7 @@ namespace natix.SimilaritySearch
 		public override double Dist (object a, object b)
 		{
 			this.numdist++;
-			return StringSpace<T>.Hamming ((IList<T>)a, (IList<T>)b);
+			return StringSpace<T>.Hamming (this.CastToArray(a), this.CastToArray(b));
 		}
 	}
 }

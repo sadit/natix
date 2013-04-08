@@ -24,7 +24,7 @@ namespace natix.SimilaritySearch
 {
 	public class LAESA : BasicIndex, IndexSingle
 	{
-		public IList<double>[] DIST;
+		public List<double>[] DIST;
 		public MetricDB PIVS;
 
 		public LAESA ()
@@ -35,9 +35,10 @@ namespace natix.SimilaritySearch
 		{
 			base.Load (Input);
 			this.PIVS = SpaceGenericIO.SmartLoad(Input, false);
-			this.DIST = new IList<double>[this.PIVS.Count];
+			this.DIST = new List<double>[this.PIVS.Count];
 			for (int i = 0; i < this.PIVS.Count; ++i) {
-				this.DIST[i] = PrimitiveIO<double>.ReadFromFile(Input, this.DB.Count, null);
+				this.DIST[i] = new List<double>(this.DB.Count);
+				PrimitiveIO<double>.ReadFromFile(Input, this.DB.Count, this.DIST[i]);
 			}
 		}
 
@@ -55,45 +56,39 @@ namespace natix.SimilaritySearch
 			this.DB = idx.DB;
 			var P = (idx.PIVS as SampleSpace);
 			var S = new int[num_pivs];
-			this.DIST = new IList<double>[num_pivs];
+			this.DIST = new List<double>[num_pivs];
 			int I = 0;
-			Action<int> one_pivot = delegate (int i) {
-				S [i] = P.SAMPLE [i];
-				var L = new List<double>(idx.DIST[i]);
-				this.DIST[i] = L;
+			for (int pivID = 0; pivID < num_pivs; ++pivID) {
+				S[pivID] = P.SAMPLE[pivID];
+				this.DIST[pivID] = idx.DIST[pivID];
 				if (I % 10 == 0) {
 					Console.WriteLine("LAESA Build, advance {0}/{1} (approx.) ", I, num_pivs);
 				}
 				I++;
-			};
-			Parallel.For (0, num_pivs, one_pivot);
+			}
 			this.PIVS = new SampleSpace("", P.DB, S);
 		}
 
 		public void Build (MetricDB db, int num_pivs)
 		{
-			var laesa = new LAESA();
-			laesa.BuildLazy(db, num_pivs);
-			this.Build(laesa, num_pivs);
-		}
-
-		IList<double> GetLazyDIST (int piv)
-		{
-			var seq = new ListGen<double>((int index) => {
-				var d = this.DB.Dist (this.PIVS[piv], this.DB [index]);
-				return d;
-			}, this.DB.Count);
-			return seq;
-		}
-
-		public void BuildLazy (MetricDB db, int num_pivs)
-		{
 			this.DB = db;
 			this.PIVS = new SampleSpace("", db, num_pivs);
-			this.DIST = new IList<double>[num_pivs];
-			for (int i = 0; i < num_pivs; ++i) {
-				this.DIST[i] = this.GetLazyDIST(i);
-			}
+			this.DIST = new List<double>[num_pivs];
+			Action<int> one_pivot = delegate (int pivID) {
+				var n = this.DB.Count;
+				var L = new List<double>();
+				this.DIST[pivID] = L;
+				for (int docID = 0; docID < n; ++docID) {
+					var d = this.DB.Dist (this.PIVS[pivID], this.DB [docID]);
+					L.Add (d);
+				}
+			};
+			ParallelOptions ops = new ParallelOptions ();
+			ops.MaxDegreeOfParallelism = -1;
+			Parallel.For (0, num_pivs, ops, one_pivot);
+//			for (int i = 0; i < num_pivs; ++i) {
+//				one_pivot(i);
+//			}
 		}
 
 		public override IResult SearchKNN (object q, int K, IResult res)

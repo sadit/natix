@@ -35,13 +35,13 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Gets the candidates. 
 		/// </summary>
-		protected override IResult GetCandidates (IList<int> qseq, int maxcand)
+		protected override IResult GetCandidates (int[] qseq, int maxcand)
 		{
 			// TODO store tsearch as an object property
 			ITThresholdAlgorithm tsearch = new NTTArray8 (-1, false);
 			// ITThresholdAlgorithm tsearch = new MergeTThreshold ();
 			// int maxcand = Math.Abs (this.Maxcand);
-			var len_qseq = qseq.Count;
+			var len_qseq = qseq.Length;
 			var lists = new IList<int>[ len_qseq];
 			for (int i = 0; i < len_qseq; ++i) {
 				var rs = this.SEQ.Unravel (qseq [i]);

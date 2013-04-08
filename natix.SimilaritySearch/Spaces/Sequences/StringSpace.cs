@@ -25,10 +25,10 @@ namespace natix.SimilaritySearch
 	/// <summary>
 	/// String space
 	/// </summary>
-	public class StringSpace<T> : MetricDB where T : IComparable
+	public class StringSpace<T> : MetricDB where T : struct,IComparable
 	{
 		// static INumeric<T> Num = (INumeric<T>)(natix.Numeric.Get (typeof(T)));
-		public IList< IList<T> > seqs;
+		public IList< T[] > seqs;
 		//public IListContainer<T> seqs;
 		protected int numdist;
 		public Func<string,IList<T>> StringParser = null;
@@ -37,7 +37,7 @@ namespace natix.SimilaritySearch
 		{
 			this.Name = Input.ReadString();
 			var len = Input.ReadInt32 ();
-			this.seqs = new IList<T>[len];
+			this.seqs = new T[len][];
 			for (int i = 0; i < this.seqs.Count; ++i) {
 				len = Input.ReadInt32 ();
 				var v = new T[len];
@@ -51,7 +51,7 @@ namespace natix.SimilaritySearch
 			Output.Write (this.Name);
 			Output.Write ((int)this.seqs.Count);
 			for (int i = 0; i < this.seqs.Count; ++i) {
-				Output.Write((int)this.seqs[i].Count);
+				Output.Write((int)this.seqs[i].Length);
 				PrimitiveIO<T>.WriteVector(Output, this.seqs[i]);
 			}
 		}
@@ -89,18 +89,38 @@ namespace natix.SimilaritySearch
 		public void Build (string outname, IList<IList<T>> seqs)
 		{
 			this.Name = outname;
-			this.seqs = seqs;
+			this.seqs = new List<T[]> (seqs.Count);
+			foreach (var _s in seqs) {
+				this.seqs.Add (this.CastToArray(_s));
+			}
+		}
+
+		protected T[] CastToArray(object seq)
+		{
+			return this.CastToArray (seq as IList<T>);
+		}
+
+		protected T[] CastToArray(IList<T> seq)
+		{
+			var s = seq as T[];
+			if (s == null) {
+				s = new T[seq.Count];
+				for (int i = 0; i < s.Length; ++i) {
+					s[i] = seq[i];
+				}
+			}
+			return s;
 		}
 
 		public virtual void Build (string seqlist)
 		{
 			Console.WriteLine ("Reading sequence '{0}'", seqlist);
-			this.seqs = new List<IList<T>> ();
+			this.seqs = new List<T[]> ();
 			this.Name = seqlist;
 			using (var stream = File.OpenText(seqlist)) {
 				while (!stream.EndOfStream) {
 					var line = stream.ReadLine ();
-					this.seqs.Add( (IList<T>) this.Parse(line, false) );
+					this.seqs.Add( this.CastToArray(this.Parse(line, false)) );
 				}
 			}
 		}
@@ -173,10 +193,10 @@ namespace natix.SimilaritySearch
 		/// <returns>
 		/// The edit distance between a and b
 		/// </returns>
-		public static int Levenshtein (IList<T> a, IList<T> b, byte inscost, byte delcost, byte repcost) 
+		public static int Levenshtein (T[] a, T[] b, byte inscost, byte delcost, byte repcost) 
 		{
-			int alength = a.Count;
-			int blength = b.Count;
+			int alength = a.Length;
+			int blength = b.Length;
 			if (alength <= 0) {
 				return blength;
 			}
@@ -215,24 +235,24 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Edit distance
 		/// </summary>
-		public static double Levenshtein (IList<T> a, IList<T> b)
+		public static double Levenshtein (T[] a, T[] b)
 		{
 			return Levenshtein (a, b, 1, 1, 1);
 		}
 		/// <summary>
 		/// LCS over Levenshtein
 		/// </summary>
-		public static double LCS (IList<T> a, IList<T> b)
+		public static double LCS (T[] a, T[] b)
 		{
 			return Levenshtein (a, b, 1, 1, 2);
 		}
 		/// <summary>
 		/// Hamming distance for Generic Datatype
 		/// </summary>
-		public static double Hamming (IList<T> a, IList<T> b)
+		public static double Hamming (T[] a, T[] b)
 		{
 			int d = 0;
-			for (int i = 0; i < a.Count; i++) {
+			for (int i = 0; i < a.Length; i++) {
 				if (a[i].CompareTo (b[i]) != 0) {
 					d++;
 				}
@@ -242,14 +262,14 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// lexicographic comparison, starting always at position 0 of every sequence
 		/// </summary>
-		public static int LexicographicCompare (IList<T> a, IList<T> b)
+		public static int LexicographicCompare (T[] a, T[] b)
 		{
-			return LexicographicCompare (a, 0, b.Count, b, 0, a.Count);
+			return LexicographicCompare (a, 0, b.Length, b, 0, a.Length);
 		}
 		/// <summary>
 		/// Compare to arrays lexicographically, returns an integer representing something like a - b
 		/// </summary>
-		public static int LexicographicCompare (IList<T> a, int aStart, int aEnd, IList<T> b, int bStart, int bEnd)
+		public static int LexicographicCompare (T[] a, int aStart, int aEnd, T[] b, int bStart, int bEnd)
 		{
 			int cmp = 0;
 			for (int i = aStart, j = bStart; i < aEnd && j < bEnd; i++,j++) {
@@ -263,15 +283,15 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Jaccard's distance
 		/// </summary>
-		public static double Jaccard (IList<T> a, IList<T> b)
+		public static double Jaccard (T[] a, T[] b)
 		{
 			// a & b are already sorted
 			// union
-			int U = a.Count + b.Count;
+			int U = a.Length + b.Length;
 			// intersection
 			int I = 0;
 			int cmp;
-			for (int ia = 0, ib = 0; ia < a.Count && ib < b.Count;) {
+			for (int ia = 0, ib = 0; ia < a.Length && ib < b.Length;) {
 				cmp = a[ia].CompareTo (b[ib]);
 				if (cmp == 0) {
 					U--;

@@ -31,7 +31,7 @@ namespace natix
 		/// <summary>
 		/// Get a numeric manager for the given numeric type
 		/// </summary>
-		public static INumeric<T> Get<T> ()
+		public static INumeric<T> Get<T>() where T: struct
 		{
 			return (INumeric<T>)Get (typeof(T));
 		}

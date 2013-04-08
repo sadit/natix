@@ -31,9 +31,9 @@ namespace natix.SimilaritySearch
 		{
 		}
 
-		protected override IResult GetCandidates (IList<int> qseq, int maxcand)
+		protected override IResult GetCandidates (int[] qseq, int maxcand)
 		{
-			var len_qseq = qseq.Count;
+			var len_qseq = qseq.Length;
 			var C = new Dictionary<int,int> ();
 			var omega = this.R.DB.Count >> 1;
 			// omega *= omega;

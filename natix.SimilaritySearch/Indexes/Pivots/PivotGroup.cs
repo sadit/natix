@@ -31,67 +31,52 @@ namespace natix.SimilaritySearch
         #region STRUCTS
         public struct Pivot : ILoadSave
         {
-            public int rank;
+			public int objID;
             public double stddev;
             public double mean;
             public double last_near;
             public double first_far;
+			public int num_near;
+			public int num_far;
 
-            public Pivot(int rank, double stddev, double mean, double cov_near, double cov_far)
+			public Pivot(int objID, double stddev, double mean, double cov_near, double cov_far, int num_near, int num_far)
             {
-                this.rank = rank;
+				this.objID = objID;
                 this.stddev = stddev;
                 this.mean = mean;
                 this.last_near = cov_near;
                 this.first_far = cov_far;
+				this.num_near=num_near;
+				this.num_far=num_far;
             }
 
             public void Load(BinaryReader Input)
             {
-                this.rank = Input.ReadInt32 ();
+				this.objID = Input.ReadInt32 ();
                 this.stddev = Input.ReadDouble();
                 this.mean = Input.ReadDouble();
                 this.last_near = Input.ReadDouble();
                 this.first_far = Input.ReadDouble();
+				this.num_near= Input.ReadInt32();
+				this.num_far=Input.ReadInt32();
             }
             
             public void Save (BinaryWriter Output)
             {
-                Output.Write (this.rank);
+				Output.Write (this.objID);
                 Output.Write (this.stddev);
                 Output.Write (this.mean);
                 Output.Write (this.last_near);
                 Output.Write (this.first_far);
+				Output.Write (this.num_near);
+				Output.Write (this.num_far);
             }
         }
 
-        public struct Item : ILoadSave
-        {
-            public int pivID;
-            public double dist;
-
-            public Item (int pivID, double dist)
-            {
-                this.pivID = pivID;
-                this.dist = dist;
-            }
-
-            public void Load(BinaryReader Input)
-            {
-                this.pivID = Input.ReadInt32 ();
-                this.dist = Input.ReadDouble();
-            }
-
-            public void Save (BinaryWriter Output)
-            {
-                Output.Write (this.pivID);
-                Output.Write (this.dist);
-            }
-        }
         #endregion
 
-        public Item[] Items;
-        public Dictionary<int,Pivot> Pivs;
+		public Pivot[] _Pivs;
+        public ItemPair[] _Items;
 
 		public PivotGroup ()
 		{
@@ -99,27 +84,19 @@ namespace natix.SimilaritySearch
 
 		public void Load(BinaryReader Input)
 		{
-            var len = Input.ReadInt32 ();
-            this.Items = CompositeIO<Item>.LoadVector(Input, len, null) as Item[];
-            len = Input.ReadInt32 ();
-            this.Pivs = new Dictionary<int, Pivot>(len);
-            for (int i = 0; i < len; ++i) {
-                var pivID = Input.ReadInt32 ();
-                var u = default(Pivot);
-                u.Load (Input);
-                this.Pivs.Add(pivID, u);
-            }
+			int len;
+			len = Input.ReadInt32 ();
+			this._Pivs = CompositeIO<Pivot>.LoadVector (Input, len, null) as Pivot[];
+			len = Input.ReadInt32 ();
+            this._Items = CompositeIO<ItemPair>.LoadVector(Input, len, null) as ItemPair[];
 		}
 
 		public void Save (BinaryWriter Output)
         {
-            Output.Write (this.Items.Length);
-            CompositeIO<Item>.SaveVector (Output, this.Items);
-            Output.Write (this.Pivs.Count);
-            foreach (var p in this.Pivs) {
-                Output.Write(p.Key);
-                p.Value.Save(Output);
-            }
+			Output.Write (this._Pivs.Length);
+			CompositeIO<Pivot>.SaveVector (Output, this._Pivs);
+            Output.Write (this._Items.Length);
+            CompositeIO<ItemPair>.SaveVector (Output, this._Items);
 		}
 
         protected virtual void SearchExtremes (DynamicSequential idx, List<ItemPair> items, object piv, double alpha_stddev, int min_bs, out IResult near, out IResult far, out DynamicSequential.Stats stats)
@@ -129,35 +106,36 @@ namespace natix.SimilaritySearch
 
         public virtual void Build (MetricDB DB, double alpha_stddev, int min_bs, int seed)
         {
-            var idxDynamic = new DynamicSequentialRandom (seed);
-            idxDynamic.Build (DB);
-            this.Items = new Item[DB.Count];
-            this.Pivs = new Dictionary<int, Pivot>();
+            var idxDynamic = new DynamicSequentialOrdered ();
+            idxDynamic.Build (DB, RandomSets.GetRandomPermutation(DB.Count, new Random(seed)));
+            this._Items = new ItemPair[DB.Count];
+			var pivs = new List<Pivot> (1024);
+			var items = new List<ItemPair> (DB.Count);
             int I = 0;
-            var items = new List<ItemPair>(idxDynamic.Count);
-            while(idxDynamic.DOCS.Count > 0){
+            var extreme_items = new List<ItemPair>(idxDynamic.Count);
+            while (idxDynamic.Count > 0) {
                 var pidx = idxDynamic.GetAnyItem();
                 object piv = DB[pidx];
                 idxDynamic.Remove(pidx);
-                this.Items[pidx] = new Item(pidx, 0);
+                this._Items[pidx] = new ItemPair(pidx, 0);
                 IResult near, far;
                 DynamicSequential.Stats stats;
-                this.SearchExtremes(idxDynamic, items, piv, alpha_stddev, min_bs, out near, out far, out stats);
+                this.SearchExtremes(idxDynamic, extreme_items, piv, alpha_stddev, min_bs, out near, out far, out stats);
                 foreach (var pair in near) {
-                    this.Items[pair.docid] = new Item (pidx, pair.dist);
+					items.Add( new ItemPair (pair.docid, pair.dist) );
                 }
-                foreach (var pair in far) {
-                    this.Items[pair.docid] = new Item (pidx, pair.dist);
-                }
-                var piv_data = new Pivot(this.Pivs.Count, stats.mean, stats.stddev, 0, double.MaxValue);
+				foreach (var pair in far) {
+					items.Add( new ItemPair (pair.docid, pair.dist) );
+				}
+				var piv_data = new Pivot(pidx, stats.mean, stats.stddev, 0, double.MaxValue, near.Count, far.Count);
                 if (near.Count > 0) piv_data.last_near = near.Last.dist;
                 if (far.Count > 0) piv_data.first_far = far.First.dist;
-                this.Pivs.Add (pidx, piv_data);
+                pivs.Add(piv_data);
                 if (I % 10 == 0) {
                     Console.WriteLine ("");
                     Console.WriteLine (this.ToString());
                     Console.WriteLine("-- I {0}> remains: {1}, alpha_stddev: {2}, mean: {3}, stddev: {4}, pivot: {5}",
-                                      I, idxDynamic.DOCS.Count, alpha_stddev, stats.mean, stats.stddev, pidx);
+                                      I, idxDynamic.Count, alpha_stddev, stats.mean, stats.stddev, pidx);
                     double near_first, near_last, far_first, far_last;
                     if (near.Count > 0) {
                         near_first = near.First.dist;
@@ -187,6 +165,8 @@ namespace natix.SimilaritySearch
                 //Console.WriteLine("Number of objects after: {0}",idxDynamic.DOCS.Count);
             }
             Console.WriteLine("Number of pivots per group: {0}", I);
+			this._Pivs = pivs.ToArray ();
+			this._Items = items.ToArray ();
         }
 	}
 }

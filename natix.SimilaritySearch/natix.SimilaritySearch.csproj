@@ -47,7 +47,6 @@
     <Compile Include="Spaces\Sequences\StringIntersectionSpace.cs" />
     <Compile Include="Spaces\Sequences\StringPrefixLengthSpace.cs" />
     <Compile Include="Spaces\Vectors\VectorSpace.cs" />
-    <Compile Include="Spaces\Vectors\DocumentSpace.cs" />
     <Compile Include="Spaces\Bitmaps\BinH8Space.cs" />
     <Compile Include="Spaces\Bitmaps\BinQ8HammingSpace.cs" />
     <Compile Include="Spaces\Bitmaps\AudioSpace.cs" />
@@ -55,8 +54,6 @@
     <Compile Include="Spaces\Bitmaps\BinQGram.cs" />
     <Compile Include="Spaces\Bitmaps\BinQ8JaccardSpace.cs" />
     <Compile Include="Spaces\Bitmaps\BinQ8ORSpace.cs" />
-    <Compile Include="Spaces\Vectors\MinkowskiVectorSpace.cs" />
-    <Compile Include="Spaces\Vectors\CosineVectorSpace.cs" />
     <Compile Include="Spaces\SampleSpace.cs" />
     <Compile Include="Spaces\SpaceGenericIO.cs" />
     <Compile Include="Result\ResultList.cs" />
@@ -142,6 +139,16 @@
     <Compile Include="Result\ResultCheckDuplicates.cs" />
     <Compile Include="Indexes\LC\LC_VorRNN.cs" />
     <Compile Include="ItemPair.cs" />
+    <Compile Include="Indexes\SAT\SATSEQ.cs" />
+    <Compile Include="Indexes\SAT\SATSEQ_ApproxSearch.cs" />
+    <Compile Include="Indexes\SAT\SATSEQ_Forest.cs" />
+    <Compile Include="Spaces\Vectors\VectorDB.cs" />
+    <Compile Include="Spaces\Vectors\CosineVectorDB.cs" />
+    <Compile Include="Spaces\Vectors\MinkowskiVectorDB.cs" />
+    <Compile Include="Indexes\Pivots\DiskPivotGroup.cs" />
+    <Compile Include="Indexes\Pivots\DiskPivotGroupIndex.cs" />
+    <Compile Include="Spaces\Vectors\DocumentDB.cs" />
+    <Compile Include="Spaces\Vectors\DiskVectorList.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

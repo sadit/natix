@@ -30,12 +30,12 @@ namespace natix.SimilaritySearch
 		public KnrSeqSearchFootrule (KnrSeqSearch knr) : base(knr)
 		{
 		}
-		protected override IResult GetCandidates (IList<int> qseq, int maxcand)
+		protected override IResult GetCandidates (int[] qseq, int maxcand)
 		{
-			var len_qseq = qseq.Count;
+			var len_qseq = qseq.Length;
 			var C = new Dictionary<int,int> ();
 			// var omega = this.IndexRefs.MainSpace.Count >> 1;
-			var omega = qseq.Count << 5;
+			var omega = len_qseq << 5;
 			// var omega = qseq.Count;
 			// var omega = 0;
 			for (int i = 0; i < len_qseq; ++i) {

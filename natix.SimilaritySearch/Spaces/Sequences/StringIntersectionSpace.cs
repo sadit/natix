@@ -24,7 +24,7 @@ namespace natix.SimilaritySearch
 	/// <summary>
 	/// String space
 	/// </summary>
-	public class StringIntersectionSpace<T> : StringSpace< T > where T : IComparable
+	public class StringIntersectionSpace<T> : StringSpace< T > where T : struct,IComparable
 	{
 		/// <summary>
 		/// Constructor

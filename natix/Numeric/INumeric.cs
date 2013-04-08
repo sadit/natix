@@ -25,7 +25,7 @@ namespace natix
 		/// <summary>
 	/// Defines some basic operations for numeric types, needed because Generics doesn't support numeric types
 	/// </summary>
-	public interface INumeric<T>
+	public interface INumeric<T> where T: struct
 	{
 		/// <summary>
 		/// Cast from double
@@ -70,41 +70,41 @@ namespace natix
 		/// <summary>
 		/// Read a binary vector 
 		/// </summary>
-		void ReadBinaryVector (IList<T> v, Stream r, int dim);
+		// void ReadBinaryVector (T[] v, Stream r, int dim);
 		/// <summary>
 		///  L_P distance
 		/// </summary>
-		double DistLP (IList<T> a, IList<T> b, float p, bool do_sqrt);
+		double DistLP (T[] a, T[] b, float p, bool do_sqrt);
 		/// <summary>
 		///  L_2 distance
 		/// </summary>
-		double DistL2 (IList<T> a, IList<T> b);
+		double DistL2 (T[] a, T[] b);
 		/// <summary>
 		///  L_1 distance
 		/// </summary>
-		double DistL1 (IList<T> a, IList<T> b);
+		double DistL1 (T[] a, T[] b);
 		/// <summary>
 		///  L_Inf distance
 		/// </summary>
-		double DistLInf (IList<T> a, IList<T> b);
+		double DistLInf (T[] a, T[] b);
 		/// <summary>
 		///  angle (from cosine) distance
 		/// </summary>
-		double DistCos (IList<T> a, IList<T> b);
-		double SimCos (IList<T> a, IList<T> b);
+		double DistCos (T[] a, T[] b);
+		double SimCos (T[] a, T[] b);
 		
-		void Sum (IList<T> u, IList<T> v, IList<T> output);
-		void Sub (IList<T> u, IList<T> v, IList<T> output);
-		void Prod (IList<T> u, IList<T> v, IList<T> output);
-		void Div (IList<T> u, IList<T> v, IList<T> output);
-		void Sum (IList<T> u, float c, IList<T> output);
-		double Sum (IList<T> u);
-		double Mean (IList<T> u);
-		double Min (IList<T> u, out int pos);
-		double Max (IList<T> u, out int pos);
-		double Var (IList<T> u, double mean);
-		double StdDev (IList<T> u, double mean);
-		void Prod (IList<T> u, float c, IList<T> output);
+		void Sum (T[] u, T[] v, T[] output);
+		void Sub (T[] u, T[] v, T[] output);
+		void Prod (T[] u, T[] v, T[] output);
+		void Div (T[] u, T[] v, T[] output);
+		void Sum (T[] u, float c, T[] output);
+		double Sum (T[] u);
+		double Mean (T[] u);
+		double Min (T[] u, out int pos);
+		double Max (T[] u, out int pos);
+		double Var (T[] u, double mean);
+		double StdDev (T[] u, double mean);
+		void Prod (T[] u, float c, T[] output);
 		T SumSingle (T u, float c);
 		T ProdSingle (T u, float c);
 	}

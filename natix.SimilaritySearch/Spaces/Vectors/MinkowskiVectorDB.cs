@@ -23,24 +23,33 @@ namespace natix.SimilaritySearch
 	/// <summary>
 	/// Vector space
 	/// </summary>
-	public class CosineVectorSpace<T> : VectorSpace<T>
+	public class MinkowskiVectorDB<T> : VectorDB<T> where T: struct
 	{
-		static INumeric<T> Num = (INumeric<T>)(natix.Numeric.Get (typeof(T)));
-
 		/// <summary>
 		/// Constructor
 		/// </summary>
-		public CosineVectorSpace () : base()
+		public MinkowskiVectorDB () : base()
 		{
 		}
 
 		/// <summary>
 		/// Distance wrapper for any P-norm
 		/// </summary>
-		public override double Dist (object a, object b)
+		public override double Dist (object _a, object _b)
 		{
 			this.numdist++;
-			return Num.DistCos((IList<T>)a, (IList<T>)b);
+			var a = (T[])_a;
+			var b = (T[])_b;
+			if (this.P == 1) {
+				return Num.DistL1 (a, b);
+			}
+			if (this.P == 2) {
+				return Num.DistL2 (a, b);
+			}
+			if (this.P == -1) {
+				return Num.DistLInf (a, b);
+			}
+			return Num.DistLP (a, b, this.P, true);
 		}
 	}
 }

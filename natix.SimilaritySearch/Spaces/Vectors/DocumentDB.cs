@@ -26,98 +26,99 @@ using natix.SortingSearching;
 
 namespace natix.SimilaritySearch
 {
-	/// <summary>
-	/// Represents a vocabulary entry
-	/// </summary>
-	public struct Tvoc
-	{
-		/// <summary>
-		/// Key identifier
-		/// </summary>
-		public Int32 keyid;
-		/// <summary>
-		/// Weight for this key
-		/// </summary>
-		public float weight;
-		/// <summary>
-		///  Constructor
-		/// </summary>
-		/// <param name="k">
-		/// A <see cref="UInt32"/>
-		/// </param>
-		/// <param name="w">
-		/// A <see cref="System.Single"/>
-		/// </param>
-		public Tvoc (Int32 k, float w)
-		{
-			this.keyid = k;
-			this.weight = w;
-		}
-	}
-	
-	/// <summary>
-	///  A document vector representation
-	/// </summary>
-	public class Tdoc
-	{
-		/// <summary>
-		/// The document vector
-		/// </summary>
-		public IList<Tvoc> doc;
-		/// <summary>
-		/// Constructor
-		/// </summary>
-		public Tdoc (IList<Tvoc> d)
-		{
-			this.doc = d;
-		}
 
-		/// <summary>
-		/// Builds the Tdoc from two vectors
-		/// </summary>
-		public Tdoc (IList<Int32> keywords, IList<Single> weigths)
-		{
-			var v = new Tvoc [keywords.Count];
-			for (int i = 0; i < keywords.Count; i++) {
-				var keyid = keywords[i];
-				float d = weigths[i];
-				v[i] = new Tvoc (keyid, d);
-			}
-			this.doc = v;
-		}
-
-		/// <summary>
-		/// Save this document's vector
-		/// </summary>
-		public void Save (BinaryWriter b)
-		{
-			b.Write ((int)this.doc.Count);
-			foreach (Tvoc v in this.doc) {
-				b.Write (v.keyid);
-				b.Write (v.weight);
-			}
-		}
-				
-		/// <summary>
-		/// Load a document's vector from stream
-		/// </summary>
-		public static Tdoc Load (BinaryReader b)
-		{
-			int len = b.ReadInt32 ();
-			// Console.WriteLine ("***** BIG LOAD? {0}", len);
-			Tdoc res = new Tdoc (new Tvoc[len]);
-			for (int i = 0; i < len; i++) {
-				res.doc[i] = new Tvoc (b.ReadInt32 (), b.ReadSingle ());
-			}
-			return res;
-		}
-	}
-	
 	/// <summary>
 	/// The document's space
 	/// </summary>
-	public class DocumentSpace : MetricDB
+	public class DocumentDB : MetricDB
 	{
+		/// <summary>
+		/// Represents a vocabulary entry
+		/// </summary>
+		public struct Tvoc
+		{
+			/// <summary>
+			/// Key identifier
+			/// </summary>
+			public Int32 keyid;
+			/// <summary>
+			/// Weight for this key
+			/// </summary>
+			public float weight;
+			/// <summary>
+			///  Constructor
+			/// </summary>
+			/// <param name="k">
+			/// A <see cref="UInt32"/>
+			/// </param>
+			/// <param name="w">
+			/// A <see cref="System.Single"/>
+			/// </param>
+			public Tvoc (Int32 k, float w)
+			{
+				this.keyid = k;
+				this.weight = w;
+			}
+		}
+		
+		/// <summary>
+		///  A document vector representation
+		/// </summary>
+		public class Tdoc
+		{
+			/// <summary>
+			/// The document vector
+			/// </summary>
+			public Tvoc[] doc;
+			/// <summary>
+			/// Constructor
+			/// </summary>
+			public Tdoc (Tvoc[] d)
+			{
+				this.doc = d;
+			}
+			
+			/// <summary>
+			/// Builds the Tdoc from two vectors
+			/// </summary>
+			public Tdoc (IList<Int32> keywords, IList<Single> weigths)
+			{
+				var v = new Tvoc [keywords.Count];
+				for (int i = 0; i < keywords.Count; i++) {
+					var keyid = keywords[i];
+					float d = weigths[i];
+					v[i] = new Tvoc (keyid, d);
+				}
+				this.doc = v;
+			}
+			
+			/// <summary>
+			/// Save this document's vector
+			/// </summary>
+			public void Save (BinaryWriter b)
+			{
+				b.Write ((int)this.doc.Length);
+				foreach (Tvoc v in this.doc) {
+					b.Write (v.keyid);
+					b.Write (v.weight);
+				}
+			}
+			
+			/// <summary>
+			/// Load a document's vector from stream
+			/// </summary>
+			public static Tdoc Load (BinaryReader b)
+			{
+				int len = b.ReadInt32 ();
+				// Console.WriteLine ("***** BIG LOAD? {0}", len);
+				Tdoc res = new Tdoc (new Tvoc[len]);
+				for (int i = 0; i < len; i++) {
+					res.doc[i] = new Tvoc (b.ReadInt32 (), b.ReadSingle ());
+				}
+				return res;
+			}
+		}
+
 		public IList<Tdoc> DOCS;
 		int numdist;
 
@@ -137,7 +138,7 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Constructor
 		/// </summary>
-		public DocumentSpace ()
+		public DocumentDB ()
 		{
 			this.DOCS = new List<Tdoc> ();
 			this.numdist = 0;
@@ -257,9 +258,9 @@ namespace natix.SimilaritySearch
 			var v1 = (Tdoc) _v1;
 			var v2 = (Tdoc) _v2;
 			var w1 = v1.doc;
-			int n1 = v1.doc.Count;
+			int n1 = v1.doc.Length;
 			var w2 = v2.doc;
-			int n2 = v2.doc.Count;
+			int n2 = v2.doc.Length;
 			double sum, norm1, norm2;
 			norm1 = norm2 = sum = 0.0;
 			for (int i = 0; i < n1; i++) {

@@ -33,7 +33,7 @@ namespace natix.SimilaritySearch
 	/// 
 	/// This is an approximate index.
 	/// </remarks>
-	public class GenPerms<GType> : BasicIndex
+	public class GenPerms<GType> : BasicIndex where GType : struct
 	{	
 		/// <summary>
 		/// The space for permutants
@@ -43,13 +43,13 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// The inverses of the permutations
 		/// </summary>
-		protected VectorSpace<GType> INVPERMS;
+		protected VectorDB<GType> INVPERMS;
 
 		public override void Load (BinaryReader Input)
 		{
 			base.Load(Input);
 			this.REFS = SpaceGenericIO.Load(Input, false);
-			this.INVPERMS = (VectorSpace<GType>)SpaceGenericIO.Load(Input, false);
+			this.INVPERMS = (VectorDB<GType>)SpaceGenericIO.Load(Input, false);
 		}
 
 		public override void Save (BinaryWriter Output)
@@ -79,7 +79,7 @@ namespace natix.SimilaritySearch
 		/// <returns>
 		/// The inverted permutations
 		/// </returns>
-		public VectorSpace<GType> GetInvPermsVectorSpace ()
+		public VectorDB<GType> GetInvPermsVectorSpace ()
 		{
 			return this.INVPERMS;
 		}
@@ -116,7 +116,7 @@ namespace natix.SimilaritySearch
 				}
 				VECS[i] = this.GetInverseBuild (i);
 			}
-			var INVS = new MinkowskiVectorSpace<GType>();
+			var INVS = new MinkowskiVectorDB<GType>();
 			INVS.Build("", VECS, 2);
 			this.INVPERMS = INVS;
 		}

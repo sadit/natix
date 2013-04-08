@@ -24,7 +24,7 @@ namespace natix.SimilaritySearch
 	/// <summary>
 	/// String space
 	/// </summary>
-	public class StringPrefixLengthSpace<T> : StringSpace< T > where T : IComparable
+	public class StringPrefixLengthSpace<T> : StringSpace< T > where T : struct,IComparable
 	{
 		/// <summary>
 		/// Constructor

@@ -25,7 +25,7 @@ namespace natix
 	/// <summary>
 	/// Simple I/O output for arrays of items of native types
 	/// </summary>
-	public class PrimitiveIO<T>
+	public class PrimitiveIO<T>  where T: struct
 	{	
 		static INumeric<T> Num = (INumeric<T>)Numeric.Get (typeof(T));
 		

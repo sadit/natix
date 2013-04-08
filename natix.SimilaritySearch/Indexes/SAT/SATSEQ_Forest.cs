@@ -23,11 +23,11 @@ using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
-    public class SAT_Forest : BasicIndex
+    public class SATSEQ_Forest : BasicIndex
     {
-        public IList<SAT_ApproxSearch> forest;
+        public IList<SATSEQ_ApproxSearch> forest;
 
-        public SAT_Forest () : base()
+        public SATSEQ_Forest () : base()
         {
         }
 
@@ -35,22 +35,22 @@ namespace natix.SimilaritySearch
         {
             base.Load (Input);
             var len = Input.ReadInt32();
-            this.forest = CompositeIO<SAT_ApproxSearch>.LoadVector(Input, len, null);
+            this.forest = CompositeIO<SATSEQ_ApproxSearch>.LoadVector(Input, len, null);
         }
 
         public override void Save (BinaryWriter Output)
         {
             base.Save (Output);
             Output.Write(this.forest.Count);
-            CompositeIO<SAT_ApproxSearch>.SaveVector(Output, this.forest);
+            CompositeIO<SATSEQ_ApproxSearch>.SaveVector(Output, this.forest);
         }
 
         public virtual void Build (IList<SAT> _forest, int max_trees)
         {
             this.DB = _forest[0].DB;
-            this.forest = new SAT_ApproxSearch[max_trees];
+            this.forest = new SATSEQ_ApproxSearch[max_trees];
             for (int i = 0; i < max_trees; ++i) {
-                this.forest[i] = new SAT_ApproxSearch();
+                this.forest[i] = new SATSEQ_ApproxSearch();
                 this.forest[i].Build(_forest[i]);
             }
         }
@@ -62,7 +62,7 @@ namespace natix.SimilaritySearch
                 //sat.Build (this.DB, rand);
                 var sat = new SAT_Randomized();
                 sat.Build (this.DB, rand, 64);
-                this.forest[i] = new SAT_ApproxSearch();
+                this.forest[i] = new SATSEQ_ApproxSearch();
                 this.forest[i].Build(sat);
             };
         }
@@ -70,7 +70,7 @@ namespace natix.SimilaritySearch
         public virtual void Build (MetricDB db, int num_trees, Random rand)
         {
             this.DB = db;
-            this.forest = new SAT_ApproxSearch[num_trees];
+            this.forest = new SATSEQ_ApproxSearch[num_trees];
             var action_list = new Action[num_trees];
             var seed = rand.Next();
             for (int i = 0; i < num_trees; ++i) {

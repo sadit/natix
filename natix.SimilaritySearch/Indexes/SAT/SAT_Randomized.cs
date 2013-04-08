@@ -44,7 +44,7 @@ namespace natix.SimilaritySearch
             for (int i = 1 + root_objID; i < this.DB.Count; ++i) _items.Add(i);
             this.rand = rand;
             DynamicSequential.Stats stats;
-            var items = DynamicSequential.ComputeDistances(this.DB, _items, this.DB[0], null, out stats);
+            var items = DynamicSequential.ComputeDistances(this.DB, _items, this.DB[root_objID], null, out stats);
             int count_step = 0;
             this.BuildNodeRandom(this.root, items, arity, ref count_step);
         }

@@ -87,7 +87,7 @@ namespace testir
 				//var seq_builder = SequenceBuilders.GetSeqXLB_DiffSetRL2_64 (12, 31, new EliasDelta64 ());
 				Console.WriteLine ("*** building SeqTextIR instance over {0} | filter {1}", inputdir, extension);
                 //var seq_container = new List<int>();
-                using (var seq_container = new MemoryMappedList<int>(basename + ".memdata", 1<<12)) {
+                using (var seq_container = new SepDiskList32<int>(basename + ".memdata", 1<<12)) {
                     //var seq_container = new MemoryMappedList<int>("H", false); // false);
                     if (listfiles == null) {
                         seq.Build (GetFilenames (inputdir, extension), seq_builder, seq_container);

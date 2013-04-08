@@ -243,10 +243,13 @@
     <Compile Include="CompactDS\Bitmaps\NullBitmap.cs" />
     <Compile Include="CompactDS\Sequences\SeqPlainCopyOnUnravel.cs" />
     <Compile Include="CompactDS\Text\SuffixSearch\SA.cs" />
-    <Compile Include="FunLists\MemoryMappedList.cs" />
     <Compile Include="FunLists\SegmentedList.cs" />
     <Compile Include="Util\PrimitiveIO.cs" />
     <Compile Include="Util\CompositeIO.cs" />
+    <Compile Include="FunLists\DiskList64.cs" />
+    <Compile Include="FunLists\DiskList32.cs" />
+    <Compile Include="FunLists\CacheList64.cs" />
+    <Compile Include="FunLists\SepDiskList32.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

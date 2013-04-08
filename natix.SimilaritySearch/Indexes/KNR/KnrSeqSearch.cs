@@ -32,7 +32,7 @@ namespace natix.SimilaritySearch
 		public KnrSeqSearch GetSortedByPrefix (SequenceBuilder seq_builder = null, ListIBuilder list_builder = null)
 		{
 			int n = this.DB.Count;
-			var seqs = new IList<int>[n];
+			var seqs = new int[n][];
 			var perm = new int[n];
 			for (int i = 0; i < n; ++i) {
 				seqs [i] = this.GetStoredKnr (i);
@@ -40,7 +40,7 @@ namespace natix.SimilaritySearch
 			}
 			// please speed up this method using another sorting method
 			// Sorting.Sort<int> (perm, (x,y) => StringSpace<int>.LexicographicCompare (seqs [x], seqs [y]));
-			Sorting.Sort<IList<int>,int> (seqs, perm, (x,y) => StringSpace<int>.LexicographicCompare (x, y));
+			Sorting.Sort<int[],int> (seqs, perm, (x,y) => StringSpace<int>.LexicographicCompare (x, y));
 			var S = new ListGen<int> ((int i) => seqs [i / this.K] [i % this.K], n * this.K);
 			if (list_builder == null) {
 				list_builder = ListIBuilders.GetListIFS();
@@ -81,11 +81,24 @@ namespace natix.SimilaritySearch
 
 		public KnrSeqSearch (KnrSeqSearch other) : base()
 		{
+			this.Build (other);
+		}
+
+		public void Build (KnrSeqSearch other)
+		{
 			this.DB = other.DB;
 			this.K = other.K;
 			this.MAXCAND = other.MAXCAND;
 			this.R = other.R;
 			this.SEQ = other.SEQ;
+		}
+
+		public void Build (MetricDB db, int num_refs, int K=7, int maxcand=1024, SequenceBuilder seq_builder = null)
+		{
+			var sample = new SampleSpace ("", db, num_refs);
+			var sat = new SAT_Distal ();
+			sat.Build (sample, RandomSets.GetRandom());
+			this.Build (db, sat, K, maxcand, seq_builder);
 		}
 
 		public void Build (MetricDB db, Index refs, int K=7, int maxcand=1024, SequenceBuilder seq_builder = null)
@@ -152,9 +165,9 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Gets the candidates. 
 		/// </summary>
-		protected virtual IResult GetCandidatesSmallDB (IList<int> qseq, int maxcand)
+		protected virtual IResult GetCandidatesSmallDB (int[] qseq, int maxcand)
 		{
-			var len_qseq = qseq.Count;
+			var len_qseq = qseq.Length;
 			var n = this.DB.Count;
 			var A = new byte[this.DB.Count];
 			for (int i = 0; i < len_qseq; ++i) {
@@ -180,13 +193,13 @@ namespace natix.SimilaritySearch
 			return res;
 		}
 
-		protected virtual IResult GetCandidates (IList<int> qseq, int maxcand)
+		protected virtual IResult GetCandidates (int[] qseq, int maxcand)
 		{
 			var n = this.DB.Count;
 			if (n < 500000) {
-				return this.GetCandidatesSmallDB (qseq, maxcand);
+				//return this.GetCandidatesSmallDB (qseq, maxcand);
 			}
-			var len_qseq = qseq.Count;
+			var len_qseq = qseq.Length;
 			var ialg = new BaezaYatesIntersection<int> (new DoublingSearch<int> ());
 			IList<int> C = new SortedListRSCache (this.SEQ.Unravel (qseq [0]));
 			int i = 1;

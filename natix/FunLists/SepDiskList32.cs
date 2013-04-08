@@ -23,14 +23,13 @@ using System.Runtime.InteropServices;
 
 namespace natix
 {
-    public class MemoryMappedList<T> : ListGenerator<T>, IDisposable, ILoadSave where T : struct
+    public class SepDiskList32<T> : ListGenerator<T>, IDisposable, ILoadSave where T : struct
     {
-        int count = 0;
+        int count = 0; 
         int max_capacity = 0;
-
-        int block_size;
+        int block_size; 
         short sizeOfT;
-        string filename;
+        string filename; // None, pointer to this filename
         MemoryMappedFile data = null;
         MemoryMappedViewAccessor view = null;
 
@@ -61,8 +60,14 @@ namespace natix
 
         public void Dispose()
         {
-            if (this.view != null) this.view.Dispose();
-            if (this.data != null) this.data.Dispose();
+            if (this.view != null) {
+				this.view.Dispose ();
+				this.view = null;
+			}
+            if (this.data != null) {
+				this.data.Dispose ();
+				this.data = null;
+			}
         }
 
         public void DeleteFile ()
@@ -99,7 +104,7 @@ namespace natix
             this.view = this.data.CreateViewAccessor ();
         }
 
-        public MemoryMappedList (string name, int block_size)
+        public SepDiskList32 (string name, int block_size)
         {
             this.filename = name;
             this.block_size = block_size;
@@ -107,7 +112,7 @@ namespace natix
             this.OpenAndGrow(false);
         }
 
-        ~MemoryMappedList()
+        ~SepDiskList32()
         {
             this.Dispose();
         }

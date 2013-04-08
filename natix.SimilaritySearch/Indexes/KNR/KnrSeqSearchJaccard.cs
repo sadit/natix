@@ -31,10 +31,10 @@ namespace natix.SimilaritySearch
 		{
 		}
 		 
-		protected override IResult GetCandidates (IList<int> qseq, int maxcand)
+		protected override IResult GetCandidates (int[] qseq, int maxcand)
 		{
 			int knrbound = this.K;
-			var len_qseq = qseq.Count;
+			var len_qseq = qseq.Length;
 			// var C = new Dictionary<int,short> ();
 			var C = new byte[this.DB.Count];
 			for (int i = 0; i < len_qseq; ++i) {

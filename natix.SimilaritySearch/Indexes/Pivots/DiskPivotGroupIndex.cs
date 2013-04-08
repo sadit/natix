@@ -29,11 +29,11 @@ using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
-	public class PivotGroupIndex : BasicIndex
+	public class DiskPivotGroupIndex : BasicIndex
 	{
-		public PivotGroup[] GROUPS;
+		public DiskPivotGroup[] GROUPS;
 
-		public PivotGroupIndex ()
+		public DiskPivotGroupIndex ()
 		{
 		}
        
@@ -41,62 +41,32 @@ namespace natix.SimilaritySearch
 		{
 			base.Load(Input);
 			var num_groups = Input.ReadInt32 ();
-			this.GROUPS = new PivotGroup[num_groups];
-			CompositeIO<PivotGroup>.LoadVector (Input, num_groups, this.GROUPS);
+			this.GROUPS = new DiskPivotGroup[num_groups];
+			CompositeIO<DiskPivotGroup>.LoadVector (Input, num_groups, this.GROUPS);
+			foreach (var g in this.GROUPS) {
+				g.CachePivObjects(this.DB);
+			}
 		}
 
 		public override void Save (BinaryWriter Output)
 		{
 			base.Save (Output);
 			Output.Write ((int)this.GROUPS.Length);
-			CompositeIO<PivotGroup>.SaveVector (Output, this.GROUPS);
+			CompositeIO<DiskPivotGroup>.SaveVector (Output, this.GROUPS);
 		}
 
-		public void Build (PivotGroupIndex pgi, int num_groups)
+		public void Build (string basename, PivotGroupIndex pgi, int num_groups = 0)
 		{
 			this.DB = pgi.DB;
-			this.GROUPS = new PivotGroup[num_groups];
-			for (int i = 0; i < num_groups; ++i) {
-				this.GROUPS[i] = pgi.GROUPS[i];
+			if (num_groups <= 0) {
+				num_groups = pgi.GROUPS.Length;
 			}
-		}
-
-		public void Build (MetricDB db, int num_groups, double alpha_stddev, int min_bs, int num_build_processors = -1, Func<PivotGroup> new_pivot_group = null)
-		{
-			this.DB = db;
-			this.GROUPS = new PivotGroup[num_groups];
-            var seeds = new int[ num_groups ];
-            for (int i = 0; i < num_groups; ++i) {
-                seeds[i] = RandomSets.GetRandomInt();
-            }
-			ParallelOptions ops = new ParallelOptions ();
-			ops.MaxDegreeOfParallelism = num_build_processors;
-			// Parallel.For (0, num_groups, ops, (i) => this.GROUPS[i] = this.GetGroup(percentil));
-			int I = 0;
-			var build_one_group = new Action<int> (delegate(int i) {
-                if (new_pivot_group == null) {
-                    this.GROUPS[i] = new PivotGroup();
-                } else {
-                    this.GROUPS[i] = new_pivot_group();
-                }
-				this.GROUPS[i].Build(this.DB, alpha_stddev, min_bs, seeds[i]);
-				// this.GROUPS [i] = this.GetGroup (alpha_stddev, min_bs);
-				Console.WriteLine ("Advance {0}/{1} (alpha_stddev={2}, db={3}, timestamp={4})",
-				                   I, num_groups, alpha_stddev, db.Name, DateTime.Now);
-				I++;
-			});
-			// parallel_build = false;
-			if (num_build_processors == 1 || num_build_processors == 0) {
-				//Parallel.ForEach (new List<int>(RandomSets.GetExpandedRange (num_groups)), ops, build_one);
-				for (int i = 0; i < num_groups; ++i) {
-					//this.GROUPS[i] = this.GetGroup(percentil);
-					build_one_group (i);
-					if (i % 5 == 0) {
-						Console.WriteLine ("*** Procesing groups ({0}/{1}) ***", i, num_groups);
-					}
-				}
-			} else {
-				Parallel.For (0, num_groups, ops, build_one_group);
+			this.GROUPS = new DiskPivotGroup[num_groups];
+			for (int i = 0; i < num_groups; ++i) {
+				var g = new DiskPivotGroup();
+				g.Build (pgi.GROUPS[i], basename + "-" + i);
+				this.GROUPS[i] = g;
+				this.GROUPS[i].CachePivObjects(this.DB);
 			}
 		}
 
@@ -108,35 +78,38 @@ namespace natix.SimilaritySearch
 			int review_groups = 0;
 			foreach (var group in this.GROUPS) {
 				++review_groups;
-				int i = 0;
-				foreach (var piv in group._Pivs) {
-					var pivOBJ = this.DB[piv.objID];
+				int abs_pos = 0;
+				for (int pivID = 0; pivID < group._Pivs.Length; ++pivID) {
+					var piv = group._Pivs[pivID];
+					var pivOBJ = group._PivObjects[pivID];
+					//foreach (var piv in group._Pivs) {
+					// var pivOBJ = this.DB[piv.objID];
 					var dqp = this.DB.Dist(q, pivOBJ);
 					res.Push (piv.objID, dqp);
 					++this.internal_numdists;
 					// checking near ball radius
 					if (dqp <= piv.last_near + res.CoveringRadius) {
-						for (int j = 0; j < piv.num_near; ++j, ++i) {
-							var item = group._Items[i];
+						for (int nearID = 0; nearID < piv.num_near; ++nearID, ++abs_pos) {
+							var item = group._Items[abs_pos];
 							// checking covering pivot
 							if (Math.Abs (item.dist - dqp) <= res.CoveringRadius) {
 								++A[item.objID];
 							}
 						}
 					} else {
-						i+= piv.num_near;
+						abs_pos+= piv.num_near;
 					}
 					// checking external radius
 					if (dqp + res.CoveringRadius >= piv.first_far) {
-						for (int j = 0; j < piv.num_far; ++j, ++i) {
-							var item = group._Items[i];
+						for (int j = 0; j < piv.num_far; ++j, ++abs_pos) {
+							var item = group._Items[abs_pos];
 							// checking covering pivot
 							if (Math.Abs (item.dist - dqp) <= res.CoveringRadius) {
 								++A[item.objID];
 							}
 						}
 					} else {
-						i+= piv.num_far;
+						abs_pos+= piv.num_far;
 					}
 					if (dqp + res.CoveringRadius <= piv.last_near || piv.first_far <= dqp - res.CoveringRadius) {
 						break;

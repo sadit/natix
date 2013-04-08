@@ -24,7 +24,7 @@ namespace natix.SimilaritySearch
 	/// <summary>
 	/// String space
 	/// </summary>
-	public class StringLevenshteinSpace<T> : StringSpace< T > where T : IComparable
+	public class StringLevenshteinSpace<T> : StringSpace< T > where T : struct,IComparable
 	{
 		/// <summary>
 		/// Constructor
@@ -40,7 +40,7 @@ namespace natix.SimilaritySearch
 		public override double Dist (object a, object b)
 		{
 			this.numdist++;
-			return StringSpace<T>.Levenshtein ((IList<T>)a, (IList<T>) b);
+			return StringSpace<T>.Levenshtein (this.CastToArray(a), this.CastToArray(b));
 		}
 	}
 }
