@@ -129,6 +129,24 @@ namespace natix
             this.view.Write<T>(header_size + index*this.sizeOfT, ref u);
         }
 
+		public T[] ReadArray (long index, int len)
+		{
+			var output = new T[len];
+			this.view.ReadArray<T>(header_size + index*this.sizeOfT, output, 0, len);
+			return output;
+		}
+
+		public T[] ReadArray (long index, T[] output)
+		{
+			this.view.ReadArray<T>(header_size + index*this.sizeOfT, output, 0, output.Length);
+			return output;
+		}
+
+		public void WriteArray (long index, T[] output)
+		{
+			this.view.WriteArray<T>(header_size + index*this.sizeOfT, output, 0, output.Length);
+		}
+
         public override void Add (T item)
         {
             if (this.Count == this.MaxCapacity) {

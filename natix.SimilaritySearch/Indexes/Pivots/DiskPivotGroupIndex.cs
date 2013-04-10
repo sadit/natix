@@ -70,58 +70,66 @@ namespace natix.SimilaritySearch
 			}
 		}
 
+		protected void GroupSearchKNN (object q, int K, IResult res, DiskPivotGroup group, short[] A)
+		{
+			int abs_pos = 0;
+			for (int pivID = 0; pivID < group._Pivs.Length; ++pivID) {
+				var piv = group._Pivs[pivID];
+				var pivOBJ = group._PivObjects[pivID];
+				//foreach (var piv in group._Pivs) {
+				// var pivOBJ = this.DB[piv.objID];
+				var dqp = this.DB.Dist(q, pivOBJ);
+				res.Push (piv.objID, dqp);
+				++this.internal_numdists;
+				// checking near ball radius
+				if (dqp <= piv.last_near + res.CoveringRadius) {
+					var bucket_size = piv.num_near;
+					var bucket = group._Items.ReadArray(abs_pos, bucket_size);
+					abs_pos += bucket_size;
+					foreach (var item in bucket) {
+						// checking covering pivot
+						if (Math.Abs (item.dist - dqp) <= res.CoveringRadius) {
+							++A[item.objID];
+						}
+					}
+				} else {
+					abs_pos+= piv.num_near;
+				}
+				// checking external radius
+				if (dqp + res.CoveringRadius >= piv.first_far) {
+					var bucket_size = piv.num_far;
+					var bucket = group._Items.ReadArray(abs_pos, bucket_size);
+					abs_pos += bucket_size;
+					foreach (var item in bucket) {
+						// checking covering pivot
+						if (Math.Abs (item.dist - dqp) <= res.CoveringRadius) {
+							++A[item.objID];
+						}
+					}
+				} else {
+					abs_pos+= piv.num_far;
+				}
+				if (dqp + res.CoveringRadius <= piv.last_near || piv.first_far <= dqp - res.CoveringRadius) {
+					break;
+				}
+			}
+		}
+
         public override IResult SearchKNN (object q, int K, IResult res)
         {       
             var l = this.GROUPS.Length;
             var n = this.DB.Count;
 			short[] A = new short[this.DB.Count]; 
-			int review_groups = 0;
+			int num_groups = this.GROUPS.Length;
 			foreach (var group in this.GROUPS) {
-				++review_groups;
-				int abs_pos = 0;
-				for (int pivID = 0; pivID < group._Pivs.Length; ++pivID) {
-					var piv = group._Pivs[pivID];
-					var pivOBJ = group._PivObjects[pivID];
-					//foreach (var piv in group._Pivs) {
-					// var pivOBJ = this.DB[piv.objID];
-					var dqp = this.DB.Dist(q, pivOBJ);
-					res.Push (piv.objID, dqp);
-					++this.internal_numdists;
-					// checking near ball radius
-					if (dqp <= piv.last_near + res.CoveringRadius) {
-						for (int nearID = 0; nearID < piv.num_near; ++nearID, ++abs_pos) {
-							var item = group._Items[abs_pos];
-							// checking covering pivot
-							if (Math.Abs (item.dist - dqp) <= res.CoveringRadius) {
-								++A[item.objID];
-							}
-						}
-					} else {
-						abs_pos+= piv.num_near;
-					}
-					// checking external radius
-					if (dqp + res.CoveringRadius >= piv.first_far) {
-						for (int j = 0; j < piv.num_far; ++j, ++abs_pos) {
-							var item = group._Items[abs_pos];
-							// checking covering pivot
-							if (Math.Abs (item.dist - dqp) <= res.CoveringRadius) {
-								++A[item.objID];
-							}
-						}
-					} else {
-						abs_pos+= piv.num_far;
-					}
-					if (dqp + res.CoveringRadius <= piv.last_near || piv.first_far <= dqp - res.CoveringRadius) {
-						break;
-					}
-				}
+				this.GroupSearchKNN(q, K, res, group, A);
 			}
 			for (int docID = 0; docID < A.Length; ++docID) {
-                if (A[docID] == review_groups) {
+                if (A[docID] == num_groups) {
                     res.Push(docID, this.DB.Dist(q, this.DB[docID]));
                 }
             }
-            return res;
+			return res;
         }
 
 		public override IResult SearchRange (object q, double radius)

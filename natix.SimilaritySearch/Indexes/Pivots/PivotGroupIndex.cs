@@ -105,9 +105,8 @@ namespace natix.SimilaritySearch
             var l = this.GROUPS.Length;
             var n = this.DB.Count;
 			short[] A = new short[this.DB.Count]; 
-			int review_groups = 0;
+			int num_groups = this.GROUPS.Length;
 			foreach (var group in this.GROUPS) {
-				++review_groups;
 				int i = 0;
 				foreach (var piv in group._Pivs) {
 					var pivOBJ = this.DB[piv.objID];
@@ -144,10 +143,11 @@ namespace natix.SimilaritySearch
 				}
 			}
 			for (int docID = 0; docID < A.Length; ++docID) {
-                if (A[docID] == review_groups) {
+                if (A[docID] == num_groups) {
                     res.Push(docID, this.DB.Dist(q, this.DB[docID]));
                 }
             }
+
             return res;
         }
 

@@ -35,7 +35,7 @@ namespace natix.SimilaritySearch
 			}
 			MetricDB sp;
 			var full_path = Path.GetFullPath (path);
-			Console.Write("XXX Searching MetricDB: '{0}', save_into_cache: {1}", full_path, save_into_cache);
+			Console.Write("XXX Loading MetricDB: '{0}', save_into_cache: {1}", full_path, save_into_cache);
 			if (CACHE.TryGetValue (full_path, out sp)) {
 				Console.WriteLine (", using CACHE");
 				return sp;
@@ -44,6 +44,7 @@ namespace natix.SimilaritySearch
 			using (var Input = new BinaryReader(File.OpenRead(full_path))) {
 				sp = Load (Input, save_into_cache);
 			}
+			Console.WriteLine ("XXX Loaded '{0}'", full_path);
 			return sp;
 		}
 

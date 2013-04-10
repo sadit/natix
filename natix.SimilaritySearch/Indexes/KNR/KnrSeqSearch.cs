@@ -93,6 +93,14 @@ namespace natix.SimilaritySearch
 			this.SEQ = other.SEQ;
 		}
 
+		public void BuildApprox (MetricDB db, int num_refs, int K=7, int maxcand=1024, SequenceBuilder seq_builder = null)
+		{
+			var sample = new SampleSpace ("", db, num_refs);
+			KnrSeqSearch inner = new KnrSeqSearch ();
+			inner.Build (sample, 1024, K, int.MaxValue);
+			this.Build (db, new KnrSeqSearchFootrule(inner), K, maxcand, seq_builder);
+		}
+
 		public void Build (MetricDB db, int num_refs, int K=7, int maxcand=1024, SequenceBuilder seq_builder = null)
 		{
 			var sample = new SampleSpace ("", db, num_refs);

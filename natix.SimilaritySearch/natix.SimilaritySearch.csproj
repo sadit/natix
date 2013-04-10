@@ -46,7 +46,6 @@
     <Compile Include="Spaces\Sequences\StringDiceSpace.cs" />
     <Compile Include="Spaces\Sequences\StringIntersectionSpace.cs" />
     <Compile Include="Spaces\Sequences\StringPrefixLengthSpace.cs" />
-    <Compile Include="Spaces\Vectors\VectorSpace.cs" />
     <Compile Include="Spaces\Bitmaps\BinH8Space.cs" />
     <Compile Include="Spaces\Bitmaps\BinQ8HammingSpace.cs" />
     <Compile Include="Spaces\Bitmaps\AudioSpace.cs" />
@@ -93,7 +92,6 @@
     <Compile Include="Indexes\KNR\CNAPP.cs" />
     <Compile Include="Spaces\MetricDB.cs" />
     <Compile Include="Indexes\PermutedIndex.cs" />
-    <Compile Include="Indexes\Pivots\LAESA.cs" />
     <Compile Include="Indexes\Pivots\CompactPivotsLRANS.cs" />
     <Compile Include="Indexes\Pivots\CompactPivotsSEQRANS.cs" />
     <Compile Include="Indexes\DynamicSequential.cs" />
@@ -119,7 +117,6 @@
     <Compile Include="Indexes\LC\PolyIndexLC_ApproxGraph.cs" />
     <Compile Include="Spaces\Bitmaps\QGramH1.cs" />
     <Compile Include="Indexes\LC\PolyIndexLC_ApproxGraphEager.cs" />
-    <Compile Include="Indexes\Pivots\LAESA_ExternalPivots.cs" />
     <Compile Include="Indexes\KNR\KnrLSH.cs" />
     <Compile Include="Indexes\KNR\MKnrLSH.cs" />
     <Compile Include="Indexes\LC\PolyIndexLC_ApproxGraphRevLC.cs" />
@@ -149,6 +146,10 @@
     <Compile Include="Indexes\Pivots\DiskPivotGroupIndex.cs" />
     <Compile Include="Spaces\Vectors\DocumentDB.cs" />
     <Compile Include="Spaces\Vectors\DiskVectorList.cs" />
+    <Compile Include="Indexes\KNR\NAPP.cs" />
+    <Compile Include="NTTArray8A.cs" />
+    <Compile Include="Indexes\Pivots\LAESA_InternalPivots.cs" />
+    <Compile Include="Indexes\Pivots\LAESA.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

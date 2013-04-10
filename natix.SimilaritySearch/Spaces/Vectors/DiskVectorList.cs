@@ -46,7 +46,7 @@ namespace natix.SimilaritySearch
 		public DiskVectorList (string filename, int dim) : base()
 		{
 			this.Dimension = dim;
-			this.Data = new DiskList64<T> (filename, 1024);
+			this.Data = new DiskList64<T> (filename, 128 * this.Dimension);
 			this._Count = (int)(this.Data.Count / this.Dimension);
 			var read_vector = new ListGen64<T[]> ((long i) => this.ReadVector (i), long.MaxValue);
 			this.Cache = new CacheList64<T[]> (read_vector, 128);
@@ -74,11 +74,12 @@ namespace natix.SimilaritySearch
 		public T[] ReadVector(long docID)
 		{
 			var vec = new T[ this.Dimension ];
-			var sp = docID * this.Dimension;
-			for (int i = 0; i < this.Dimension; ++i) {
-				vec[i] = this.Data[sp + i];
-			}
-			return vec;
+			return this.Data.ReadArray (docID * this.Dimension, vec);
+//			var sp = docID * this.Dimension;
+//			for (int i = 0; i < this.Dimension; ++i) {
+//				vec[i] = this.Data[sp + i];
+//			}
+//			return vec;
 		}
 
 		public override void Add (T[] vector)
