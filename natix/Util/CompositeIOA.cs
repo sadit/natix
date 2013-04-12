@@ -23,14 +23,14 @@ using System.IO;
 namespace natix
 {
 	/// <summary>
-	/// Simple I/O output for objects implementing the ILoadSave interface
+	/// Simple I/O output for objects implementing the ILoadSave interface, alternative without T having new()
 	/// </summary>
-	public class CompositeIO<T> where T: ILoadSave, new()
+	public class CompositeIOA<T> where T: ILoadSave
     {		
 		/// <summary>
 		/// Reads "numitems" vectors from rfile, store items in "output" (array or list)
 		/// </summary>
-		public static IList<T> LoadVector (BinaryReader Input, int numitems, IList<T> output = null)
+		public static IList<T> LoadVector (BinaryReader Input, int numitems, Func<T> new_item, IList<T> output = null)
 		{
 			if (output == null) {
 				output = new T[numitems];
@@ -38,7 +38,8 @@ namespace natix
             if (output.Count > 0) {
                 for (int i = 0; i < output.Count; i++) {
                     //var u = default(T);
-                    var u = new T();
+                    //var u = new T();
+					var u = new_item();
                     u.Load(Input);
                     output [i] = u;
                 }
@@ -46,7 +47,8 @@ namespace natix
             }
             for (int i = 0; i < numitems; i++) {
                 //var u = default(T);
-                var u = new T();
+                //var u = new T();
+				var u = new_item();
                 u.Load(Input);
                 output.Add (u);
             }
@@ -63,9 +65,8 @@ namespace natix
 			}
 		}
 
-        public static T Load(BinaryReader Input)
+        public static T Load(BinaryReader Input, T new_item)
         {
-            var new_item = new T();
             new_item.Load(Input);
             return new_item;
         }

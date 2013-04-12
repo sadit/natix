@@ -61,8 +61,9 @@ namespace natix.SimilaritySearch
 			}
 		}
 
-		public void Build (MetricDB db, int num_groups, double alpha_stddev, int min_bs, int num_build_processors = -1, Func<PivotGroup> new_pivot_group = null)
+		public void Build (MetricDB db, int num_groups, double alpha, int min_bs, int num_build_processors = -1, Func<PivotGroup> new_pivot_group = null)
 		{
+			num_build_processors = 1;
 			this.DB = db;
 			this.GROUPS = new PivotGroup[num_groups];
             var seeds = new int[ num_groups ];
@@ -79,10 +80,10 @@ namespace natix.SimilaritySearch
                 } else {
                     this.GROUPS[i] = new_pivot_group();
                 }
-				this.GROUPS[i].Build(this.DB, alpha_stddev, min_bs, seeds[i]);
+				this.GROUPS[i].Build(this.DB, alpha, min_bs, seeds[i]);
 				// this.GROUPS [i] = this.GetGroup (alpha_stddev, min_bs);
-				Console.WriteLine ("Advance {0}/{1} (alpha_stddev={2}, db={3}, timestamp={4})",
-				                   I, num_groups, alpha_stddev, db.Name, DateTime.Now);
+				Console.WriteLine ("Advance {0}/{1} (alpha={2}, db={3}, timestamp={4})",
+				                   I, num_groups, alpha, db.Name, DateTime.Now);
 				I++;
 			});
 			// parallel_build = false;
@@ -107,47 +108,13 @@ namespace natix.SimilaritySearch
 			short[] A = new short[this.DB.Count]; 
 			int num_groups = this.GROUPS.Length;
 			foreach (var group in this.GROUPS) {
-				int i = 0;
-				foreach (var piv in group._Pivs) {
-					var pivOBJ = this.DB[piv.objID];
-					var dqp = this.DB.Dist(q, pivOBJ);
-					res.Push (piv.objID, dqp);
-					++this.internal_numdists;
-					// checking near ball radius
-					if (dqp <= piv.last_near + res.CoveringRadius) {
-						for (int j = 0; j < piv.num_near; ++j, ++i) {
-							var item = group._Items[i];
-							// checking covering pivot
-							if (Math.Abs (item.dist - dqp) <= res.CoveringRadius) {
-								++A[item.objID];
-							}
-						}
-					} else {
-						i+= piv.num_near;
-					}
-					// checking external radius
-					if (dqp + res.CoveringRadius >= piv.first_far) {
-						for (int j = 0; j < piv.num_far; ++j, ++i) {
-							var item = group._Items[i];
-							// checking covering pivot
-							if (Math.Abs (item.dist - dqp) <= res.CoveringRadius) {
-								++A[item.objID];
-							}
-						}
-					} else {
-						i+= piv.num_far;
-					}
-					if (dqp + res.CoveringRadius <= piv.last_near || piv.first_far <= dqp - res.CoveringRadius) {
-						break;
-					}
-				}
+				this.internal_numdists += group.SearchKNN(this.DB, q, K, res, A);
 			}
 			for (int docID = 0; docID < A.Length; ++docID) {
                 if (A[docID] == num_groups) {
                     res.Push(docID, this.DB.Dist(q, this.DB[docID]));
                 }
             }
-
             return res;
         }
 

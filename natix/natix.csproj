@@ -248,6 +248,7 @@
     <Compile Include="FunLists\CacheList64.cs" />
     <Compile Include="FunLists\SepDiskList32.cs" />
     <Compile Include="Sets\Tthreshold\NTTArray8.cs" />
+    <Compile Include="Util\CompositeIOA.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

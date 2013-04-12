@@ -28,8 +28,7 @@ namespace natix.SimilaritySearch
 {
 	public class PivotGroup : ILoadSave
 	{
-        #region STRUCTS
-        public struct Pivot : ILoadSave
+        public class Pivot : ILoadSave
         {
 			public int objID;
             public double stddev;
@@ -38,6 +37,10 @@ namespace natix.SimilaritySearch
             public double first_far;
 			public int num_near;
 			public int num_far;
+
+			public Pivot()
+			{
+			}
 
 			public Pivot(int objID, double stddev, double mean, double cov_near, double cov_far, int num_near, int num_far)
             {
@@ -71,12 +74,17 @@ namespace natix.SimilaritySearch
 				Output.Write (this.num_near);
 				Output.Write (this.num_far);
             }
+
+			public override string ToString ()
+			{
+				return string.Format ("[Pivot objID: {0}, stddev: {1}, mean: {2}, last_near: {3}, first_far: {4}, num_near: {5}, num_far: {6}]",
+				                      this.objID, this.stddev, this.mean, this.last_near, this.first_far, this.num_near, this.num_far);
+			}
         }
 
-        #endregion
 
-		public Pivot[] _Pivs;
-        public ItemPair[] _Items;
+		public Pivot[] Pivs;
+        public ItemPair[] Items;
 
 		public PivotGroup ()
 		{
@@ -86,17 +94,17 @@ namespace natix.SimilaritySearch
 		{
 			int len;
 			len = Input.ReadInt32 ();
-			this._Pivs = CompositeIO<Pivot>.LoadVector (Input, len, null) as Pivot[];
+			this.Pivs = CompositeIO<Pivot>.LoadVector (Input, len, null) as Pivot[];
 			len = Input.ReadInt32 ();
-            this._Items = CompositeIO<ItemPair>.LoadVector(Input, len, null) as ItemPair[];
+            this.Items = CompositeIO<ItemPair>.LoadVector(Input, len, null) as ItemPair[];
 		}
 
 		public void Save (BinaryWriter Output)
         {
-			Output.Write (this._Pivs.Length);
-			CompositeIO<Pivot>.SaveVector (Output, this._Pivs);
-            Output.Write (this._Items.Length);
-            CompositeIO<ItemPair>.SaveVector (Output, this._Items);
+			Output.Write (this.Pivs.Length);
+			CompositeIO<Pivot>.SaveVector (Output, this.Pivs);
+            Output.Write (this.Items.Length);
+            CompositeIO<ItemPair>.SaveVector (Output, this.Items);
 		}
 
         protected virtual void SearchExtremes (DynamicSequential idx, List<ItemPair> items, object piv, double alpha_stddev, int min_bs, out IResult near, out IResult far, out DynamicSequential.Stats stats)
@@ -108,8 +116,8 @@ namespace natix.SimilaritySearch
         {
             var idxDynamic = new DynamicSequentialOrdered ();
             idxDynamic.Build (DB, RandomSets.GetRandomPermutation(DB.Count, new Random(seed)));
-            this._Items = new ItemPair[DB.Count];
-			var pivs = new List<Pivot> (1024);
+            // this.Items = new ItemPair[DB.Count];
+			var pivs = new List<Pivot> (32);
 			var items = new List<ItemPair> (DB.Count);
             int I = 0;
             var extreme_items = new List<ItemPair>(idxDynamic.Count);
@@ -117,7 +125,7 @@ namespace natix.SimilaritySearch
                 var pidx = idxDynamic.GetAnyItem();
                 object piv = DB[pidx];
                 idxDynamic.Remove(pidx);
-                this._Items[pidx] = new ItemPair(pidx, 0);
+                // this.Items[pidx] = new ItemPair(pidx, 0);
                 IResult near, far;
                 DynamicSequential.Stats stats;
                 this.SearchExtremes(idxDynamic, extreme_items, piv, alpha_stddev, min_bs, out near, out far, out stats);
@@ -140,23 +148,23 @@ namespace natix.SimilaritySearch
                     if (near.Count > 0) {
                         near_first = near.First.dist;
                         near_last = near.Last.dist;
-                        Console.WriteLine("-- (ABSVAL)  first-near: {0}, last-near: {1}, near-count: {2}",
-                                          near_first, near_last, near.Count);
+//                        Console.WriteLine("-- (ABSVAL)  first-near: {0}, last-near: {1}, near-count: {2}",
+//                                          near_first, near_last, near.Count);
                         Console.WriteLine("-- (NORMVAL) first-near: {0}, last-near: {1}",
                                           near_first / stats.max, near_last / stats.max);
-                        Console.WriteLine("-- (SIGMAS)  first-near: {0}, last-near: {1}",
-                                          near_first / stats.stddev, near_last / stats.stddev);
+//                        Console.WriteLine("-- (SIGMAS)  first-near: {0}, last-near: {1}",
+//                                          near_first / stats.stddev, near_last / stats.stddev);
                         
                     }
                     if (far.Count > 0) {
                         far_first = far.First.dist;
                         far_last = far.Last.dist;
-                        Console.WriteLine("++ (ABSVAL)  first-far: {0}, last-far: {1}, far-count: {2}",
-                                          far_first, far_last, far.Count);
+//                        Console.WriteLine("++ (ABSVAL)  first-far: {0}, last-far: {1}, far-count: {2}",
+//                                          far_first, far_last, far.Count);
                         Console.WriteLine("++ (NORMVAL) first-far: {0}, last-far: {1}",
                                           far_first / stats.max, far_last / stats.max);
-                        Console.WriteLine("++ (SIGMAS)  first-far: {0}, last-far: {1}",
-                                          far_first / stats.stddev, far_last / stats.stddev);
+//                        Console.WriteLine("++ (SIGMAS)  first-far: {0}, last-far: {1}",
+//                                          far_first / stats.stddev, far_last / stats.stddev);
                     }
                 }
                 ++I;
@@ -165,9 +173,49 @@ namespace natix.SimilaritySearch
                 //Console.WriteLine("Number of objects after: {0}",idxDynamic.DOCS.Count);
             }
             Console.WriteLine("Number of pivots per group: {0}", I);
-			this._Pivs = pivs.ToArray ();
-			this._Items = items.ToArray ();
+			this.Pivs = pivs.ToArray ();
+			this.Items = items.ToArray ();
         }
+
+		public virtual int SearchKNN (MetricDB db, object q, int K, IResult res, short[] A)
+		{
+			int abs_pos = 0;
+			int count_dist = 0;
+			foreach (var piv in this.Pivs) {
+				var pivOBJ = db [piv.objID];
+				var dqp = db.Dist (q, pivOBJ);
+				res.Push (piv.objID, dqp);
+				++count_dist;
+				// checking near ball radius
+				if (dqp <= piv.last_near + res.CoveringRadius) {
+					for (int j = 0; j < piv.num_near; ++j, ++abs_pos) {
+						var item = this.Items [abs_pos];
+						// checking covering pivot
+						if (Math.Abs (item.dist - dqp) <= res.CoveringRadius) {
+							++A [item.objID];
+						}
+					}
+				} else {
+					abs_pos += piv.num_near;
+				}
+				// checking external radius
+				if (dqp + res.CoveringRadius >= piv.first_far) {
+					for (int j = 0; j < piv.num_far; ++j, ++abs_pos) {
+						var item = this.Items [abs_pos];
+						// checking covering pivot
+						if (Math.Abs (item.dist - dqp) <= res.CoveringRadius) {
+							++A [item.objID];
+						}
+					}
+				} else {
+					abs_pos += piv.num_far;
+				}
+				if (dqp + res.CoveringRadius <= piv.last_near || piv.first_far <= dqp - res.CoveringRadius) {
+					break;
+				}
+			}
+			return count_dist;
+		}
 	}
 }
 

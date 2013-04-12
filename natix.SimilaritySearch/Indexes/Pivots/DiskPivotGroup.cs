@@ -1,3 +1,6 @@
+//
+//  Copyright 2013  Eric Sadit Tellez Avila
+//
 //    Licensed under the Apache License, Version 2.0 (the "License");
 //    you may not use this file except in compliance with the License.
 //    You may obtain a copy of the License at
@@ -10,10 +13,6 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 // 
-// Eric S. Tellez
-// - Load and Save methods
-// - Everything was modified to compute slices using radius instead of the percentiles
-// - Argument minimum bucket size
 
 using System;
 using System.IO;
@@ -26,52 +25,102 @@ namespace natix.SimilaritySearch
 	public class DiskPivotGroup : ILoadSave
 	{
 		public object[] _PivObjects;
-		public PivotGroup.Pivot[] _Pivs;
-        public DiskList64<ItemPair> _Items;
+		public PivotGroup.Pivot[] Pivs;
+        public DiskList64<ItemPair> DiskItems;
 		public string Filename;
 
 		public DiskPivotGroup ()
 		{
 		}
 
-		public void CachePivObjects(MetricDB db)
+		protected void CachePivObjects(MetricDB db)
 		{
-			this._PivObjects = new object[this._Pivs.Length];
-			for (int pivID = 0; pivID < this._Pivs.Length; ++pivID) {
-				this._PivObjects [pivID] = db [this._Pivs [pivID].objID];
+			if (this._PivObjects == null) { 
+				this._PivObjects = new object[this.Pivs.Length];
+				for (int pivID = 0; pivID < this.Pivs.Length; ++pivID) {
+					this._PivObjects [pivID] = db [this.Pivs [pivID].objID];
+				}
 			}
 		}
 
 		public void Load(BinaryReader Input)
 		{
 			var len = Input.ReadInt32 ();
-			this._Pivs = CompositeIO<PivotGroup.Pivot>.LoadVector (Input, len, null) as PivotGroup.Pivot[];
+			this.Pivs = CompositeIO<PivotGroup.Pivot>.LoadVector (Input, len, null) as PivotGroup.Pivot[];
 			this.Filename = Input.ReadString ();
-			this._Items = new DiskList64<ItemPair>(this.Filename, 1024);
+			this.DiskItems = new DiskList64<ItemPair>(this.Filename, 1024);
 		}
 
 		public void Save (BinaryWriter Output)
         {
-			Output.Write (this._Pivs.Length);
-			CompositeIO<PivotGroup.Pivot>.SaveVector (Output, this._Pivs);
+			Output.Write (this.Pivs.Length);
+			CompositeIO<PivotGroup.Pivot>.SaveVector (Output, this.Pivs);
 			Output.Write (this.Filename);
             // CompositeIO<ItemPair>.SaveVector (Output, this._Items);
 		}
 
-        protected virtual void SearchExtremes (DynamicSequential idx, List<ItemPair> items, object piv, double alpha_stddev, int min_bs, out IResult near, out IResult far, out DynamicSequential.Stats stats)
-        {
-            throw new NotSupportedException();
-        }
+//        protected virtual void SearchExtremes (DynamicSequential idx, List<ItemPair> items, object piv, double alpha_stddev, int min_bs, out IResult near, out IResult far, out DynamicSequential.Stats stats)
+//        {
+//            throw new NotSupportedException();
+//        }
 
         public virtual void Build (PivotGroup g, string filename)
         {
-			this._Pivs = g._Pivs;
-			var num_groups = g._Items.Length;
-			this._Items = new DiskList64<ItemPair> (filename, 1024);
-			foreach (var p in g._Items) {
-				this._Items.Add(p);
+			this.Pivs = g.Pivs;
+			var num_groups = g.Items.Length;
+			this.DiskItems = new DiskList64<ItemPair> (filename, 1024);
+			foreach (var p in g.Items) {
+				this.DiskItems.Add(p);
 			}
         }
+
+		public int SearchKNN (MetricDB db, object q, int K, IResult res, short[] A)
+		{
+			this.CachePivObjects (db);
+			int abs_pos = 0;
+			int inner_numdist = 0;
+			for (int pivID = 0; pivID < this.Pivs.Length; ++pivID) {
+				var piv = this.Pivs [pivID];
+				var pivOBJ = this._PivObjects [pivID];
+				//foreach (var piv in group._Pivs) {
+				// var pivOBJ = this.DB[piv.objID];
+				var dqp = db.Dist (q, pivOBJ);
+				res.Push (piv.objID, dqp);
+				++inner_numdist;
+				// checking near ball radius
+				if (dqp <= piv.last_near + res.CoveringRadius) {
+					var bucket_size = piv.num_near;
+					var bucket = this.DiskItems.ReadArray (abs_pos, bucket_size);
+					abs_pos += bucket_size;
+					foreach (var item in bucket) {
+						// checking covering pivot
+						if (Math.Abs (item.dist - dqp) <= res.CoveringRadius) {
+							++A [item.objID];
+						}
+					}
+				} else {
+					abs_pos += piv.num_near;
+				}
+				// checking external radius
+				if (dqp + res.CoveringRadius >= piv.first_far) {
+					var bucket_size = piv.num_far;
+					var bucket = this.DiskItems.ReadArray (abs_pos, bucket_size);
+					abs_pos += bucket_size;
+					foreach (var item in bucket) {
+						// checking covering pivot
+						if (Math.Abs (item.dist - dqp) <= res.CoveringRadius) {
+							++A [item.objID];
+						}
+					}
+				} else {
+					abs_pos += piv.num_far;
+				}
+				if (dqp + res.CoveringRadius <= piv.last_near || piv.first_far <= dqp - res.CoveringRadius) {
+					break;
+				}
+			}
+			return inner_numdist;
+		}
 	}
 }
 

@@ -150,6 +150,7 @@
     <Compile Include="NTTArray8A.cs" />
     <Compile Include="Indexes\Pivots\LAESA_InternalPivots.cs" />
     <Compile Include="Indexes\Pivots\LAESA.cs" />
+    <Compile Include="Indexes\Pivots\PivotGroupIB.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
