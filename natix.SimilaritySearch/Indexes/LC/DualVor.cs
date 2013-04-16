@@ -21,7 +21,7 @@ using natix.SortingSearching;
 
 namespace natix.SimilaritySearch
 {
-    public class LC_DualVor : BasicIndex
+    public class DualVor : BasicIndex
     {
 		class Node : ILoadSave
 		{
@@ -83,7 +83,7 @@ namespace natix.SimilaritySearch
 
 		List<Node> node_list;
 
-		public LC_DualVor () : base()
+		public DualVor () : base()
         {
         }
 
