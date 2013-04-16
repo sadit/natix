@@ -156,7 +156,8 @@
       <DependentUpon>MetricDB.cs</DependentUpon>
     </Compile>
     <Compile Include="Indexes\LC\LC_KVorRNN.cs" />
-    <Compile Include="Indexes\LC\DualVor.cs" />
+    <Compile Include="Indexes\Hyperplanes\DualVor.cs" />
+    <Compile Include="Indexes\Hyperplanes\Vor.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -164,6 +165,7 @@
     <Folder Include="Indexes\Pivots\" />
     <Folder Include="Spaces\QString\" />
     <Folder Include="Indexes\SAT\" />
+    <Folder Include="Indexes\Hyperplanes\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\natix\natix.csproj">
