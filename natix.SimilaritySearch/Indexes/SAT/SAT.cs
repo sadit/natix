@@ -18,6 +18,7 @@ using System.Collections;
 using System.Collections.Generic;
 using natix.CompactDS;
 using natix.SortingSearching;
+using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
@@ -206,8 +207,9 @@ namespace natix.SimilaritySearch
 				_items.Add (docID);
 			}
             var items = DynamicSequential.ComputeDistances(this.DB, _items, this.DB[root_objID], null);
-            int count_step = 0;
-            this.BuildNode(this.root, items, ref count_step);
+            //int count_step = 0;
+            //this.BuildNode(this.root, items, ref count_step, 1);
+			this.BuildNode(this.root, items, 1);
         }
 
         protected virtual void SortItems (List<ItemPair> items)
@@ -215,12 +217,13 @@ namespace natix.SimilaritySearch
             DynamicSequential.SortByDistance (items);
         }
 
-        protected virtual void BuildNode (Node node, List<ItemPair> items, ref int count_step)
+		int count_step = 0;
+        protected virtual void BuildNode (Node node, List<ItemPair> items, int depth)// ref int count_step, int depth)
         {
             //Console.WriteLine("======== BUILD NODE: {0}", node.objID);
             ++count_step;
             if (count_step < 100 || count_step % 100 == 0) {
-                Console.WriteLine ("======== SAT {4} build_node: {0}, count_step: {1}/{2}, items_count: {3}", node.objID, count_step, this.DB.Count, items.Count, this);
+				Console.WriteLine ("======== SAT {4} build_node: {0}, count_step: {1}/{2}, items_count: {3}, timestamp: {4}", node.objID, count_step, this.DB.Count, items.Count, this, DateTime.Now);
             }
             var partition = new List< List< ItemPair > > ();
             //var cache = new Dictionary<int,double> (items.Count);
@@ -268,10 +271,18 @@ namespace natix.SimilaritySearch
             }
             pool = null;
             //Console.WriteLine("===== add children");
-            for (int child_ID = 0; child_ID < node.Children.Count; ++child_ID) {
-                this.BuildNode ( node.Children[child_ID], partition[child_ID], ref count_step );
-                partition[child_ID] = null;
-            }
+//			Action<int> build_node = delegate (int child_ID) {
+//				this.BuildNode (node.Children [child_ID], partition [child_ID], depth + 1);
+//				partition [child_ID] = null;
+//			};
+//			var ops = new ParallelOptions();
+//			ops.MaxDegreeOfParallelism = -1;
+//			Parallel.For (0, node.Children.Count, build_node);
+			for (int child_ID = 0; child_ID < node.Children.Count; ++child_ID) {
+				//this.BuildNode (node.Children [child_ID], partition [child_ID], ref count_step, depth + 1);
+				this.BuildNode (node.Children [child_ID], partition [child_ID], depth + 1);
+				partition [child_ID] = null;
+			}
         }         
     }
 }

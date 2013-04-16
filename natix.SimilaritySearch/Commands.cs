@@ -60,13 +60,12 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Constructor
 		/// </summary>
-		public ShellSearchOptions (string queryname, string indexname, string resultname = null, int showmaxres=128, bool showhist = true)
+		public ShellSearchOptions (string queryname, string indexname, string resultname = null, int showmaxres=128)
 		{
 			this.QueryName = queryname;
 			this.IndexName = indexname;
 			this.ResultName = resultname;
 			this.ShowMaxResult = showmaxres;
-			this.ShowHist = showhist;
 		}
 	}
 	
@@ -98,7 +97,6 @@ namespace natix.SimilaritySearch
 			if (searchOps.ResultName != null) {
 				ResultOutput = new BinaryWriter (File.Create (searchOps.ResultName + ".tmp"));
 			}
-			SortedDictionary<double, int> avg_hist = new SortedDictionary<double, int> ();
 			int qid = 0;
 			long totaltime = 0;
 			SearchCost totalCost = new SearchCost (0, 0);
@@ -127,49 +125,15 @@ namespace natix.SimilaritySearch
 				totalCost.Total += finalCost.Total;
 				long time = DateTime.Now.Ticks - tstart;
 				totaltime += time;
-				SortedDictionary<double, int> hist = new SortedDictionary<double, int> ();
-				if (searchOps.ShowHist) {
-					foreach (ResultPair p in res) {
-						if (hist.ContainsKey (p.dist)) {
-							hist [p.dist]++;
-						} else {
-							hist [p.dist] = 1;
-						}
-					}
-					foreach (var p in hist) {
-						if (avg_hist.ContainsKey (p.Key)) {
-							avg_hist [p.Key] += p.Value;
-						} else {
-							avg_hist [p.Key] = p.Value;
-						}
-					}
-					if (avg_hist.Count > 1000) {
-						searchOps.ShowHist = false;
-						Console.WriteLine ("WARNING: Histogram of distances was disabled because there are too many bins");
-					}
-				}
 				ResultInfo info = new ResultInfo (qid, qItem.EncodeQTypeQArgInSign(), qraw, finalCost, new TimeSpan (time), res);
+				Console.WriteLine ("== qid: {0}", qid);
+				Console.WriteLine ("== index: {0}, db: {1}, result: {2}", index, index.DB.Name, searchOps.ResultName);
 				if (ResultOutput != null) {
 					// Dirty.SerializeBinary (ResultOutput, info);
 					info.Save (ResultOutput);
 				}
 				Console.WriteLine (info.ToString (searchOps.ShowMaxResult, null));
-				if (searchOps.ShowHist) {
-					Console.WriteLine ("Distance histogram (dist => counter)");
-					foreach (KeyValuePair<double, int> xp in hist) {
-						Console.Write ("({0} => {1}), ", xp.Key, xp.Value);
-					}
-					Console.WriteLine ("<TheEnd>");
-				}
-				Console.WriteLine ("Number Results: {0}", res.Count);
 				qid++;
-			}
-			if (searchOps.ShowHist) {
-				Console.WriteLine ("Average Distance histogram (dist => counter)");
-				foreach (KeyValuePair<double, int> xp in avg_hist) {
-					Console.Write ("({0} => {1}), ", xp.Key, ((double)xp.Value) / qid);
-				}
-				Console.WriteLine ("<TheEnd>");
 			}
 			if (ResultOutput != null) {
 				ResultOutput.Close ();

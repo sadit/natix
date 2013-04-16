@@ -64,7 +64,7 @@ namespace natix.SimilaritySearch
         {       
             var l = this.GROUPS.Length;
             var n = this.DB.Count;
-			short[] A = new short[this.DB.Count]; 
+			short[] A = new short[this.DB.Count];
 			int num_groups = this.GROUPS.Length;
 			foreach (var group in this.GROUPS) {
 				this.internal_numdists += group.SearchKNN(this.DB, q, K, res, A);

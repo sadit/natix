@@ -55,6 +55,9 @@ namespace natix.SimilaritySearch
 		public void Build (PivotGroupIndex pgi, int num_groups)
 		{
 			this.DB = pgi.DB;
+			if (num_groups <= 0) {
+				num_groups = pgi.GROUPS.Length;
+			}
 			this.GROUPS = new PivotGroup[num_groups];
 			for (int i = 0; i < num_groups; ++i) {
 				this.GROUPS[i] = pgi.GROUPS[i];
@@ -63,7 +66,6 @@ namespace natix.SimilaritySearch
 
 		public void Build (MetricDB db, int num_groups, double alpha, int min_bs, int num_build_processors = -1, Func<PivotGroup> new_pivot_group = null)
 		{
-			num_build_processors = 1;
 			this.DB = db;
 			this.GROUPS = new PivotGroup[num_groups];
             var seeds = new int[ num_groups ];

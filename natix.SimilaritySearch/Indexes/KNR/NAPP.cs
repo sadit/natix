@@ -110,9 +110,12 @@ namespace natix.SimilaritySearch
 			var len_qseq = qseq.Length;
 			// var C = new Dictionary<int,short> ();
 			var posting = new int[len_qseq][];
+			int avg_len = 0;
 			for (int i = 0; i < len_qseq; ++i) {
 				posting[i] = this.INVINDEX[qseq[i]];
+				avg_len += posting[i].Length;
 			}
+			Console.WriteLine ("=== avg-posting-list-length: {0}", avg_len / ((float)len_qseq));
 			return posting;
 		}
 

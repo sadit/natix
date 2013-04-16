@@ -117,7 +117,8 @@ namespace natix.SimilaritySearch
                 var center_objID = this.CENTERS[centerID];
                 double dcq = cache[ center_objID ];
                 var cov = this.COV[centerID];
-                if (dcq <= d_closer + 2 * R.CoveringRadius && dcq <= R.CoveringRadius + cov) {
+				var rescov = R.CoveringRadius;
+                if (dcq <= d_closer + rescov + rescov && dcq <= rescov + cov) {
                     // if (dcq_cov <= R.CoveringRadius) {
                     var list = this.SEQ.Unravel(centerID);
                     if (queue_dist != null) {

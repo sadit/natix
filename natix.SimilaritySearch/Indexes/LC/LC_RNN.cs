@@ -145,7 +145,32 @@ namespace natix.SimilaritySearch
 		public virtual void Build (MetricDB db, int num_centers, Random rand, SequenceBuilder seq_builder = null)
 		{
 			this.DB = db;
+			var n = this.DB.Count;
+			// randomized has very good performance, even compared with more "intelligent" strategies
 			this.CENTERS = RandomSets.GetRandomSubSet (num_centers, this.DB.Count, rand);
+//			var perm = RandomSets.GetIdentity (n);
+//			double prob_review = (Math.Sqrt(n)*2)/ n;
+//			this.CENTERS = new int[num_centers];
+//			for (int i = 0; i < num_centers; ++i) {
+//				if ((i & 1) == 0) {
+//					var pos = rand.Next(i, perm.Length);
+//					var objID = perm[pos];
+//					perm[pos] = perm[i];
+//					this.CENTERS[i] = objID;
+//				} else {
+//					var prevOBJ = this.DB[this.CENTERS[i-1]];
+//					var furthest = new Result(1);
+//					furthest.Push(perm[i], -this.DB.Dist(prevOBJ, this.DB[perm[i]]));
+//					for (int j = i+1; j < n; ++j) {
+//						if (rand.NextDouble() <= prob_review) {
+//							furthest.Push(j, -this.DB.Dist(prevOBJ, this.DB[perm[j]]));
+//						}
+//					}
+//					var objID = perm[furthest.First.docid];
+//					perm[furthest.First.docid] = perm[i];
+//					this.CENTERS[i] = objID;
+//				}
+//			}
 			Sorting.Sort<int> (this.CENTERS);
 			BitStream32 IsCenter = new BitStream32 ();
 			IsCenter.Write (false, db.Count);

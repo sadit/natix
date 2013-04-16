@@ -75,7 +75,7 @@ namespace natix.SimilaritySearch
 			var vecs = new List<T[]> ();
 			var len = this.VECTORS.Count;
 			for (int docID = 0; docID < len; ++docID) {
-				if (docID % 1000 == 0) {
+				if (docID % 10000 == 0) {
 					Console.WriteLine("== loading vectors: {0}/{1}, {2:0.00}%", docID, len, docID * 100.0 / len);
 				}
 				vecs.Add(this.VECTORS[docID]);

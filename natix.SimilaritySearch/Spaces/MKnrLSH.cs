@@ -25,9 +25,17 @@ namespace natix.SimilaritySearch
 	public class MKnrLSH : BasicIndex
 	{
         public KnrLSH[] A;
+		public bool ExpandQueries = false;
+
+		public override string ToString ()
+		{
+			return string.Format ("[MKnrLSH num_indexes: {0}, first-index: {1}, expand: {2}]", this.A.Length,
+			                      this.A.Length == 0 ? "undefined" : this.A[0].ToString(), this.ExpandQueries);
+		}
 
 		public override void Save (BinaryWriter Output)
         {
+			base.Save (Output);
             Output.Write (A.Length);
             foreach (var a in A) {
                 a.Save(Output);
@@ -36,6 +44,7 @@ namespace natix.SimilaritySearch
 
 		public override void Load (BinaryReader Input)
         {
+			base.Load (Input);
             var len = Input.ReadInt32 ();
             this.A = new KnrLSH[len];
             for (int i = 0; i < len; ++i) {
@@ -49,29 +58,63 @@ namespace natix.SimilaritySearch
 		{
 		}
 
-		public void Build (MetricDB db, int num_instances)
+		public void Build (MKnrLSH knrlsh, int num_instances)
+		{
+			this.A = new KnrLSH[num_instances];
+			this.DB = knrlsh.DB;
+			for (int i = 0; i < num_instances; ++i) {
+				this.A[i] = knrlsh.A[i];
+			}
+		}
+
+		public void Build (MetricDB db, int K, int num_refs, int num_instances)
         {
             this.A = new KnrLSH[num_instances];
             this.DB = db;
-            for (int i = 0; i < num_instances; ++i) {
-                var a = new KnrLSH();
-                a.Build(db);
-                this.A[i] = a;
-            }
+			var seed = RandomSets.GetRandomInt ();
+			int I = 0;
+			Action<int> compute = delegate (int i) {
+				var a = new KnrLSH();
+				a.Build(db, K, num_refs, RandomSets.GetRandom(seed + i));
+				this.A[i] = a;
+				++I;
+				Console.WriteLine ("=== Created {0}/{1} KnrLSH index", I, num_instances);
+			};
+//			for(int i = 0; i < num_instances; ++i) {
+//				compute.Invoke(i);
+//			}
+			ParallelOptions ops = new ParallelOptions ();
+			ops.MaxDegreeOfParallelism = -1; 
+			Parallel.For(0, num_instances, ops, compute);
 		}
 
 		public override IResult SearchKNN (object q, int knn, IResult res)
 		{
             var L = new HashSet<int>();
-            foreach (var a in this.A) {
-                var h = a.GetHashKnr(q);
-                IList<int> M;
-                if (a.TABLE.TryGetValue(h, out M)) {
-                    foreach (var docID in M) {
-                        L.Add(docID);
-                    }
-                }
-            }
+			if (this.ExpandQueries) {
+				foreach (var a in this.A) {
+					//var h = a.GetHashKnr(q);
+					foreach (var h in a.ExpandHashKnr(q)) {
+						IList<int> M;
+						if (a.TABLE.TryGetValue(h, out M)) {
+							foreach (var docID in M) {
+								L.Add(docID);
+							}
+						}
+					}
+				}
+			} else {
+				foreach (var a in this.A) {
+					var h = a.GetHashKnr(q);
+					IList<int> M;
+					if (a.TABLE.TryGetValue(h, out M)) {
+						foreach (var docID in M) {
+							L.Add(docID);
+						}
+					}
+				}
+			}
+// 			Console.WriteLine ("XXXXX candidates: {0}", L.Count);
             foreach (var docID in L) {
                 double d = this.DB.Dist (q, this.DB [docID]);
                 res.Push (docID, d);

@@ -28,6 +28,13 @@ namespace natix.SimilaritySearch
 		public Index R;
         public Dictionary<int, IList<int>> TABLE;       
 
+		public override string ToString ()
+		{
+			return string.Format ("[KnrLSH K: {0}, num_refs: {1}, num_symbols: {2}, db: {3}]",
+			                      this.K, this.R.DB.Count,
+			                      this.TABLE == null ? "undefined" : this.TABLE.Count.ToString(), this.DB.Name);
+		}
+
 		public override void Save (BinaryWriter Output)
         {
             base.Save (Output);
@@ -67,44 +74,80 @@ namespace natix.SimilaritySearch
 			this.TABLE = other.TABLE;
 		}
 
-		public void Build (MetricDB db)
+		public void Build (MetricDB db, int K, int num_refs, Random rand)
 		{
             this.DB = db;
 			int n = db.Count;
             // valid values to be used as parameters
             // numrefs <= 255
             // K <= 4
-            var numrefs = 16;
-            this.K = 4;
-            var refs = new SampleSpace("", db, numrefs);
+			this.K = K;
+            var refs = new SampleSpace("", db, num_refs);
             var seq = new Sequential();
             seq.Build(refs);
             this.R = seq;
 			int[] G = new int[n];
-			int I = 0;
-			Action<int> compute = delegate (int i) {
-				if (I % 1000 == 0) {
-					Console.WriteLine ("computing knrlsh {0}/{1} (adv. {2:0.00}%, curr. time: {3})", I, n, I*100.0/n, DateTime.Now);
-				}
-				++I;
-				var u = this.DB[i];
+			for (int objID = 0; objID < n; ++objID) {
+				var u = this.DB[objID];
 				var useq = this.GetHashKnr(u);
-                G[i] = useq;
-			};
-			Parallel.For(0, n, compute);
+				G[objID] = useq;
+				if (objID % 10000 == 0) {
+					Console.WriteLine ("computing knrlsh {0}/{1} (adv. {2:0.00}%, db: {3}, K: {4}, curr. time: {5})", objID, n, objID*100.0/n, this.DB.Name, this.K, DateTime.Now);
+				}
+			}
             this.TABLE = new Dictionary<int, IList<int>> ();
-            for (int docID = 0; docID < n; ++docID) {
-                var hash = G[docID];
+            for (int objID = 0; objID < n; ++objID) {
+                var hash = G[objID];
                 IList<int> L;
                 if (!this.TABLE.TryGetValue(hash, out L)) {
                     L = new List<int>();
                     this.TABLE.Add(hash, L);
                 }
-                L.Add (docID);
+                L.Add (objID);
             }
 		}
 
-		public int GetHashKnr (object q)
+		public virtual IEnumerable<int> ExpandHashKnr (object q)
+		{
+			this.internal_numdists-=this.R.Cost.Internal;
+			var near = this.R.SearchKNN(q, this.K);
+			var list = new List<int> (Fun.Map<ResultPair,int>(near, (pair) => pair.docid ));
+			this.internal_numdists+=this.R.Cost.Internal;
+			var max_pos = list.Count - 1;
+			var first = this.EncodeKnr(list);
+			yield return first;
+			for (int i = 0; i < list.Count; ++i) {
+				for (int j = 0; j < max_pos; ++j) {
+					swap (j, list);
+					// var x = Fun.Reduce<string>(Fun.Map<int,string>(list, (item) => item.ToString()), (a,b) => String.Format("({0},{1}), ",a, b));
+					// Console.WriteLine ("({0},{1}) => {2}", i, j, x);
+					var h = this.EncodeKnr(list);
+					if (h != first) {
+						yield return h;
+					}
+				}
+			}
+		}
+
+		void swap(int i, List<int> list)
+		{
+			var item = list[i];
+			list [i] = list [i + 1];
+			list [i + 1] = item;
+		}
+
+		public int EncodeKnr(List<int> near)
+		{
+			int hash = 0;
+			int i = 0;
+			foreach (var refID in near) {
+				hash |= refID << (i << 3);
+				++i;
+			}
+			return hash;
+		}
+
+		public virtual int GetHashKnr (object q)
 		{
             this.internal_numdists-=this.R.Cost.Internal;
 			var near = this.R.SearchKNN(q, this.K);

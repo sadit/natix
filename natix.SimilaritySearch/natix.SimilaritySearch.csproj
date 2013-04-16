@@ -118,7 +118,6 @@
     <Compile Include="Spaces\Bitmaps\QGramH1.cs" />
     <Compile Include="Indexes\LC\PolyIndexLC_ApproxGraphEager.cs" />
     <Compile Include="Indexes\KNR\KnrLSH.cs" />
-    <Compile Include="Indexes\KNR\MKnrLSH.cs" />
     <Compile Include="Indexes\LC\PolyIndexLC_ApproxGraphRevLC.cs" />
     <Compile Include="Indexes\DynamicSequentialRandom.cs" />
     <Compile Include="Indexes\Pivots\PivotGroupDiscardMeanNNRadius.cs" />
@@ -151,6 +150,13 @@
     <Compile Include="Indexes\Pivots\LAESA_InternalPivots.cs" />
     <Compile Include="Indexes\Pivots\LAESA.cs" />
     <Compile Include="Indexes\Pivots\PivotGroupIB.cs" />
+    <Compile Include="Indexes\Pivots\PivotGroupIndexApprox.cs" />
+    <Compile Include="Indexes\Pivots\PivotGroupApprox.cs" />
+    <Compile Include="Spaces\MKnrLSH.cs">
+      <DependentUpon>MetricDB.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Indexes\LC\LC_KVorRNN.cs" />
+    <Compile Include="Indexes\LC\LC_DualVor.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
