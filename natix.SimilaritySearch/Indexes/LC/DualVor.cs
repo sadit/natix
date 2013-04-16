@@ -112,13 +112,15 @@ namespace natix.SimilaritySearch
 			var n = this.DB.Count;
 			// randomized has very good performance, even compared with more "intelligent" strategies
 			this.node_list = new List<Node> (num_centers);
-			{
-				var subset = RandomSets.GetRandomSubSet (num_centers, this.DB.Count, rand);
-				for (int centerID = 0; centerID < num_centers; ++centerID) {
-					this.node_list.Add (new Node (subset [centerID]));
-				}
+			var subset = RandomSets.GetRandomSubSet (num_centers, this.DB.Count, rand);
+			for (int centerID = 0; centerID < num_centers; ++centerID) {
+				this.node_list.Add (new Node (subset [centerID]));
 			}
+			var H = new HashSet<int> (subset);
 			for (int docID = 0; docID < n; ++docID) {
+				if (H.Contains(docID)) {
+					continue;
+				}
 				var near = new Result(1);
 				var far = new Result(1);
 				for (var centerID = 0; centerID < num_centers; ++centerID) {
