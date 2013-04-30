@@ -90,8 +90,6 @@ namespace natix.SimilaritySearch
             var l = this.forest.Length;
             var n = this.DB.Count;
 			short[] A = new short[n];
-			ItemPair[] B = new ItemPair[n];
-
 			var D_trees = new double[this.forest.Length][];
 			for (int rowID = 0; rowID < this.forest.Length; ++rowID) {
 				var pivs = this.forest[rowID].Pivs;
@@ -105,10 +103,10 @@ namespace natix.SimilaritySearch
 			}
 			for (short treeID = 0; treeID < l; ++treeID) {
 				var t = this.forest[treeID];
-				t.SearchKNN(this.DB, q, K, res, A, B, treeID, D_trees[treeID]);
+				t.SearchKNN(this.DB, q, K, res, A, treeID, D_trees[treeID]);
 			}
 			for (int docID = 0; docID < A.Length; ++docID) {
-                if (A[docID] == l && 
+                if (A[docID] == l) {
 				    var d = this.DB.Dist(q, this.DB[docID]);
                     res.Push(docID, d);
                 }

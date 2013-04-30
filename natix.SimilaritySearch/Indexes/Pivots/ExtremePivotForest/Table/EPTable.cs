@@ -29,7 +29,7 @@ using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
-	public class EPTable : BasicIndex
+	public class EPTable : BasicIndex, IndexSingle
 	{
 		public EPList[] rows;
 
@@ -116,9 +116,8 @@ namespace natix.SimilaritySearch
 			}
 		}
 
-		public override IResult SearchKNN (object q, int K, IResult res)
+		public object CreateQueryContext(object q)
 		{
-			var n = this.DB.Count;
 			var D_rows = new double[this.rows.Length][];
 			for (int rowID = 0; rowID < this.rows.Length; ++rowID) {
 				var pivs = this.rows[rowID].Pivs;
@@ -128,14 +127,35 @@ namespace natix.SimilaritySearch
 				}
 				this.internal_numdists += pivs.Length;
 			}
+			return D_rows;
+		}
 
+		public bool MustReviewItem(object q, int objID, double radius, object query_context)
+		{
+			var D_rows = (double[][])query_context;
+			for (int rowID = 0; rowID < this.rows.Length; ++rowID) {
+				var g = this.rows[rowID];
+				var item = g.Items[objID];
+				var dqp = D_rows[rowID][item.objID];
+				if (Math.Abs(item.dist - dqp) > radius) {
+					return false;
+				}
+			}
+			return true;
+		}
+		                               
+		public override IResult SearchKNN (object q, int K, IResult res)
+		{
+			var n = this.DB.Count;
+			var D_rows = (double[][])this.CreateQueryContext (q);
 			for (int objID = 0; objID < n; ++objID) {
 				bool review = true;
+				var radius = res.CoveringRadius;
 				for (int rowID = 0; rowID < this.rows.Length; ++rowID) {
 					var g = this.rows[rowID];
 					var item = g.Items[objID];
 					var dqp = D_rows[rowID][item.objID];
-					if (Math.Abs(item.dist - dqp) > res.CoveringRadius) {
+					if (Math.Abs(item.dist - dqp) > radius) {
 						review = false;
 						break;
 					}
@@ -148,7 +168,6 @@ namespace natix.SimilaritySearch
 			return res;
 		}
 
-		
 		public override IResult SearchRange (object q, double radius)
 		{
 			var res = new ResultRange (radius, this.DB.Count);

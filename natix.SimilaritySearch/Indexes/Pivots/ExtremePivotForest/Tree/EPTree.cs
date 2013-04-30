@@ -26,7 +26,7 @@ namespace natix.SimilaritySearch
 	public class EPTree : ILoadSave
 	{			
 		public EPivot[] Pivs;
-		public ItemPair[] Items;
+		public int[] Items;
 
 		public virtual void Load(BinaryReader Input)
 		{
@@ -34,7 +34,7 @@ namespace natix.SimilaritySearch
 			len = Input.ReadInt32 ();
 			this.Pivs = CompositeIO<EPivot>.LoadVector (Input, len, null) as EPivot[];
 			len = Input.ReadInt32 ();
-			this.Items = CompositeIO<ItemPair>.LoadVector(Input, len, null) as ItemPair[];
+			this.Items = PrimitiveIO<int>.ReadFromFile (Input, len, null) as int[];
 		}
 		
 		public virtual void Save (BinaryWriter Output)
@@ -42,7 +42,7 @@ namespace natix.SimilaritySearch
 			Output.Write (this.Pivs.Length);
 			CompositeIO<EPivot>.SaveVector (Output, this.Pivs);
 			Output.Write (this.Items.Length);
-			CompositeIO<ItemPair>.SaveVector (Output, this.Items);
+			PrimitiveIO<int>.WriteVector (Output, this.Items);
 		}
 		
 
@@ -54,9 +54,9 @@ namespace natix.SimilaritySearch
 		public EPTree (EPList list)
 		{
 			var H = new HashSet<int> ();
-			var D = new List<List<ItemPair>> (list.Pivs.Length);
+			var D = new List<List<int>> (list.Pivs.Length);
 			for (int pivID = 0; pivID < list.Pivs.Length; ++pivID) {
-				D.Add(new List<ItemPair>());
+				D.Add(new List<int>());
 				H.Add(list.Pivs[pivID].objID);
 			}
 			var n = list.Items.Length;
@@ -65,20 +65,21 @@ namespace natix.SimilaritySearch
 				// EPTree stores Items as tuples (objID, dist)
 				// EPList stores Items as tuples (pivID, dist)
 				if (!H.Contains(objID)) {
-					D[item.objID].Add(new ItemPair(objID, item.dist));
+					D[item.objID].Add(objID);
 				}
 			}
 			this.Pivs = new EPivot[ list.Pivs.Length ];
-			this.Items = new ItemPair[ list.Items.Length ];
+			this.Items = new int[ list.Items.Length ];
 			int abs_pos = 0;
 			for (int pivID = 0; pivID < list.Pivs.Length; ++pivID) {
-				D[pivID].Sort( (x,y) => x.dist.CompareTo(y.dist) );
+				D[pivID].Sort( (x,y) => list.Items[x].dist.CompareTo(list.Items[y].dist) );
 				var lpiv = list.Pivs[pivID];
 				var piv = new EPivot(lpiv.objID, lpiv.stddev, lpiv.mean, 0, double.MaxValue, 0, 0);
 				this.Pivs[pivID] = piv;
-				foreach (var item in D[pivID]) {
-					this.Items[abs_pos] = item;
+				foreach (var objID in D[pivID]) {
+					this.Items[abs_pos] = objID;
 					++abs_pos;
+					var item = list.Items[objID];
 					if (item.dist <= piv.mean) {
 						piv.num_near++;
 						piv.last_near = Math.Max (piv.last_near, item.dist);
@@ -92,7 +93,9 @@ namespace natix.SimilaritySearch
 		}
 
 		
-		public virtual void SearchKNN (MetricDB db, object q, int K, IResult res, short[] A, ItemPair[] B, short current_rank_A, double[] D)
+		public virtual void SearchKNN (MetricDB db, object q, int K, IResult res,
+		                               short[] A,
+		                               short current_rank_A, double[] D)
 		{
 			int abs_pos = 0;
 			for (int pivID = 0; pivID < this.Pivs.Length; ++pivID) {
@@ -104,11 +107,8 @@ namespace natix.SimilaritySearch
 				// checking near ball radius
 				if (dqp <= piv.last_near + res.CoveringRadius) {
 					for (int j = 0; j < piv.num_near; ++j, ++abs_pos) {
-						var item = this.Items [abs_pos];
-						// checking covering pivot
-						if (A[item.objID] == current_rank_A && Math.Abs (item.dist - dqp) <= res.CoveringRadius) {
-							++A [item.objID];
-						}
+						var objID = this.Items [abs_pos];
+						++A [objID];
 					}
 				} else {
 					abs_pos += piv.num_near;
@@ -116,11 +116,8 @@ namespace natix.SimilaritySearch
 				// checking external radius
 				if (dqp + res.CoveringRadius >= piv.first_far) {
 					for (int j = 0; j < piv.num_far; ++j, ++abs_pos) {
-						var item = this.Items [abs_pos];
-						// checking covering pivot
-						if (A[item.objID] == current_rank_A && Math.Abs (item.dist - dqp) <= res.CoveringRadius) {
-							++A [item.objID];
-						}
+						var objID = this.Items [abs_pos];
+						++A [objID];
 					}
 				} else {
 					abs_pos += piv.num_far;
