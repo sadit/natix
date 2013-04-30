@@ -21,12 +21,13 @@
     <ConsolePause>False</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
+    <DebugType>full</DebugType>
     <Optimize>True</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>False</ConsolePause>
+    <DebugSymbols>True</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -95,8 +96,6 @@
     <Compile Include="Indexes\Pivots\CompactPivotsLRANS.cs" />
     <Compile Include="Indexes\Pivots\CompactPivotsSEQRANS.cs" />
     <Compile Include="Indexes\DynamicSequential.cs" />
-    <Compile Include="Indexes\Pivots\PivotGroup.cs" />
-    <Compile Include="Indexes\Pivots\PivotGroupIndex.cs" />
     <Compile Include="Indexes\Pivots\CompactPivotsSEQINTSvS.cs" />
     <Compile Include="Spaces\QString\QStringSpace.cs" />
     <Compile Include="Spaces\QString\QStringLevenshteinSpace.cs" />
@@ -120,11 +119,6 @@
     <Compile Include="Indexes\KNR\KnrLSH.cs" />
     <Compile Include="Indexes\LC\PolyIndexLC_ApproxGraphRevLC.cs" />
     <Compile Include="Indexes\DynamicSequentialRandom.cs" />
-    <Compile Include="Indexes\Pivots\PivotGroupDiscardMeanNNRadius.cs" />
-    <Compile Include="Indexes\Pivots\PivotGroupDiscardMeanSigmaRadius.cs" />
-    <Compile Include="Indexes\Pivots\PivotGroupAcceptExtremesSigmaRadius.cs" />
-    <Compile Include="Indexes\Pivots\PivotGroupAcceptExtremesFixedBucket.cs" />
-    <Compile Include="Indexes\Pivots\PivotGroupAcceptExtremesQuantile.cs" />
     <Compile Include="Indexes\SAT\SAT.cs" />
     <Compile Include="Indexes\DynamicSequentialOrdered.cs" />
     <Compile Include="Indexes\SAT\SAT_Distal.cs" />
@@ -141,23 +135,38 @@
     <Compile Include="Spaces\Vectors\VectorDB.cs" />
     <Compile Include="Spaces\Vectors\CosineVectorDB.cs" />
     <Compile Include="Spaces\Vectors\MinkowskiVectorDB.cs" />
-    <Compile Include="Indexes\Pivots\DiskPivotGroup.cs" />
-    <Compile Include="Indexes\Pivots\DiskPivotGroupIndex.cs" />
     <Compile Include="Spaces\Vectors\DocumentDB.cs" />
     <Compile Include="Spaces\Vectors\DiskVectorList.cs" />
     <Compile Include="Indexes\KNR\NAPP.cs" />
     <Compile Include="NTTArray8A.cs" />
     <Compile Include="Indexes\Pivots\LAESA_InternalPivots.cs" />
     <Compile Include="Indexes\Pivots\LAESA.cs" />
-    <Compile Include="Indexes\Pivots\PivotGroupIB.cs" />
-    <Compile Include="Indexes\Pivots\PivotGroupIndexApprox.cs" />
-    <Compile Include="Indexes\Pivots\PivotGroupApprox.cs" />
     <Compile Include="Spaces\MKnrLSH.cs">
       <DependentUpon>MetricDB.cs</DependentUpon>
     </Compile>
     <Compile Include="Indexes\LC\LC_KVorRNN.cs" />
     <Compile Include="Indexes\Hyperplanes\DualVor.cs" />
     <Compile Include="Indexes\Hyperplanes\Vor.cs" />
+    <Compile Include="Indexes\Hyperplanes\VorFar.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroupAcceptExtremesQuantile.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroupAcceptExtremesFixedBucket.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroupAcceptExtremesSigmaRadius.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroupDiscardMeanNNRadius.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroupDiscardMeanSigmaRadius.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroupApprox.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroup.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroupIndexApprox.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\DiskPivotGroup.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\DiskPivotGroupIndex.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPTable.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPListRandomPivots.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPListOptimized.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\EPivot.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPList.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\Tree\EPTree.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\Tree\EPForest.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPListMeanPivots.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroupIndex.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -166,6 +175,10 @@
     <Folder Include="Spaces\QString\" />
     <Folder Include="Indexes\SAT\" />
     <Folder Include="Indexes\Hyperplanes\" />
+    <Folder Include="Indexes\Pivots\ExtremePivotForest\" />
+    <Folder Include="Indexes\Pivots\ExtremePivotForest\Tree\" />
+    <Folder Include="Indexes\Pivots\ExtremePivotForest\Table\" />
+    <Folder Include="Indexes\Pivots\ExtremePivotForest\OLD\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\natix\natix.csproj">

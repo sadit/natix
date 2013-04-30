@@ -36,20 +36,34 @@ namespace natix.SimilaritySearch
 		public PivotGroupIndex ()
 		{
 		}
+
+		protected virtual void InitGROUPS(int len)
+		{
+			this.GROUPS = new PivotGroup[len];
+			for (int i = 0; i < len; ++i) {
+				this.GROUPS[i] = new PivotGroup();
+			}
+		}
        
 		public override void Load (BinaryReader Input)
 		{
 			base.Load(Input);
 			var num_groups = Input.ReadInt32 ();
-			this.GROUPS = new PivotGroup[num_groups];
-			CompositeIO<PivotGroup>.LoadVector (Input, num_groups, this.GROUPS);
+			this.InitGROUPS (num_groups);
+			//CompositeIO<PivotGroup>.LoadVector (Input, num_groups, this.GROUPS);
+			foreach (var g in this.GROUPS) {
+				g.Load(Input);
+			}
 		}
 
 		public override void Save (BinaryWriter Output)
 		{
 			base.Save (Output);
 			Output.Write ((int)this.GROUPS.Length);
-			CompositeIO<PivotGroup>.SaveVector (Output, this.GROUPS);
+			// CompositeIO<PivotGroup>.SaveVector (Output, this.GROUPS);
+			foreach (var g in this.GROUPS) {
+				g.Save(Output);
+			}
 		}
 
 		public void Build (PivotGroupIndex pgi, int num_groups)
@@ -58,16 +72,16 @@ namespace natix.SimilaritySearch
 			if (num_groups <= 0) {
 				num_groups = pgi.GROUPS.Length;
 			}
-			this.GROUPS = new PivotGroup[num_groups];
+			this.InitGROUPS (num_groups);
 			for (int i = 0; i < num_groups; ++i) {
 				this.GROUPS[i] = pgi.GROUPS[i];
 			}
 		}
 
-		public void Build (MetricDB db, int num_groups, double alpha, int min_bs, int num_build_processors = -1, Func<PivotGroup> new_pivot_group = null)
+		public virtual void Build (MetricDB db, int num_groups, double alpha, int min_bs, bool do_far = true, int num_build_processors = -1, Func<PivotGroup> new_pivot_group = null)
 		{
 			this.DB = db;
-			this.GROUPS = new PivotGroup[num_groups];
+			this.InitGROUPS (num_groups);
             var seeds = new int[ num_groups ];
             for (int i = 0; i < num_groups; ++i) {
                 seeds[i] = RandomSets.GetRandomInt();
@@ -82,13 +96,13 @@ namespace natix.SimilaritySearch
                 } else {
                     this.GROUPS[i] = new_pivot_group();
                 }
-				this.GROUPS[i].Build(this.DB, alpha, min_bs, seeds[i]);
+				this.GROUPS[i].Build(this.DB, alpha, min_bs, seeds[i], do_far);
 				// this.GROUPS [i] = this.GetGroup (alpha_stddev, min_bs);
 				Console.WriteLine ("Advance {0}/{1} (alpha={2}, db={3}, timestamp={4})",
 				                   I, num_groups, alpha, db.Name, DateTime.Now);
 				I++;
 			});
-			// parallel_build = false;
+
 			if (num_build_processors == 1 || num_build_processors == 0) {
 				//Parallel.ForEach (new List<int>(RandomSets.GetExpandedRange (num_groups)), ops, build_one);
 				for (int i = 0; i < num_groups; ++i) {
@@ -109,8 +123,9 @@ namespace natix.SimilaritySearch
             var n = this.DB.Count;
 			short[] A = new short[this.DB.Count]; 
 			int num_groups = this.GROUPS.Length;
-			foreach (var group in this.GROUPS) {
-				this.internal_numdists += group.SearchKNN(this.DB, q, K, res, A);
+			for (short groupID = 0; groupID < l; ++groupID) {
+				var group = this.GROUPS[groupID];
+				this.internal_numdists += group.SearchKNN(this.DB, q, K, res, A, groupID);
 			}
 			for (int docID = 0; docID < A.Length; ++docID) {
                 if (A[docID] == num_groups) {

@@ -112,7 +112,7 @@ namespace natix.SimilaritySearch
             throw new NotSupportedException();
         }
 
-        public virtual void Build (MetricDB DB, double alpha_stddev, int min_bs, int seed)
+        public virtual void Build (MetricDB DB, double alpha, int min_bs, int seed, bool do_far)
         {
             var idxDynamic = new DynamicSequentialOrdered ();
             idxDynamic.Build (DB, RandomSets.GetRandomPermutation(DB.Count, new Random(seed)));
@@ -126,50 +126,51 @@ namespace natix.SimilaritySearch
                 object piv = DB[pidx];
                 idxDynamic.Remove(pidx);
                 // this.Items[pidx] = new ItemPair(pidx, 0);
-                IResult near, far;
-                DynamicSequential.Stats stats;
-                this.SearchExtremes(idxDynamic, extreme_items, piv, alpha_stddev, min_bs, out near, out far, out stats);
-                foreach (var pair in near) {
-					items.Add( new ItemPair (pair.docid, pair.dist) );
-                }
-				foreach (var pair in far) {
-					items.Add( new ItemPair (pair.docid, pair.dist) );
+				DynamicSequential.Stats stats;
+				Pivot piv_data;
+				double near_first = double.MaxValue;
+				double near_last = 0;
+				double far_first = double.MaxValue;
+				int num_near = 0;
+				int num_far = 0;
+				{
+					IResult near, far;
+					this.SearchExtremes(idxDynamic, extreme_items, piv, alpha, min_bs, out near, out far, out stats);
+					foreach (var pair in near) {
+						near_first = Math.Min (near_first, pair.dist);
+						near_last = Math.Max (near_last, pair.dist);
+						items.Add( new ItemPair (pair.docid, pair.dist) );
+					}
+					num_near = near.Count;
+					idxDynamic.Remove(near);
+					if (do_far) {
+						foreach (var pair in far) {
+							far_first = Math.Min (far_first, pair.dist);
+							items.Add( new ItemPair (pair.docid, pair.dist) );
+						}
+						num_far = far.Count;
+						idxDynamic.Remove(far);
+					}
+					piv_data = new Pivot(pidx, stats.mean, stats.stddev, near_last, far_first, num_near, num_far);
+					pivs.Add(piv_data);
 				}
-				var piv_data = new Pivot(pidx, stats.mean, stats.stddev, 0, double.MaxValue, near.Count, far.Count);
-                if (near.Count > 0) piv_data.last_near = near.Last.dist;
-                if (far.Count > 0) piv_data.first_far = far.First.dist;
-                pivs.Add(piv_data);
                 if (I % 10 == 0) {
                     Console.WriteLine ("");
                     Console.WriteLine (this.ToString());
-                    Console.WriteLine("-- I {0}> remains: {1}, alpha_stddev: {2}, mean: {3}, stddev: {4}, pivot: {5}",
-                                      I, idxDynamic.Count, alpha_stddev, stats.mean, stats.stddev, pidx);
-                    double near_first, near_last, far_first, far_last;
-                    if (near.Count > 0) {
-                        near_first = near.First.dist;
-                        near_last = near.Last.dist;
-//                        Console.WriteLine("-- (ABSVAL)  first-near: {0}, last-near: {1}, near-count: {2}",
-//                                          near_first, near_last, near.Count);
-                        Console.WriteLine("-- (NORMVAL) first-near: {0}, last-near: {1}",
-                                          near_first / stats.max, near_last / stats.max);
-//                        Console.WriteLine("-- (SIGMAS)  first-near: {0}, last-near: {1}",
-//                                          near_first / stats.stddev, near_last / stats.stddev);
+					Console.WriteLine("-- I {0}> remains: {1}, alpha: {2}, mean: {3}, stddev: {4}, pivot: {5}, min_bs: {6}, db: {7}, do_far: {8}",
+                                      I, idxDynamic.Count, alpha, stats.mean, stats.stddev, pidx, min_bs, DB.Name, do_far);
+                    if (piv_data.num_near > 0) {
+						Console.WriteLine("-- (NORMVAL) first-near: {0}, last-near: {1}, near-count: {2}",
+                                          near_first / stats.max, piv_data.last_near / stats.max, piv_data.num_near);
                         
                     }
-                    if (far.Count > 0) {
-                        far_first = far.First.dist;
-                        far_last = far.Last.dist;
-//                        Console.WriteLine("++ (ABSVAL)  first-far: {0}, last-far: {1}, far-count: {2}",
-//                                          far_first, far_last, far.Count);
-                        Console.WriteLine("++ (NORMVAL) first-far: {0}, last-far: {1}",
-                                          far_first / stats.max, far_last / stats.max);
-//                        Console.WriteLine("++ (SIGMAS)  first-far: {0}, last-far: {1}",
-//                                          far_first / stats.stddev, far_last / stats.stddev);
+                    if (piv_data.num_far > 0) {
+						Console.WriteLine("++ (NORMVAL) first-far: {0}, far-count: {1}",
+                                          piv_data.first_far / stats.max, piv_data.num_far);
                     }
                 }
                 ++I;
-                idxDynamic.Remove(near);
-                idxDynamic.Remove(far);
+
                 //Console.WriteLine("Number of objects after: {0}",idxDynamic.DOCS.Count);
             }
             Console.WriteLine("Number of pivots per group: {0}", I);
@@ -177,7 +178,7 @@ namespace natix.SimilaritySearch
 			this.Items = items.ToArray ();
         }
 
-		public virtual int SearchKNN (MetricDB db, object q, int K, IResult res, short[] A)
+		public virtual int SearchKNN (MetricDB db, object q, int K, IResult res, short[] A, short current_rank_A)
 		{
 			int abs_pos = 0;
 			int count_dist = 0;
@@ -191,7 +192,7 @@ namespace natix.SimilaritySearch
 					for (int j = 0; j < piv.num_near; ++j, ++abs_pos) {
 						var item = this.Items [abs_pos];
 						// checking covering pivot
-						if (Math.Abs (item.dist - dqp) <= res.CoveringRadius) {
+						if (A[item.objID] == current_rank_A && Math.Abs (item.dist - dqp) <= res.CoveringRadius) {
 							++A [item.objID];
 						}
 					}
@@ -203,7 +204,7 @@ namespace natix.SimilaritySearch
 					for (int j = 0; j < piv.num_far; ++j, ++abs_pos) {
 						var item = this.Items [abs_pos];
 						// checking covering pivot
-						if (Math.Abs (item.dist - dqp) <= res.CoveringRadius) {
+						if (A[item.objID] == current_rank_A && Math.Abs (item.dist - dqp) <= res.CoveringRadius) {
 							++A [item.objID];
 						}
 					}

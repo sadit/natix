@@ -37,7 +37,7 @@ namespace natix.SimilaritySearch
 			this.ApproxFactor = approx_factor;
 		}
 
-		public override int SearchKNN (MetricDB db, object q, int K, IResult res, short[] A)
+		public override int SearchKNN (MetricDB db, object q, int K, IResult res, short[] A, short current_rank_A)
 		{
 			int abs_pos = 0;
 			int count_dist = 0;

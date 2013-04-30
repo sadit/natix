@@ -21,13 +21,13 @@ using natix.SortingSearching;
 
 namespace natix.SimilaritySearch
 {
-    public class Vor : BasicIndex
+    public class VorFar : BasicIndex
     {
 		class Node : ILoadSave
 		{
 			public int refID;
-			public double cov_radius;
-			public List<int> bucket_near;
+			public double ext_radius;
+			public List<int> bucket;
 			public Node()
 			{
 			}
@@ -35,39 +35,38 @@ namespace natix.SimilaritySearch
 			public Node(int refID)
 			{
 				this.refID = refID;
-				this.cov_radius = 0;
-				this.bucket_near = new List<int>();
+				this.ext_radius = double.MaxValue;
+				this.bucket = new List<int>();
 			}
 
 			public void Add(int docID, double dist)
 			{
-				this.cov_radius = Math.Max (this.cov_radius, dist);
-				this.bucket_near.Add (docID);
+				this.ext_radius = Math.Min (this.ext_radius, dist);
+				this.bucket.Add (docID);
 			}
-
 
 			public void Save(BinaryWriter Output)
 			{
 				Output.Write (this.refID);
-				Output.Write (this.cov_radius);
-				Output.Write (this.bucket_near.Count);
-				PrimitiveIO<int>.WriteVector (Output, this.bucket_near);
+				Output.Write (this.ext_radius);
+				Output.Write (this.bucket.Count);
+				PrimitiveIO<int>.WriteVector (Output, this.bucket);
 			}
 
 			public void Load(BinaryReader Input)
 			{
 				this.refID = Input.ReadInt32 ();
-				this.cov_radius = Input.ReadDouble ();
+				this.ext_radius = Input.ReadDouble ();
 				var len = Input.ReadInt32 ();
-				this.bucket_near = new List<int> (len);
-				PrimitiveIO<int>.ReadFromFile (Input, len, this.bucket_near);
+				this.bucket = new List<int> (len);
+				PrimitiveIO<int>.ReadFromFile (Input, len, this.bucket);
 			}
 
 		}
 
 		List<Node> node_list;
 
-		public Vor () : base()
+		public VorFar () : base()
         {
         }
 
@@ -77,7 +76,11 @@ namespace natix.SimilaritySearch
 			var len = Input.ReadInt32 ();
 			this.node_list = new List<Node> (len);
 			CompositeIO<Node>.LoadVector (Input, len, this.node_list);
-
+			int i = 0;
+			foreach (var node in this.node_list) {
+				Console.WriteLine ("===== bucket: {0}, len: {1}", i, node.bucket.Count);
+				++i;
+			}
 		}
 		
 		public override void Save (BinaryWriter Output)
@@ -103,19 +106,19 @@ namespace natix.SimilaritySearch
 			var H = new HashSet<int> (subset);
 			for (int docID = 0; docID < n; ++docID) {
 				if (docID % 1000 == 0) {
-					Console.WriteLine ("== Vor {0}/{1}, num_centers: {2}, db: {3}", docID + 1, n, num_centers, db.Name);
+					Console.WriteLine ("== {0} {1}/{2}, num_centers: {3}, db: {4}", this, docID + 1, n, num_centers, db.Name);
 				}
 				if (H.Contains(docID)) {
 					continue;
 				}
-				var near = new Result(1);
+				var far = new Result(1);
 				for (var centerID = 0; centerID < num_centers; ++centerID) {
 					var node = this.node_list[centerID];
 					var d = this.DB.Dist(this.DB[node.refID], this.DB[docID]);
-					near.Push(centerID, d);
+					far.Push(centerID, -d);
 				}
-				var _near = near.First;
-				this.node_list[_near.docid].Add(docID, _near.dist);
+				var _far = far.First;
+				this.node_list[_far.docid].Add(docID, -_far.dist);
 			}
 		}
 
@@ -137,19 +140,19 @@ namespace natix.SimilaritySearch
         {
 			int num_centers = this.node_list.Count;
 			var D = new double[num_centers];
-			var min_dist = double.MaxValue;
+			var max_dist = double.MinValue;
 			for (int centerID = 0; centerID < num_centers; ++centerID) {
 				var center_objID = this.node_list[centerID].refID;
 				var d = this.DB.Dist(q, this.DB[center_objID]);
 				D[centerID] = d;
-				min_dist = Math.Min (d, min_dist);
+				max_dist = Math.Max (d, max_dist);
 				res.Push (center_objID, d);
 			}
 			for (int centerID = 0; centerID < num_centers; ++centerID) {
 				var node = this.node_list[centerID];
 				var rad = res.CoveringRadius;
-				if (min_dist + rad + rad >= D[centerID] && D[centerID] <= rad + node.cov_radius) {
-					foreach (var objID in node.bucket_near) {
+				if (max_dist + rad >= D[centerID] - rad && D[centerID] + rad >= node.ext_radius) {
+					foreach (var objID in node.bucket) {
 						var d = this.DB.Dist(q, this.DB[objID]);
 						res.Push(objID, d);
 					}
