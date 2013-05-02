@@ -89,7 +89,8 @@ namespace natix.SimilaritySearch
         {
             var l = this.forest.Length;
             var n = this.DB.Count;
-			short[] A = new short[n];
+			float[] Linf = new float[n];
+			byte[] A = new byte[n];
 			var D_trees = new double[this.forest.Length][];
 			for (int rowID = 0; rowID < this.forest.Length; ++rowID) {
 				var pivs = this.forest[rowID].Pivs;
@@ -98,15 +99,16 @@ namespace natix.SimilaritySearch
 					var objID = pivs[pivID].objID;
 					D[pivID] = this.DB.Dist(q, this.DB[objID]);
 					res.Push (objID, D[pivID]);
+					Linf[objID] = float.MaxValue;
 				}
 				this.internal_numdists += pivs.Length;
 			}
 			for (short treeID = 0; treeID < l; ++treeID) {
 				var t = this.forest[treeID];
-				t.SearchKNN(this.DB, q, K, res, A, treeID, D_trees[treeID]);
+				t.SearchKNN(this.DB, q, K, res, A, treeID, Linf, D_trees[treeID]);
 			}
-			for (int docID = 0; docID < A.Length; ++docID) {
-                if (A[docID] == l) {
+			for (int docID = 0; docID < n; ++docID) {
+                if (A[docID] == l && Linf[docID] <= res.CoveringRadius) {
 				    var d = this.DB.Dist(q, this.DB[docID]);
                     res.Push(docID, d);
                 }

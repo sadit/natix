@@ -37,6 +37,7 @@ namespace natix.SimilaritySearch
 			do {
 				piv = rand.Next(0, n);
 			} while (already_pivot.Contains(piv));
+			already_pivot.Add (piv);
 			var stats = new DynamicSequential.Stats ();
 			idxseq.ComputeDistances (idxseq.DB [piv], _items, out stats);
 			int pivID = pivs.Count;
@@ -59,7 +60,7 @@ namespace natix.SimilaritySearch
 			}
 		}
 
-		public EPListRandomPivots (MetricDB DB, int seed, int num_iters)
+		public EPListRandomPivots (MetricDB DB, int seed, int num_pivots)
 		{
 			this.Items = null;
 			var already_pivot = new HashSet<int> ();
@@ -69,7 +70,7 @@ namespace natix.SimilaritySearch
 			idxseq.Build (DB, RandomSets.GetIdentity (DB.Count));
 			var tmp_items = new List<ItemPair> (DB.Count);
 
-			for (int i = 0; i < num_iters; ++i) {
+			for (int i = 0; i < num_pivots; ++i) {
 				this.ComputeDistRow (idxseq, rand, already_pivot, pivs, tmp_items);
 				double sum = 0;
 				for (int objID = 0; objID < this.Items.Length; ++objID) {

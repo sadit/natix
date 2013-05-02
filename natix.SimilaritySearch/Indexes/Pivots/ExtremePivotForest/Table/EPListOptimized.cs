@@ -56,11 +56,11 @@ namespace natix.SimilaritySearch
 			return stats;
 		}
 
-		protected void EstimateQueryStatistics(MetricDB DB, Random rand, int num_queries, int sample_size, out double varY, out double qrad)
+		protected void EstimateQueryStatistics(MetricDB DB, Random rand, int num_queries, int sample_size, out double mean, out double varY, out double qrad)
 		{
 			var n = DB.Count;
 			var N = num_queries * sample_size;
-			var mean = 0.0;
+			mean = 0.0;
 			var square_mean = 0.0;
 			qrad = 0;
 			for (int qID = 0; qID < num_queries; ++qID) {
@@ -96,7 +96,8 @@ namespace natix.SimilaritySearch
 			var tmp_items = new List<ItemPair> (DB.Count);
 			double qrad;
 			double varY;
-			this.EstimateQueryStatistics (DB, rand, 128, 128, out varY, out qrad);
+			double mean;
+			this.EstimateQueryStatistics (DB, rand, 128, 128, out mean, out varY, out qrad);
 			double prev_cost = -1;
 			double curr_cost = n;
 			double derivative;

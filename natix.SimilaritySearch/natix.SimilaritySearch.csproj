@@ -167,6 +167,7 @@
     <Compile Include="Indexes\Pivots\ExtremePivotForest\Tree\EPForest.cs" />
     <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPListMeanPivots.cs" />
     <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroupIndex.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPListRandomPivotsPriorized.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
