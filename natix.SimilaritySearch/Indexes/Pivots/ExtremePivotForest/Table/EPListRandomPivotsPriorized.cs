@@ -29,41 +29,6 @@ namespace natix.SimilaritySearch
 		{
 		}
 
-		protected int NextPivot(int n, Random rand, HashSet<int> already_pivot)
-		{
-			int piv;
-			do {
-				piv = rand.Next (0, n);
-			} while (already_pivot.Contains(piv));
-			already_pivot.Add (piv);
-			return piv;
-		}
-		
-		protected void EstimatePivotStatistics(MetricDB DB, Random rand, object piv, int sample_size, out double mean, out double variance, out double qrad)
-		{
-			var n = DB.Count;
-			mean = 0.0;
-			var square_mean = 0.0;
-			qrad = 0;
-			var min = double.MaxValue;
-			for (int sampleID = 0; sampleID < sample_size; ++sampleID) {
-				var u = DB[ rand.Next(0, n) ];
-				var d = DB.Dist(piv, u);
-				mean += d / sample_size;
-				square_mean += d * d / sample_size;
-				if (d > 0) {
-					min = Math.Min (min, d);
-				}
-			}
-			// qrad = Math.Max (min, qrad);
-			if (qrad == 0) {
-				qrad = min;
-			} else {
-				qrad = (min + qrad) * 0.5;
-			}
-			variance = square_mean - mean * mean;
-		}
-
 		public void Statistics(out double mean, out double variance)
 		{
 			var n = this.Items.Length;
@@ -80,10 +45,10 @@ namespace natix.SimilaritySearch
 		{
 			var n = DB.Count;
 			this.Items = new ItemPair[n];
-			var already_pivot = new HashSet<int> ();
 			var pivs = new List<EPivot> (32);
 			var rand = new Random (seed);
-			var piv = this.NextPivot (n, rand, already_pivot);
+			var pivsel = new PivotSelector (n, rand);
+			var piv = pivsel.NextPivot ();
 			var pivOBJ = DB [piv];
 			for (int objID = 0; objID < n; ++objID) {
 				var d = DB.Dist(pivOBJ, DB[objID]);
@@ -105,9 +70,9 @@ namespace natix.SimilaritySearch
 			var list = new List<int> ();
 			for (int i = 0; i < num_pivs; ++i) {
 				Console.WriteLine("XXXXXX BEGIN {0} i: {1}", this, i);
-				piv = this.NextPivot(n, rand, already_pivot);
+				piv = pivsel.NextPivot();
 				double piv_mean, piv_variance, qrad;
-				this.EstimatePivotStatistics(DB, rand, DB[piv], 256, out piv_mean, out piv_variance, out qrad);
+				PivotSelector.EstimatePivotStatistics(DB, rand, DB[piv], 256, out piv_mean, out piv_variance, out qrad);
 				var pivID = pivs.Count;
 				pivs.Add(new EPivot(piv, Math.Sqrt(piv_variance), mean, 0, 0, 0, 0));
 				list.Clear();

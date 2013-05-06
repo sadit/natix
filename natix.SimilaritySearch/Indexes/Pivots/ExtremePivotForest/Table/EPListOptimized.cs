@@ -36,57 +36,29 @@ namespace natix.SimilaritySearch
 			var stats = new DynamicSequential.Stats ();
 			idxseq.ComputeDistances (idxseq.DB [piv], _items, out stats);
 			int pivID = pivs.Count;
-			pivs.Add(new EPivot(piv, stats.stddev, stats.mean, stats.min, stats.max, 0, 0));
+			pivs.Add (new EPivot (piv, stats.stddev, stats.mean, stats.min, stats.max, 0, 0));
 			if (this.Items == null) {
 				this.Items = new ItemPair[n];
 				for (int objID = 0; objID < n; ++objID) {
-					this.Items[objID] = new ItemPair(0, _items[objID].dist); 
+					this.Items [objID] = new ItemPair (0, _items [objID].dist); 
 				}
 			} else {
 				for (int objID = 0; objID < n; ++objID) {
-					var new_piv = pivs[pivID];
-					var new_dist = _items[objID].dist;
-					var old_piv = pivs[ this.Items[objID].objID ];
-					var old_dist = this.Items[objID].dist;
-					if (Math.Abs(old_dist - old_piv.mean) < Math.Abs (new_dist - new_piv.mean)) {
-						this.Items[objID] = new ItemPair(pivID, _items[objID].dist);
+					var new_piv = pivs [pivID];
+					var new_dist = _items [objID].dist;
+					var old_piv = pivs [this.Items [objID].objID];
+					var old_dist = this.Items [objID].dist;
+					if (Math.Abs (old_dist - old_piv.mean) < Math.Abs (new_dist - new_piv.mean)) {
+						this.Items [objID] = new ItemPair (pivID, _items [objID].dist);
 					}
 				}
 			}
 			return stats;
 		}
 
-		protected void EstimateQueryStatistics(MetricDB DB, Random rand, int num_queries, int sample_size, out double mean, out double varY, out double qrad)
-		{
-			var n = DB.Count;
-			var N = num_queries * sample_size;
-			mean = 0.0;
-			var square_mean = 0.0;
-			qrad = 0;
-			for (int qID = 0; qID < num_queries; ++qID) {
-				var q = DB[ rand.Next(0, n) ];
-				var min = double.MaxValue;
-				for (int sampleID = 0; sampleID < sample_size; ++sampleID) {
-					var u = DB[ rand.Next(0, n) ];
-					var d = DB.Dist(q, u);
-					mean += d / N;
-					square_mean += d * d / N;
-					if (d > 0) {
-						min = Math.Min (min, d);
-					}
-				}
-				// qrad = Math.Max (min, qrad);
-				if (qrad == 0) {
-					qrad = min;
-				} else {
-					qrad = (min + qrad) * 0.5;
-				}
-			}
-			varY = square_mean - mean * mean;
-		}
-
 		public EPListOptimized (MetricDB DB, int seed, int num_indexes, int max_iters, double error_factor)
 		{
+			Console.WriteLine ("XXX {0}, num_indexes: {1}, max_iters: {2}, error_factor: {3}", this, num_indexes, max_iters, error_factor);
 			this.Items = null;
 			var pivs = new List<EPivot> (32);
 			var rand = new Random (seed);
@@ -97,25 +69,30 @@ namespace natix.SimilaritySearch
 			double qrad;
 			double varY;
 			double mean;
-			this.EstimateQueryStatistics (DB, rand, 128, 128, out mean, out varY, out qrad);
+			PivotSelector.EstimateQueryStatistics (DB, rand, 128, 128, out mean, out varY, out qrad);
 			double prev_cost = -1;
 			double curr_cost = n;
 			double derivative;
-			int next_piv = rand.Next (0, n);
+			var pivsel = new PivotSelector (n, rand);
+			int nextpiv = pivsel.NextPivot();
 			int i = 0;
 			do {
-				double min_diff = double.MaxValue;
-				this.ComputeDistRow (next_piv, idxseq, rand, pivs, tmp_items);
+				// Console.WriteLine("A {0} => {1}, {2}", this, i, seed);
+				//double min_diff = double.MaxValue;
+				this.ComputeDistRow (nextpiv, idxseq, rand, pivs, tmp_items);
+				// Console.WriteLine("B {0} => {1}, {2}", this, i, seed);
 				double varX = 0;
 				for (int objID = 0; objID < this.Items.Length; ++objID) {
 					var u = this.Items[objID];
 					var diff = Math.Abs( u.dist - pivs[u.objID].mean );
 					varX += diff * diff / n;
-					if (diff < min_diff) {
-						min_diff = diff;
-						next_piv = objID;
-					}
+//					if (diff < min_diff) {
+//						min_diff = diff;
+//						next_piv = objID;
+//					}
 				}
+				nextpiv = pivsel.NextPivot();
+				// Console.WriteLine("C {0} => {1}, {2}", this, i, seed);
 				++i;
 				prev_cost = curr_cost;
 				curr_cost = this.expected_cost(qrad, varX, varY, n, i, num_indexes, error_factor);
