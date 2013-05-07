@@ -117,7 +117,6 @@
     <Compile Include="Indexes\LC\PolyIndexLC_ApproxGraph.cs" />
     <Compile Include="Spaces\Bitmaps\QGramH1.cs" />
     <Compile Include="Indexes\LC\PolyIndexLC_ApproxGraphEager.cs" />
-    <Compile Include="Indexes\KNR\KnrLSH.cs" />
     <Compile Include="Indexes\LC\PolyIndexLC_ApproxGraphRevLC.cs" />
     <Compile Include="Indexes\DynamicSequentialRandom.cs" />
     <Compile Include="Indexes\SAT\SAT.cs" />
@@ -142,9 +141,6 @@
     <Compile Include="NTTArray8A.cs" />
     <Compile Include="Indexes\Pivots\LAESA_InternalPivots.cs" />
     <Compile Include="Indexes\Pivots\LAESA.cs" />
-    <Compile Include="Spaces\MKnrLSH.cs">
-      <DependentUpon>MetricDB.cs</DependentUpon>
-    </Compile>
     <Compile Include="Indexes\LC\LC_KVorRNN.cs" />
     <Compile Include="Indexes\Hyperplanes\DualVor.cs" />
     <Compile Include="Indexes\Hyperplanes\Vor.cs" />
@@ -171,6 +167,11 @@
     <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPListRandomPivotsPriorized.cs" />
     <Compile Include="Indexes\Pivots\PivotSelector.cs" />
     <Compile Include="Indexes\ApproxGraph\ApproxGraph.cs" />
+    <Compile Include="Indexes\Hashing\KnrLSH.cs" />
+    <Compile Include="Indexes\Hashing\SmallPerms.cs" />
+    <Compile Include="Indexes\Hashing\MKnrLSH.cs" />
+    <Compile Include="Indexes\Hashing\KnrLSHQueryExpansion.cs" />
+    <Compile Include="Indexes\Hashing\NAPPHash.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -184,6 +185,7 @@
     <Folder Include="Indexes\Pivots\ExtremePivotForest\Table\" />
     <Folder Include="Indexes\Pivots\ExtremePivotForest\OLD\" />
     <Folder Include="Indexes\ApproxGraph\" />
+    <Folder Include="Indexes\Hashing\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\natix\natix.csproj">

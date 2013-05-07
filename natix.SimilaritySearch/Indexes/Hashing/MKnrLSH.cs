@@ -1,5 +1,5 @@
 // 
-//  Copyright 2012  sadit
+//  Copyright 2012  Eric Sadit Tellez Avila
 // 
 //    Licensed under the Apache License, Version 2.0 (the "License");
 //    you may not use this file except in compliance with the License.
@@ -25,12 +25,11 @@ namespace natix.SimilaritySearch
 	public class MKnrLSH : BasicIndex
 	{
         public KnrLSH[] A;
-		public bool ExpandQueries = false;
 
 		public override string ToString ()
 		{
-			return string.Format ("[MKnrLSH num_indexes: {0}, first-index: {1}, expand: {2}]", this.A.Length,
-			                      this.A.Length == 0 ? "undefined" : this.A[0].ToString(), this.ExpandQueries);
+			return string.Format ("[MKnrLSH num_indexes: {0}, first-index: {1}]", this.A.Length,
+			                      this.A.Length == 0 ? "undefined" : this.A[0].ToString());
 		}
 
 		public override void Save (BinaryWriter Output)
@@ -56,6 +55,20 @@ namespace natix.SimilaritySearch
 
 		public MKnrLSH () : base()
 		{
+		}
+
+		public void SetQueryExpansion()
+		{
+			for (int i = 0; i < this.A.Length; ++i) {
+				this.A[i] = new KnrLSHQueryExpansion(this.A[i]);
+			}
+		}
+
+		public void UnsetQueryExpansion()
+		{
+			for (int i = 0; i < this.A.Length; ++i) {
+				this.A[i] = new KnrLSH(this.A[i]);
+			}
 		}
 
 		public void Build (MKnrLSH knrlsh, int num_instances)
@@ -91,33 +104,18 @@ namespace natix.SimilaritySearch
 		public override IResult SearchKNN (object q, int knn, IResult res)
 		{
             var L = new HashSet<int>();
-			if (this.ExpandQueries) {
-				foreach (var a in this.A) {
-					//var h = a.GetHashKnr(q);
-					foreach (var h in a.ExpandHashKnr(q)) {
-						IList<int> M;
-						if (a.TABLE.TryGetValue(h, out M)) {
-							foreach (var docID in M) {
-								L.Add(docID);
-							}
-						}
+			foreach (var a in this.A) {
+				var h = a.GetHashKnr(q);
+				List<int> M;
+				if (a.TABLE.TryGetValue(h, out M)) {
+					foreach (var docID in M) {
+						L.Add(docID);
 					}
 				}
-			} else {
-				foreach (var a in this.A) {
-					var h = a.GetHashKnr(q);
-					IList<int> M;
-					if (a.TABLE.TryGetValue(h, out M)) {
-						foreach (var docID in M) {
-							L.Add(docID);
-						}
-					}
+            	foreach (var docID in L) {
+               		double d = this.DB.Dist (q, this.DB [docID]);
+               		res.Push (docID, d);
 				}
-			}
-// 			Console.WriteLine ("XXXXX candidates: {0}", L.Count);
-            foreach (var docID in L) {
-                double d = this.DB.Dist (q, this.DB [docID]);
-                res.Push (docID, d);
 			}
 			return res;
 		}

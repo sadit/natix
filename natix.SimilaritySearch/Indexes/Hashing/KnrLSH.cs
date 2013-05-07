@@ -26,7 +26,7 @@ namespace natix.SimilaritySearch
 	{
 		public int K;
 		public Index R;
-        public Dictionary<int, IList<int>> TABLE;       
+        public Dictionary<int, List<int>> TABLE;       
 
 		public override string ToString ()
 		{
@@ -44,7 +44,8 @@ namespace natix.SimilaritySearch
             Output.Write ((int)num_keys);
             foreach (var p in this.TABLE) {
                 Output.Write (p.Key);
-                ListIGenericIO.Save(Output, p.Value);
+				Output.Write (p.Value.Count);
+				PrimitiveIO<int>.WriteVector(Output, p.Value);
             }
 		}
 
@@ -54,10 +55,12 @@ namespace natix.SimilaritySearch
             this.K = Input.ReadInt32 ();
             this.R = IndexGenericIO.Load (Input);
             var num_keys = Input.ReadInt32 ();
-            this.TABLE = new Dictionary<int, IList<int>> (num_keys);
+            this.TABLE = new Dictionary<int, List<int>> (num_keys);
             for (int i = 0; i < num_keys; ++i) {
                 var key = Input.ReadInt32();
-                var value = ListIGenericIO.Load(Input);
+				var len = Input.ReadInt32 ();
+				var value = new List<int>(len);
+				PrimitiveIO<int>.ReadFromFile(Input, len, value);
                 this.TABLE.Add (key, value);
             }
 		}
@@ -81,6 +84,12 @@ namespace natix.SimilaritySearch
             // valid values to be used as parameters
             // numrefs <= 255
             // K <= 4
+			if (K > 4) {
+				throw new ArgumentOutOfRangeException (String.Format("K should be between 1 to 4, K={0}", K));
+			}
+			if (num_refs > 255) {
+				throw new ArgumentOutOfRangeException (String.Format("num_refs should be between 1 to 255, num_refs={0}", num_refs));
+			}
 			this.K = K;
             var refs = new SampleSpace("", db, num_refs);
             var seq = new Sequential();
@@ -95,45 +104,16 @@ namespace natix.SimilaritySearch
 					Console.WriteLine ("computing knrlsh {0}/{1} (adv. {2:0.00}%, db: {3}, K: {4}, curr. time: {5})", objID, n, objID*100.0/n, this.DB.Name, this.K, DateTime.Now);
 				}
 			}
-            this.TABLE = new Dictionary<int, IList<int>> ();
+            this.TABLE = new Dictionary<int, List<int>> ();
             for (int objID = 0; objID < n; ++objID) {
                 var hash = G[objID];
-                IList<int> L;
+                List<int> L;
                 if (!this.TABLE.TryGetValue(hash, out L)) {
                     L = new List<int>();
                     this.TABLE.Add(hash, L);
                 }
                 L.Add (objID);
             }
-		}
-
-		public virtual IEnumerable<int> ExpandHashKnr (object q)
-		{
-			this.internal_numdists-=this.R.Cost.Internal;
-			var near = this.R.SearchKNN(q, this.K);
-			var list = new List<int> (Fun.Map<ResultPair,int>(near, (pair) => pair.docid ));
-			this.internal_numdists+=this.R.Cost.Internal;
-			var max_pos = list.Count - 1;
-			var first = this.EncodeKnr(list);
-			yield return first;
-			for (int i = 0; i < list.Count; ++i) {
-				for (int j = 0; j < max_pos; ++j) {
-					swap (j, list);
-					// var x = Fun.Reduce<string>(Fun.Map<int,string>(list, (item) => item.ToString()), (a,b) => String.Format("({0},{1}), ",a, b));
-					// Console.WriteLine ("({0},{1}) => {2}", i, j, x);
-					var h = this.EncodeKnr(list);
-					if (h != first) {
-						yield return h;
-					}
-				}
-			}
-		}
-
-		void swap(int i, List<int> list)
-		{
-			var item = list[i];
-			list [i] = list [i + 1];
-			list [i + 1] = item;
 		}
 
 		public int EncodeKnr(List<int> near)
@@ -164,14 +144,20 @@ namespace natix.SimilaritySearch
             return hash;
 		}
 
-		public override IResult SearchKNN (object q, int knn, IResult res)
+		public virtual HashSet<int> GetNear(object q)
 		{
 			var hash = this.GetHashKnr (q);
-            IList<int> L;
-            if (!this.TABLE.TryGetValue(hash, out L)) {
-                return res;
-            }
-            foreach (var docID in L) {
+			List<int> L;
+			if (this.TABLE.TryGetValue(hash, out L)) {
+				return new HashSet<int>(L);
+			} else {
+				return new HashSet<int>();
+			}
+		}
+
+		public override IResult SearchKNN (object q, int knn, IResult res)
+		{
+            foreach (var docID in this.GetNear(q)) {
                 double d = this.DB.Dist (q, this.DB [docID]);
                 res.Push (docID, d);
 			}

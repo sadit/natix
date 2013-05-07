@@ -13,7 +13,7 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 //
-	
+
 using System;
 using System.IO;
 using natix.CompactDS;
@@ -33,7 +33,7 @@ namespace natix.SimilaritySearch
 		public short Arity;
 		public short RepeatSearch;
 		public Random rand;
-
+		
 		public override void Load (BinaryReader Input)
 		{
 			base.Load (Input);
@@ -41,7 +41,7 @@ namespace natix.SimilaritySearch
 			this.RepeatSearch = Input.ReadInt16 ();
 			this.Vertices = new List<Vertex> ();
 		}
-
+		
 		public override void Save (BinaryWriter Output)
 		{
 			base.Save (Output);
@@ -63,13 +63,13 @@ namespace natix.SimilaritySearch
 			int n = db.Count;
 			this.Vertices = new List<Vertex> (n);
 			for (int objID = 0; objID < n; ++objID) {
-				if (objID % 1000 == 0) {
-					Console.WriteLine ("==== {0} DB: {1}, Arity: {2}, RepeatSearch: {3}", this, db.Name, arity, repeat_search);
+				if (objID % 100 == 0) {
+					Console.WriteLine ("XXX==== {0} DB: {1}, Arity: {2}, RepeatSearch: {3}, objID: {4}", this, db.Name, arity, repeat_search, objID);
 				}
 				this.AddObjID(objID);
 			}
 		}
-
+		
 		protected void AddObjID(int objID)
 		{
 			if (this.Vertices.Count == 0) {
@@ -85,14 +85,14 @@ namespace natix.SimilaritySearch
 				}
 			}
 		}
-
+		
 		public override IResult SearchRange (object q, double radius)
 		{
 			var res = new ResultRange (radius, this.DB.Count);
 			this.SearchKNN (q, this.DB.Count, res);
 			return res;
 		}
-
+		
 		public override IResult SearchKNN (object q, int K, IResult res)
 		{
 			var visited = new HashSet<int> ();
@@ -109,7 +109,7 @@ namespace natix.SimilaritySearch
 			}
 			return res;
 		}
-
+		
 		protected void GreedySearch(object q, IResult res, HashSet<int> visited, HashSet<int> evaluated, int startID)
 		{
 			var minDist = double.MaxValue;
