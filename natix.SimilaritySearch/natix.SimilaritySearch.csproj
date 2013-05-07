@@ -169,6 +169,7 @@
     <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroupIndex.cs" />
     <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPListRandomPivotsPriorized.cs" />
     <Compile Include="Indexes\Pivots\PivotSelector.cs" />
+    <Compile Include="Indexes\ApproxGraph\ApproxGraph.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -181,6 +182,7 @@
     <Folder Include="Indexes\Pivots\ExtremePivotForest\Tree\" />
     <Folder Include="Indexes\Pivots\ExtremePivotForest\Table\" />
     <Folder Include="Indexes\Pivots\ExtremePivotForest\OLD\" />
+    <Folder Include="Indexes\ApproxGraph\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\natix\natix.csproj">
