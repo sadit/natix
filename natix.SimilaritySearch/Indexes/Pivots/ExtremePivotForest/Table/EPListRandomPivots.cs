@@ -72,16 +72,19 @@ namespace natix.SimilaritySearch
 
 			for (int i = 0; i < num_pivots; ++i) {
 				this.ComputeDistRow (idxseq, rand, already_pivot, pivs, tmp_items);
-				double sum = 0;
-				for (int objID = 0; objID < this.Items.Length; ++objID) {
-					var u = this.Items[objID];
-					sum += Math.Abs( u.dist - pivs[u.objID].mean );
+//				double sum = 0;
+//				for (int objID = 0; objID < this.Items.Length; ++objID) {
+//					var u = this.Items[objID];
+//					sum += Math.Abs( u.dist - pivs[u.objID].mean );
+//				}
+				if (i % 10 == 0) {
+					Console.WriteLine("XXXXXX {0}, seed: {1}, iteration: {2}/{3}, DB: {4}", this, seed, i, num_pivots, DB.Name);
 				}
-				if (i % 10 == 0) Console.WriteLine("XXXXXX {0} sum: {1}, i: {2}", this, sum, i);
 			}
 			this.Pivs = pivs.ToArray ();
 			Console.WriteLine("Number of pivots per group: {0}", this.Pivs.Length);
 		}
+
 	}
 }
 

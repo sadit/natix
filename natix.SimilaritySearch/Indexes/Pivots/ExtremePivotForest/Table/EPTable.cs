@@ -89,8 +89,9 @@ namespace natix.SimilaritySearch
 			this.DB = db;
 			this.InitRows (num_groups);
 			var seeds = new int[ num_groups ];
-			for (int i = 0; i < num_groups; ++i) {
-				seeds[i] = RandomSets.GetRandomInt();
+			seeds [0] = RandomSets.GetRandomInt ();
+			for (int i = 1; i < num_groups; ++i) {
+				seeds[i] = seeds[i-1] + 1;
 			}
 			ParallelOptions ops = new ParallelOptions ();
 			ops.MaxDegreeOfParallelism = num_build_processors;

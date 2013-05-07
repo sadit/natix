@@ -99,8 +99,9 @@ namespace natix.SimilaritySearch
 				derivative = curr_cost - prev_cost;
 				// Console.WriteLine ("DEBUG: stddev: {0}", stats.stddev);
 				if (i % 10 == 1) {
-					Console.WriteLine("XXXXXX i: {0}, qcurr_cost: {1}, prev_cost: {2}, varX: {3}, varY: {4}, qrad: {5}",
-					                   i, curr_cost, prev_cost, varX, varY, qrad);
+					Console.Write("XXXXXX {0}, seed: {1}, iteration: {2}, DB: {3}, ", this, seed, i, DB.Name);
+					Console.WriteLine("qcurr_cost: {0}, prev_cost: {1}, varX: {2}, varY: {3}, qrad: {4}",
+					                   curr_cost, prev_cost, varX, varY, qrad);
 				}
 			} while (derivative < 0 && i < max_iters);
 			this.Pivs = pivs.ToArray ();

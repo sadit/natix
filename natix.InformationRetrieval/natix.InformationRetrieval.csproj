@@ -10,6 +10,7 @@
     <RootNamespace>natix.InformationRetrieval</RootNamespace>
     <AssemblyName>natix.InformationRetrieval</AssemblyName>
     <newfilesearch>OnLoadAutoInsert</newfilesearch>
+    <ReleaseVersion>1</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>

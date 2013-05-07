@@ -9,6 +9,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>natixir</RootNamespace>
     <AssemblyName>test-ir</AssemblyName>
+    <ReleaseVersion>1</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>True</DebugSymbols>

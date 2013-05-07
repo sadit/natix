@@ -9,6 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>cftdb</RootNamespace>
     <AssemblyName>CFTDB</AssemblyName>
+    <ReleaseVersion>1</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
