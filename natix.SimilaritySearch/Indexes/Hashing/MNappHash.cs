@@ -98,20 +98,15 @@ namespace natix.SimilaritySearch
 		{
             var L = new HashSet<int>();
 			foreach (var a in this.A) {
-				var M = a.GetNearList(q);
-				if (a.TABLE.TryGetValue(h, out M)) {
-					foreach (var docID in M) {
-						L.Add(docID);
-					}
-				}
-            	foreach (var docID in L) {
-               		double d = this.DB.Dist (q, this.DB [docID]);
-               		res.Push (docID, d);
-				}
+				L.UnionWith( a.GetNearList(q) );
+			}
+			foreach (var docID in L) {
+				double d = this.DB.Dist (q, this.DB [docID]);
+				res.Push (docID, d);
 			}
 			return res;
 		}
-
+		
 		public override IResult SearchRange (object q, double radius)
 		{
             return this.SearchKNN(q, this.DB.Count, new ResultRange(radius));

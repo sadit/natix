@@ -48,8 +48,6 @@ namespace natix.SimilaritySearch
 			for (int i = 0; i < list.Count; ++i) {
 				for (int j = 0; j < max_pos; ++j) {
 					swap (j, list);
-					// var x = Fun.Reduce<string>(Fun.Map<int,string>(list, (item) => item.ToString()), (a,b) => String.Format("({0},{1}), ",a, b));
-					// Console.WriteLine ("({0},{1}) => {2}", i, j, x);
 					var h = this.EncodeKnr(list);
 					if (h != first) {
 						yield return h;
@@ -72,9 +70,7 @@ namespace natix.SimilaritySearch
 				Console.WriteLine ("=== hash {0}", hash);
 				List<int> L;
 				if (this.TABLE.TryGetValue(hash, out L)) {
-					foreach  (var item in L) {
-						near.Add(item);
-					}
+					near.UnionWith(L);
 				}
 			}
 			return near;

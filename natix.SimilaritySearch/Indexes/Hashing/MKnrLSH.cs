@@ -108,14 +108,12 @@ namespace natix.SimilaritySearch
 				var h = a.GetHashKnr(q);
 				List<int> M;
 				if (a.TABLE.TryGetValue(h, out M)) {
-					foreach (var docID in M) {
-						L.Add(docID);
-					}
+					L.UnionWith(M);
 				}
-            	foreach (var docID in L) {
-               		double d = this.DB.Dist (q, this.DB [docID]);
-               		res.Push (docID, d);
-				}
+			}
+			foreach (var docID in L) {
+				double d = this.DB.Dist (q, this.DB [docID]);
+				res.Push (docID, d);
 			}
 			return res;
 		}

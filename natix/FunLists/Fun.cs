@@ -46,7 +46,5 @@ namespace natix
 			}
 			return prev;
 		}
-
 	}
 }
-

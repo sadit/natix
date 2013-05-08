@@ -17,7 +17,7 @@ using System.IO;
 
 namespace natix.SimilaritySearch
 {
-    public struct ItemPair : ILoadSave
+    public struct ItemPair : ILoadSave, IComparable<ItemPair>
     {
         public int objID;
         public double dist;
@@ -44,7 +44,19 @@ namespace natix.SimilaritySearch
         {
             return string.Format ("[Item (objID={0},dist={1})]", this.objID, this.dist);
         }
-    }
 
+		int IComparable<ItemPair>.CompareTo(ItemPair other)
+		{
+			var cmp = this.dist - other.dist;
+			if (cmp == 0) {
+				return this.objID - other.objID;
+			}
+			if (cmp < 0) {
+				return -1;
+			} else {
+				return 1;
+			}
+		}
+	}
 }
 

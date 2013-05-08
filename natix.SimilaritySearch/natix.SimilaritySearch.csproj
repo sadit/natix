@@ -168,10 +168,11 @@
     <Compile Include="Indexes\Pivots\PivotSelector.cs" />
     <Compile Include="Indexes\ApproxGraph\ApproxGraph.cs" />
     <Compile Include="Indexes\Hashing\KnrLSH.cs" />
-    <Compile Include="Indexes\Hashing\SmallPerms.cs" />
     <Compile Include="Indexes\Hashing\MKnrLSH.cs" />
     <Compile Include="Indexes\Hashing\KnrLSHQueryExpansion.cs" />
-    <Compile Include="Indexes\Hashing\NAPPHash.cs" />
+    <Compile Include="Indexes\Hashing\MNappHash.cs" />
+    <Compile Include="Indexes\Hashing\NappHash.cs" />
+    <Compile Include="Indexes\Hashing\ShortPerms.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -186,6 +187,7 @@
     <Folder Include="Indexes\Pivots\ExtremePivotForest\OLD\" />
     <Folder Include="Indexes\ApproxGraph\" />
     <Folder Include="Indexes\Hashing\" />
+    <Folder Include="Indexes\Hashing\Hashing\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\natix\natix.csproj">
