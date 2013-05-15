@@ -37,7 +37,8 @@ namespace natix.SimilaritySearch
 			get;
 			set;
 		}
-		IList< IList<byte> > pool;
+
+		List< byte[] > pool;
 		protected int numdist;
 		/// <summary>
 		///  Symbol's length in bytes
@@ -57,11 +58,12 @@ namespace natix.SimilaritySearch
 			this.Name = Input.ReadString ();
 			this.symlen = Input.ReadInt32 ();
 			int len = Input.ReadInt32 ();
-			this.pool = new IList<byte>[len];
+			this.pool.Capacity = len;
 			for (int i = 0; i < len; ++i) {
 				len = Input.ReadInt32 ();
 				var list = new byte[len];
 				PrimitiveIO<byte>.ReadFromFile(Input, len, list);
+				this.pool.Add (list);
 			}
 		}
 
@@ -71,7 +73,7 @@ namespace natix.SimilaritySearch
 			Output.Write ((int)this.symlen);
 			Output.Write ((int)this.pool.Count);
 			for (int i = 0; i < this.pool.Count; ++i) {
-				Output.Write ((int)this.pool [i].Count);
+				Output.Write ((int)this.pool [i].Length);
 				PrimitiveIO<byte>.WriteVector (Output, this.pool [i]);
 			}
 		}
@@ -83,6 +85,7 @@ namespace natix.SimilaritySearch
 		{
 			this.symlen = symlen;
 			this.numdist = 0;
+			this.pool = new List<byte[]> ();
 		}
 	
 		public IResult CreateResult (int K, bool ceiling)
@@ -106,10 +109,16 @@ namespace natix.SimilaritySearch
 				if (s.Length == 0) {
 					continue;
 				}
-				this.pool.Add ((IList<byte>)this.Parse (s, false));
+				this.pool.Add ((byte[])this.Parse (s, false));
 			}
 			Console.WriteLine ("done reading");
 			r.Close ();
+		}
+
+		public int Add(byte[] bitmap)
+		{
+			this.pool.Add (bitmap);
+			return this.pool.Count - 1;
 		}
 
 		/// <summary>
@@ -174,6 +183,7 @@ namespace natix.SimilaritySearch
 			s.Close ();
 			return _s;
 		}
+
 		public static string ToAsciiString (int d)
 		{
 			return BinQ8HammingSpace.ToAsciiString((uint)d);
@@ -192,10 +202,10 @@ namespace natix.SimilaritySearch
 		/// </returns>
 		public string ObjectToAsciiString (int docid)
 		{
-			return BinQ8HammingSpace.ToAsciiString ((IList<byte>)this [docid]);
+			return BinQ8HammingSpace.ToAsciiString (this.pool[docid]);
 		}
 
-		public static IList<byte> ParseObjectFromString (string data)
+		public static byte[] ParseObjectFromString (string data)
 		{
 			List<byte > res = new List<byte> ();
 			int ishift = 0;
@@ -223,10 +233,10 @@ namespace natix.SimilaritySearch
 			if (ishift != 0) { 
 				res.Add((byte)buffer);
 			}
-			return res;
+			return res.ToArray();
 		}
 		
-		public static IList<byte> LoadObjectFromFile (string name, bool save_binary_cache)
+		public static byte[] LoadObjectFromFile (string name, bool save_binary_cache)
 		{
 			if (name.EndsWith (".bin")) {
 				return File.ReadAllBytes (name);
@@ -284,32 +294,16 @@ namespace natix.SimilaritySearch
 		public virtual double Dist (object a, object b)
 		{
 			this.numdist++;
-			return DistMinHamming((IList<byte>)a, (IList<byte>)b, this.symlen);
+			return DistHamming((byte[])a, (byte[])b);
 		}
 
-		public static double DistMinHamming (IList<byte> a, IList<byte> b, int symlen)
+		public static double DistHamming (byte[] a, byte[] b)
 		{
-			int min = int.MaxValue;
-			if (a.Count < b.Count) {
-				IList<byte> w = a;
-				a = b;
-				b = w;
+			int d = 0;
+			for (int i = 0; i < a.Length; ++i) {
+				d += Bits.PopCount8[a[i] ^ b[i]];
 			}
-			int bL = b.Count;
-			int aL = a.Count - bL;
-			int d;
-			//Console.WriteLine ("aL: {0} bL: {1}, symlen: {2}", aL, bL, this.symlen);
-			for (int askip = 0; askip <= aL; askip += symlen) {
-				d = 0;
-				for (int bskip = 0, abskip = askip; bskip < bL; bskip++,abskip++) {
-					// Console.WriteLine ("a:{0}, b:{1}, A: {2}, B: {3}", askip, bskip, a[askip], b[bskip]);
-					d += Bits.PopCount8[a[abskip] ^ b[bskip]];
-				}
-				if (min > d) {
-					min = d;
-				}
-			}
-			return min;
+			return d;
 		}
 	}
 }

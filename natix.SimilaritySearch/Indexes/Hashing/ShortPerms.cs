@@ -41,7 +41,7 @@ namespace natix.SimilaritySearch
             var num_keys = this.TABLE.Count;
             Output.Write ((int)num_keys);
             foreach (var p in this.TABLE) {
-                Output.Write (p.Key);
+                Output.Write ((long)p.Key);
 				Output.Write (p.Value.Count);
 				PrimitiveIO<int>.WriteVector(Output, p.Value);
             }
@@ -54,7 +54,7 @@ namespace natix.SimilaritySearch
 			var num_keys = Input.ReadInt32 ();
             this.TABLE = new Dictionary<long, List<int>> (num_keys);
             for (int i = 0; i < num_keys; ++i) {
-                var key = Input.ReadInt32();
+                var key = Input.ReadInt64();
 				var len = Input.ReadInt32 ();
 				var value = new List<int>(len);
 				PrimitiveIO<int>.ReadFromFile(Input, len, value);
@@ -77,7 +77,7 @@ namespace natix.SimilaritySearch
 			var G = new long[n];
 			for (int objID = 0; objID < n; ++objID) {
 				var u = this.DB[objID];
-				var useq = this.GetHashKnr(u);
+				var useq = this.GetHash(u);
 				G[objID] = useq;
 			}
             this.TABLE = new Dictionary<long, List<int>> ();
@@ -90,21 +90,28 @@ namespace natix.SimilaritySearch
                 }
                 L.Add (objID);
             }
+			int m = 0;
+			foreach ( var p in this.TABLE ) {
+				m += p.Value.Count;
+				Console.WriteLine ("@@@@> key: {0}, count: {1}", p.Key, p.Value.Count);
+			}
+			Console.WriteLine ("===== @@@ hashes: {0}, n: {1}, m: {2}", this.TABLE.Count, n, m);
 		}
 
-		public virtual long GetHashKnr (object q)
+		public virtual long GetHash (object q)
 		{
 			var near = new List<ItemPair> ();
 			this.internal_numdists += this.refs.Count;
 			for (int refID = 0; refID < this.refs.Count; ++refID) {
 				var d = this.DB.Dist(q, this.DB[refID]);
-				near.Add (new ItemPair(refID, d)); 
+				near.Add (new ItemPair(refID, d));
 			}
 			near.Sort ();
-            var hash = 0;
+            long hash = 0;
             int i = 0;
             foreach (var p in near) {
-                hash |= p.objID << (i << 4);
+				long objID = p.objID;
+                hash |= objID << (i << 2);
                 ++i;
             }
             return hash;
@@ -112,7 +119,7 @@ namespace natix.SimilaritySearch
 
 		public override IResult SearchKNN (object q, int knn, IResult res)
 		{
-			var hash = this.GetHashKnr (q);
+			var hash = this.GetHash (q);
             List<int> L;
             if (!this.TABLE.TryGetValue(hash, out L)) {
                 return res;

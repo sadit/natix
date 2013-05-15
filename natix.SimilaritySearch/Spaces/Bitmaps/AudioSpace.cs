@@ -28,7 +28,7 @@ namespace  natix.SimilaritySearch
 		public IRankSelect LENS;
 		public int SymbolSize;
 		public int Q;
-		IList< byte > Data;
+		byte[] Data;
 		int numdist = 0;
 
 		public string Name {
@@ -40,7 +40,7 @@ namespace  natix.SimilaritySearch
 			RankSelectGenericIO.Save (Output, this.LENS);
 			Output.Write ((int) this.SymbolSize);
 			Output.Write ((int) this.Q);
-			Output.Write ((int) this.Data.Count);
+			Output.Write ((int) this.Data.Length);
 			PrimitiveIO<byte>.WriteVector(Output, this.Data);
 			Output.Write (this.Name);
 		}
@@ -51,7 +51,7 @@ namespace  natix.SimilaritySearch
 			this.SymbolSize = Input.ReadInt32();
 			this.Q = Input.ReadInt32();
 			var len = Input.ReadInt32 ();
-			this.Data = new byte[ len ];
+			this.Data = new byte[len];
 			PrimitiveIO<byte>.ReadFromFile(Input, len, this.Data);
 			this.Name = Input.ReadString();
 		}
@@ -61,7 +61,7 @@ namespace  natix.SimilaritySearch
 			if (name.StartsWith ("obj")) {
 				var A = name.Split (' ');
 				var id = A [1];
-				var u = (IList<byte>)this [int.Parse (id)];
+				var u = (BinQGramArray)this [int.Parse (id)];
 				if (A.Length == 2) {
 					return u;
 				}
@@ -83,7 +83,7 @@ namespace  natix.SimilaritySearch
 				return L;
 			}
 			var res = BinQ8HammingSpace.LoadObjectFromFile (name, !isquery);
-			return new BinQGram (res, 0, this.Q);
+			return new BinQGramArray (res, 0, this.Q);
 		}
 
 		public IResult CreateResult (int K, bool ceiling)
@@ -100,12 +100,34 @@ namespace  natix.SimilaritySearch
 		public double Dist (object a, object b)
 		{
 			this.numdist++;
-			/* if (this.numdist % 2048 == 0) {
-				Console.WriteLine ("numdist: {0}, a.Count: {1}, b.Count: {2}", this.numdist, a.Count, b.Count);
-			}
-			*/
-			return BinQ8HammingSpace.DistMinHamming ((IList<byte>)a, (IList<byte>)b, this.SymbolSize);
+			return DistMinHamming ((BinQGramArray)a, (BinQGramArray)b, this.SymbolSize);
 		}
+
+		public static double DistMinHamming (BinQGramArray a, BinQGramArray b, int symlen)
+		{
+			int min = int.MaxValue;
+			if (a.Count < b.Count) {
+				var w = a;
+				a = b;
+				b = w;
+			}
+			int bL = b.Count;
+			int aL = a.Count - bL;
+			int d;
+			//Console.WriteLine ("aL: {0} bL: {1}, symlen: {2}", aL, bL, this.symlen);
+			for (int askip = 0; askip <= aL; askip += symlen) {
+				d = 0;
+				for (int bskip = 0, abskip = askip; bskip < bL; bskip++,abskip++) {
+					// Console.WriteLine ("a:{0}, b:{1}, A: {2}, B: {3}", askip, bskip, a[askip], b[bskip]);
+					d += Bits.PopCount8[a[abskip] ^ b[bskip]];
+				}
+				if (min > d) {
+					min = d;
+				}
+			}
+			return min;
+		}
+
 
 		public AudioSpace ()
 		{
@@ -130,10 +152,10 @@ namespace  natix.SimilaritySearch
 				foreach (var b in data) {
 					D.Add(b);
 				}
-				lens.Add(lens[lens.Count-1]+data.Count);
+				lens.Add(lens[lens.Count-1]+data.Length);
 			}
 			this.LENS = BitmapBuilders.GetSArray().Invoke(lens);
-			this.Data = D;
+			this.Data = D.ToArray();
 		}
 
 		public object this [int docid] {
@@ -143,21 +165,21 @@ namespace  natix.SimilaritySearch
 				//return new ListGen<byte> (delegate(int i) {
 				//	return this.Data[startIndex + i];
 				//}, this.Q);
-				return new BinQGram (this.Data, docid * this.SymbolSize, this.Q);
+				return new BinQGramArray (this.Data, docid * this.SymbolSize, this.Q);
 			}
 		}
 				
-		public IList<byte> GetAudio (int audioId)
+		public BinQGramArray GetAudio (int audioId)
 		{
 			var startPos = this.LENS.Select1(audioId+1);
 			var len = this.LENS.Select1(audioId+2);
-			return new BinQGram (this.Data, startPos, len);
+			return new BinQGramArray (this.Data, startPos, len);
 		}
 		
 		public int Count {
 			get {
 				// return this.Data.Count / this.Q;
-				return (this.Data.Count - Q) / this.SymbolSize;
+				return (this.Data.Length - Q) / this.SymbolSize;
 			}
 		}
 

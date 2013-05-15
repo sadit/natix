@@ -19,13 +19,13 @@ using System.Collections.Generic;
 
 namespace  natix.SimilaritySearch
 {
-	public class BinQGram : ListGenerator<byte>
+	public class BinQGramList : ListGenerator<byte>
 	{
 		int StartIndex;
 		int Len;
-		IList<byte> Data;
+		List<byte> Data;
 		
-		public BinQGram (IList<byte> Data, int startIndex, int Len)
+		public BinQGramList (List<byte> Data, int startIndex, int Len)
 		{
 			this.StartIndex = startIndex;
 			this.Data = Data;

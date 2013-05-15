@@ -26,24 +26,24 @@ namespace natix.SimilaritySearch
 	/// <summary>
 	/// Jaccard for bit strings
 	/// </summary>
-	public class BinQ8JaccardSpace : BinQ8HammingSpace
+	public class BinQ8MinJaccardSpace : BinQ8HammingSpace
 	{
 		public override double Dist (object a, object b)
 		{
 			this.numdist++;
-			return DistMinJaccard((IList<byte>) a, (IList<byte>) b, this.symlen);
+			return DistMinJaccard((byte[]) a, (byte[]) b, this.symlen);
 		}
 
-		public static double DistMinJaccard(IList<byte> a, IList<byte> b, int symlen)
+		public static double DistMinJaccard(byte[] a, byte[] b, int symlen)
 		{
 			double min = double.MaxValue;
-			if (a.Count < b.Count) {
-				IList<byte> w = a;
+			if (a.Length < b.Length) {
+				var w = a;
 				a = b;
 				b = w;
 			}
-			int bL = b.Count;
-			int aL = a.Count - bL;
+			int bL = b.Length;
+			int aL = a.Length - bL;
 			for (int askip = 0; askip <= aL; askip += symlen) {
 				float I = 0;
 				float U = 0;

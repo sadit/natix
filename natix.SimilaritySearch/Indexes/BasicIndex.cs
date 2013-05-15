@@ -61,7 +61,12 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Search by range
 		/// </summary>
-		public abstract IResult SearchRange (object q, double radius);
+		public virtual IResult SearchRange (object q, double radius)
+		{
+			var res = new ResultRange (radius, this.DB.Count);
+			this.SearchKNN (q, this.DB.Count, res);
+			return res;
+		}
 		
 		/// <summary>
 		/// Search by KNN
@@ -74,7 +79,7 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Perform a KNN search.
 		/// </summary>
-		public abstract IResult SearchKNN(object q, int K, IResult res);
+		public abstract IResult SearchKNN (object q, int K, IResult res);
 
         protected int internal_numdists = 0;
 		/// <summary>

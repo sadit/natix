@@ -26,31 +26,31 @@ namespace natix.SimilaritySearch
 	/// <summary>
 	/// Jaccard for bit strings
 	/// </summary>
-	public class BinQ8ORSpace : BinQ8HammingSpace
+	public class BinQ8MinHammingSpace : BinQ8HammingSpace
 	{
-
-		public override double Dist(object a, object b)
+		public override double Dist (object a, object b)
 		{
 			this.numdist++;
-			return DistMinOR((byte[])a, (byte[])b, this.symlen);
+			return DistMinHamming((byte[]) a, (byte[]) b, this.symlen);
 		}
 
-		public static double DistMinOR(byte[] a, byte[] b, int symlen)
+		public static double DistMinHamming (byte[] a, byte[] b, int symlen)
 		{
 			int min = int.MaxValue;
 			if (a.Length < b.Length) {
-				byte[] w = a;
+				var w = a;
 				a = b;
 				b = w;
 			}
 			int bL = b.Length;
 			int aL = a.Length - bL;
 			int d;
+			//Console.WriteLine ("aL: {0} bL: {1}, symlen: {2}", aL, bL, this.symlen);
 			for (int askip = 0; askip <= aL; askip += symlen) {
 				d = 0;
 				for (int bskip = 0, abskip = askip; bskip < bL; bskip++,abskip++) {
-					//Console.WriteLine ("a:{0}, b:{1}, A: {2}, B: {3}", askip, bskip, a[askip], b[bskip]);
-					d += Bits.PopCount8[a[abskip] | b[bskip]];
+					// Console.WriteLine ("a:{0}, b:{1}, A: {2}, B: {3}", askip, bskip, a[askip], b[bskip]);
+					d += Bits.PopCount8[a[abskip] ^ b[bskip]];
 				}
 				if (min > d) {
 					min = d;
@@ -58,5 +58,6 @@ namespace natix.SimilaritySearch
 			}
 			return min;
 		}
+
 	}
 }

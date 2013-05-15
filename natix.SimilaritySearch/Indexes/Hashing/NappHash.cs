@@ -62,8 +62,6 @@ namespace natix.SimilaritySearch
 		public void Build (MetricDB db, int k, int num_refs, Random rand)
 		{
 			var sample = new SampleSpace("", db, num_refs, rand);
-//			var I = new EPTable();
-//			I.Build(sample, 4, (_db, _seed) => new EPListRandomPivots(_db, _seed, 300));
 			var I = new SAT_Distal();
 			I.Build(sample, rand);
 			this.Build(db, k, I);
@@ -91,7 +89,6 @@ namespace natix.SimilaritySearch
 			});
 			ParallelOptions ops = new ParallelOptions();
 			ops.MaxDegreeOfParallelism = -1;
-			ops.MaxDegreeOfParallelism = 1;
 			Parallel.ForEach(new ListGen<int>((int i) => i, this.DB.Count), ops, compute_one);
 
 			for (int objID = 0; objID < this.DB.Count; ++objID) {
@@ -116,26 +113,34 @@ namespace natix.SimilaritySearch
 			return qseq;
 		}
 
-		public virtual List<int> GetNearList(object q)
+		public virtual List<int>[] GetNear(object q, int ksearch)
 		{
-			var first = this.GetKnr (q, 1)[0];
-			return this.INVINDEX[first];	
+			var near = new List<int> [ksearch];
+			var knrseq = this.GetKnr(q, ksearch);
+			for (int i = 0; i < ksearch; ++i) {
+				near[i] = this.INVINDEX[knrseq[i]];
+			}
+			return near;
 		}
 
 		public override IResult SearchKNN (object q, int knn, IResult res)
 		{
-			var list = this.GetNearList(q);
-			foreach (var objID in list) {
-				double d = this.DB.Dist (q, this.DB [objID]);
-				res.Push (objID, d);
+			var list = this.GetNear (q, this.K);
+			if (list.Length == 1) {
+				foreach (var objID in list[0]) {
+					double d = this.DB.Dist (q, this.DB [objID]);
+					res.Push (objID, d);
+				}
+			} else {
+				var near = new HashSet<int> ();
+				foreach (var L in list) {
+					near.UnionWith(L);
+				}
+				foreach (var objID in near) {
+					double d = this.DB.Dist (q, this.DB [objID]);
+					res.Push (objID, d);
+				}
 			}
-			return res;
-		}
-
-		public override IResult SearchRange (object q, double radius)
-		{
-			var res = new ResultRange (radius, this.DB.Count);
-			this.SearchKNN(q, this.DB.Count, res);
 			return res;
 		}
 	}

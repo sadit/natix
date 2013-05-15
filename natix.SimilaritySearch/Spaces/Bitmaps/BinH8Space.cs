@@ -28,7 +28,7 @@ namespace natix.SimilaritySearch
 	/// </summary>
 	public class BinH8Space : MetricDB
 	{
-		public IList<byte> DATA;
+		public List<byte> DATA;
 		public IRankSelect LENS;
 		int numdist;
 
@@ -43,7 +43,7 @@ namespace natix.SimilaritySearch
 		{
 			this.Name = Input.ReadString();
 			var len = Input.ReadInt32 ();
-			this.DATA = new byte[len];
+			this.DATA = new List<byte> (len);
 			PrimitiveIO<byte>.ReadFromFile(Input, len, this.DATA);
 			this.LENS = RankSelectGenericIO.Load(Input);
 		}
@@ -150,7 +150,7 @@ namespace natix.SimilaritySearch
 				var start_index = this.LENS.Select1(docid+1);
 				var last_index = this.LENS.Select1(docid+2);
 				var len = last_index - start_index;
-				var s = new BinQGram(this.DATA, start_index, len);
+				var s = new BinQGramList(this.DATA, start_index, len);
 				return s;
 			}
 		}

@@ -25,6 +25,8 @@ namespace natix.SimilaritySearch
 	public class MNappHash : BasicIndex
 	{
         public NappHash[] A;
+		public HyperplaneFP hplanes;
+		public static int NumberHyperplanes = 64;
 
 		public override string ToString ()
 		{
@@ -75,12 +77,13 @@ namespace natix.SimilaritySearch
 		{
 			this.A = new NappHash[num_instances];
 			this.DB = I.DB;
+			this.hplanes = I.hplanes;
 			for (int i = 0; i < num_instances; ++i) {
 				this.A[i] = I.A[i];
 			}
 		}
 
-		public void Build (MetricDB db, int K, int num_refs, int num_instances)
+		public void Build (MetricDB db, int K, int num_refs, int num_instances, HyperplaneFP hpfp)
         {
             this.A = new NappHash[num_instances];
             this.DB = db;
@@ -92,21 +95,53 @@ namespace natix.SimilaritySearch
 				++I;
 				Console.WriteLine ("=== Created {0}/{1} K:{2}, {3}", I, num_instances, K, this);
 			}
+			this.hplanes = hpfp;
+		}
+
+		public void SetHyperplanes(int numhyperplanes)
+		{
+			this.hplanes = new HyperplaneFP ();
+			this.hplanes.Build (this.DB, numhyperplanes);
+		}
+
+		public void SetExpansionK (int k)
+		{
+			foreach (var a in this.A) {
+				a.K = k;
+			}
 		}
 
 		public override IResult SearchKNN (object q, int knn, IResult res)
 		{
             var L = new HashSet<int>();
 			foreach (var a in this.A) {
-				L.UnionWith( a.GetNearList(q) );
+				foreach (var b in a.GetNear(q, a.K)) {
+					L.UnionWith( b );
+				}
 			}
-			foreach (var docID in L) {
-				double d = this.DB.Dist (q, this.DB [docID]);
-				res.Push (docID, d);
+	
+			Console.WriteLine ("L.Count: {0}",L.Count);
+			var r = this.FilterCandidates(q,L);
+			
+			foreach (var pair in r) {
+				double d = this.DB.Dist (q, this.DB [pair.docid]);
+				res.Push (pair.docid, d);
 			}
 			return res;
 		}
-		
+
+		public virtual IResult FilterCandidates (object q, HashSet<int> L)
+		{
+			var query = this.hplanes.GetFP(q);
+			IResult r = new Result(this.hplanes.MaxCandidates, false);
+			var fp = this.hplanes.Fingerprints;
+			foreach(var docID in L){
+				var d = fp.Dist (query, fp[docID]);
+				r.Push(docID,d);
+			}
+			return r;
+		}
+
 		public override IResult SearchRange (object q, double radius)
 		{
             return this.SearchKNN(q, this.DB.Count, new ResultRange(radius));
