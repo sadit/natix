@@ -176,7 +176,8 @@
     <Compile Include="Spaces\Bitmaps\BinQ8MinJaccardSpace.cs" />
     <Compile Include="Indexes\Hyperplanes\HyperplaneFP.cs" />
     <Compile Include="Indexes\ApproxGraph\ApproxGraph.cs" />
-    <Compile Include="Indexes\ApproxRandom\SimpleRandomIndex.cs" />
+    <Compile Include="Indexes\ApproxRandom\LargeRandomizedSearch.cs" />
+    <Compile Include="Indexes\ApproxRandom\ShortRandomizedSearch.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

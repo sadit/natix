@@ -20,14 +20,31 @@ using natix.CompactDS;
 
 namespace natix.SimilaritySearch
 {
-	public class SimpleRandomIndex : BasicIndex
+	public class LargeRandomizedSearch : BasicIndex
 	{
-		public SimpleRandomIndex () : base()
+		public int SampleSize ;
+		Random rand;
+
+		public LargeRandomizedSearch () : base()
 		{
 		}
 
-		public void Build (MetricDB db)
+		public void Build (MetricDB db, int samplesize)
 		{
+			this.SampleSize = samplesize;
+			this.DB = db;
+			this.rand = new Random ();
+		}
+
+		public override IResult SearchKNN (object q, int K, IResult res)
+		{
+			var n = this.DB.Count;
+			for (int i = 0; i < this.SampleSize; ++i) {
+				var objID = this.rand.Next (0, n);
+				var d = this.DB.Dist (q, this.DB [objID]);
+				res.Push (objID, d);
+			}
+			return res;
 		}
 	}
 }
