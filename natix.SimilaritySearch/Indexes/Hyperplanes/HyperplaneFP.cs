@@ -15,9 +15,11 @@
 //
 //
 using System;
+using System.IO;
 using System.Collections.Generic;
 using natix;
 using natix.CompactDS;
+using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
@@ -27,24 +29,51 @@ namespace natix.SimilaritySearch
 		public BinQ8HammingSpace Fingerprints;
 		public int MaxCandidates=100000;
 		public MetricDB Sample;
-		Index internalIndex;
+		public Index InternalIndex;
 
 		public HyperplaneFP ()
 		{
 		}
 
+
+		public override void Load (BinaryReader Input)
+		{
+			base.Load (Input);
+			this.Sample = SpaceGenericIO.SmartLoad (Input, false);
+			this.InternalIndex = IndexGenericIO.Load (Input);
+			this.Fingerprints = this.InternalIndex.DB as BinQ8HammingSpace;
+		}
+
+		public override void Save (BinaryWriter Output)
+		{
+			base.Save (Output);
+			SpaceGenericIO.SmartSave (Output, this.Sample);
+			IndexGenericIO.Save (Output, this.InternalIndex);
+		}
+
 		public byte[] GetFP(object a){
 			int numsamplerefs = Sample.Count;
-			int numpairs = numsamplerefs / 2;
+//			int numpairs = numsamplerefs / 2;
+//			var row = new byte[(int)Math.Ceiling(numsamplerefs/16.0)];
+//			for(int i=0; i<numpairs; i++){
+//				var dist1 = this.DB.Dist(a,this.Sample[2*i]);
+//				var dist2 = this.DB.Dist(a,this.Sample[2*i+1]);
+//				if(dist1 <= dist2){
+//					BitAccess.SetBit(row,i);
+//				}
+//				else{
+//					BitAccess.ResetBit(row,i);
+//				}
+//			}
+			int numpairs = numsamplerefs >> 1;
 			var row = new byte[(int)Math.Ceiling(numsamplerefs/16.0)];
-			for(int i=0; i<numpairs; i++){
-				var dist1 = this.DB.Dist(a,this.Sample[2*i]);
-				var dist2 = this.DB.Dist(a,this.Sample[2*i+1]);
-				
-				if(dist1 <= dist2){
+			for(int i = 0; i < numpairs; ++i){
+				var c = i << 1;
+				var dist1 = this.DB.Dist(a,this.Sample[c]);
+				var dist2 = this.DB.Dist(a,this.Sample[c+1]);
+				if (dist1 <= dist2){
 					BitAccess.SetBit(row,i);
-				}
-				else{
+				} else {
 					BitAccess.ResetBit(row,i);
 				}
 			}
@@ -56,17 +85,27 @@ namespace natix.SimilaritySearch
 			this.Fingerprints = new BinQ8HammingSpace (1);
 			this.Sample = new SampleSpace("", this.DB, num_pairs * 2);
 			this.MaxCandidates = maxCandidates;
-
+			var n = this.DB.Count;
+			var A = new byte[n][];
 			int pc = this.DB.Count / 100 + 1;
-			for(int i=0; i < this.DB.Count; i++){
-				this.Fingerprints.Add( this.GetFP(this.DB[i]) );
-				if (i % pc == 0) {
-					Console.WriteLine ("Mapping object: ({0}/{1}), db: {2}, num_pairs: {3}",i,this.DB.Count, db.Name, num_pairs);
+			int advance = 0;
+			var create_one = new Action<int> (delegate(int i) {
+				var fp = this.GetFP(this.DB[i]);
+				A[i] = fp;
+				if (advance % pc == 0) {
+					Console.WriteLine ("DEBUG {0}  ({1}/{2}), db: {3}, num_pairs: {4}, timestamp: {5}", this, advance, n, db.Name, num_pairs, DateTime.Now);
 				}
+				advance++;
+			});
+			ParallelOptions ops = new ParallelOptions();
+			ops.MaxDegreeOfParallelism = -1;
+			Parallel.For (0, n, create_one);
+			foreach (var fp in A) {
+				this.Fingerprints.Add( fp );
 			}
 			var s = new Sequential ();
-			s.Build (db);
-			this.internalIndex = s;
+			s.Build (this.Fingerprints);
+			this.InternalIndex = s;
 		}
 
 		public override IResult SearchKNN (object q, int K, IResult res)
@@ -75,14 +114,13 @@ namespace natix.SimilaritySearch
 			if (maxC < 0) {
 				maxC = this.DB.Count;
 			}
-			var cand = this.internalIndex.SearchKNN(q, maxC);
+			var cand = this.InternalIndex.SearchKNN(q, maxC);
 			foreach (var p in cand) {
 				var d = this.DB.Dist(this.DB[p.docid], q);
 				res.Push (p.docid, d);
 			}
 			return res;
 		}
-		
 	}
 }
 

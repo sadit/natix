@@ -81,11 +81,15 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Constructor
 		/// </summary>
-		public BinQ8HammingSpace (int symlen=1)
+		public BinQ8HammingSpace (int symlen)
 		{
 			this.symlen = symlen;
 			this.numdist = 0;
 			this.pool = new List<byte[]> ();
+		}
+
+		public BinQ8HammingSpace() : this(1)
+		{
 		}
 	
 		public IResult CreateResult (int K, bool ceiling)

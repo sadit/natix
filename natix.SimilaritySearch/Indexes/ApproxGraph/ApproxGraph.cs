@@ -27,19 +27,27 @@ namespace natix.SimilaritySearch
 	{
 		public class Vertex : List<int>
 		{
+			public Vertex(int capacity) : base(capacity) {}
+			public Vertex() : base() {}
 		}
 		
 		public List<Vertex> Vertices;
 		public short Arity;
 		public short RepeatSearch;
-		public Random rand;
+		public Random rand = new Random ();
 		
 		public override void Load (BinaryReader Input)
 		{
 			base.Load (Input);
 			this.Arity = Input.ReadInt16 ();
 			this.RepeatSearch = Input.ReadInt16 ();
-			this.Vertices = new List<Vertex> ();
+			var count = Input.ReadInt32 ();
+			this.Vertices = new List<Vertex> (count);
+			for (int i = 0; i < count; ++i) {
+				count = Input.ReadInt32 ();
+				var vertex = new Vertex (count);
+				PrimitiveIO<int>.ReadFromFile(Input, count, vertex);
+			}
 		}
 		
 		public override void Save (BinaryWriter Output)
@@ -47,7 +55,11 @@ namespace natix.SimilaritySearch
 			base.Save (Output);
 			Output.Write (this.Arity);
 			Output.Write (this.RepeatSearch);
-			// 
+			Output.Write ((int) this.Vertices.Count);
+			foreach (var vertex in this.Vertices) {
+				Output.Write ((int) vertex.Count);
+				PrimitiveIO<int>.WriteVector (Output, vertex);
+			}
 		}
 		
 		public ApproxGraph ()
@@ -86,44 +98,53 @@ namespace natix.SimilaritySearch
 			}
 		}
 		
-		public override IResult SearchRange (object q, double radius)
+		public override IResult SearchKNN (object q, int K, IResult final_result)
 		{
-			var res = new ResultRange (radius, this.DB.Count);
-			this.SearchKNN (q, this.DB.Count, res);
-			return res;
-		}
-		
-		public override IResult SearchKNN (object q, int K, IResult res)
-		{
-			var visited = new HashSet<int> ();
-			var evaluated = new HashSet<int> ();
-			for (int i = 0; i < this.RepeatSearch; ++i) {
-				var objID = this.rand.Next (this.Vertices.Count);
-				while (visited.Add (objID)) {
-					if (evaluated.Add (objID)) {
-						var d = this.DB.Dist (this.DB [objID], q);
-						res.Push (objID, d);
+			var res_array = new Result[ this.RepeatSearch ];
+			// seeds[i] = Randomly select a subset of size this.RepeatSearch in [0,n]
+//			var search = new Action<int> (delegate (int i) {
+//				var res = new Result (K);
+//				this.GreedySearch(q, res, seeds[i]);
+//				res_array [i] = res;
+//			});
+//			System.Threading.Tasks.Parallel.For (0, this.RepeatSearch, search);
+			for (int i = 0; i < res_array.Length; ++i) {
+				var res = new Result (K);
+				this.GreedySearch(q, res, this.rand.Next (this.Vertices.Count));
+				res_array [i] = res;
+			}
+			var inserted = new HashSet<int> ();
+			foreach (var res in res_array) {
+				foreach (var p in res) {
+					if (inserted.Add(p.docid)) {
+						final_result.Push(p.docid, p.dist);
 					}
-					this.GreedySearch(q, res, visited, evaluated, objID);
 				}
 			}
-			return res;
+			return final_result;
 		}
 		
-		protected void GreedySearch(object q, IResult res, HashSet<int> visited, HashSet<int> evaluated, int startID)
+		void GreedySearch(object q, IResult res, int startID)
 		{
+			HashSet<int> visited = new HashSet<int> ();
+			HashSet<int> evaluated = new HashSet<int> ();
+			{
+				visited.Add (startID);
+				evaluated.Add (startID);
+				var d = this.DB.Dist (this.DB[ startID ], q);
+				res.Push (startID, d);
+			}
 			var minDist = double.MaxValue;
 			var minItem = 0;
 			do {
-				// Console.WriteLine ("XXXXXX SEARCH  startID: {0}, count: {1}, res-count: {2}", startID, this.vertices.Count, res.Count);
 				foreach (var objID in this.Vertices[startID]) {
-					if (evaluated.Add (objID)) {
-						var d = this.DB.Dist (this.DB [objID], q);
+					var d = this.DB.Dist (this.DB [objID], q);
+					if (evaluated.Add(objID)) { 
 						res.Push (objID, d);
-						if (minDist > d) {
-							minDist = d;
-							minItem = objID;
-						}
+					}
+					if (minDist > d) {
+						minDist = d;
+						minItem = objID;
 					}
 				}
 				startID = minItem;

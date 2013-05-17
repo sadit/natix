@@ -178,6 +178,7 @@
     <Compile Include="Indexes\ApproxGraph\ApproxGraph.cs" />
     <Compile Include="Indexes\ApproxRandom\LargeRandomizedSearch.cs" />
     <Compile Include="Indexes\ApproxRandom\ShortRandomizedSearch.cs" />
+    <Compile Include="Indexes\ApproxGraph\ApproxGraphSeq.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
