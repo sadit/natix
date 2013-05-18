@@ -29,6 +29,10 @@ namespace natix.SimilaritySearch
 		{
 		}
 
+		public ApproxGraphSeq (ApproxGraph a) : base(a)
+		{
+		}
+
 		public override IResult SearchKNN (object q, int K, IResult res)
 		{
 			var visited = new HashSet<int> ();
@@ -51,7 +55,7 @@ namespace natix.SimilaritySearch
 			var minDist = double.MaxValue;
 			var minItem = 0;
 			do {
-				// Console.WriteLine ("XXXXXX SEARCH  startID: {0}, count: {1}, res-count: {2}", startID, this.vertices.Count, res.Count);
+				// Console.WriteLine ("XXXXXX======= SEARCH  startID: {0}, count: {1}, res-count: {2}", startID, this.Vertices.Count, res.Count);
 				foreach (var objID in this.Vertices[startID]) {
 					if (evaluated.Add (objID)) {
 						var d = this.DB.Dist (this.DB [objID], q);

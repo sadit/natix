@@ -44,9 +44,10 @@ namespace natix.SimilaritySearch
 			var count = Input.ReadInt32 ();
 			this.Vertices = new List<Vertex> (count);
 			for (int i = 0; i < count; ++i) {
-				count = Input.ReadInt32 ();
-				var vertex = new Vertex (count);
-				PrimitiveIO<int>.ReadFromFile(Input, count, vertex);
+				var c = Input.ReadInt32 ();
+				var vertex = new Vertex (c);
+				PrimitiveIO<int>.ReadFromFile(Input, c, vertex);
+				this.Vertices.Add (vertex);
 			}
 		}
 		
@@ -66,6 +67,14 @@ namespace natix.SimilaritySearch
 		{
 			this.rand = new Random ();
 		}
+
+		public ApproxGraph(ApproxGraph a) : base()
+		{
+			this.DB = a.DB;
+			this.Arity = a.Arity;
+			this.RepeatSearch = a.RepeatSearch;
+			this.Vertices = a.Vertices;
+		}
 		
 		public void Build(MetricDB db, short arity, short repeat_search)
 		{
@@ -75,7 +84,7 @@ namespace natix.SimilaritySearch
 			int n = db.Count;
 			this.Vertices = new List<Vertex> (n);
 			for (int objID = 0; objID < n; ++objID) {
-				if (objID % 100 == 0) {
+				if (objID % 1000 == 0) {
 					Console.WriteLine ("XXX==== {0} DB: {1}, Arity: {2}, RepeatSearch: {3}, objID: {4}", this, db.Name, arity, repeat_search, objID);
 				}
 				this.AddObjID(objID);
@@ -137,6 +146,7 @@ namespace natix.SimilaritySearch
 			var minDist = double.MaxValue;
 			var minItem = 0;
 			do {
+				// Console.WriteLine ("StartID: {0}, Count-Vertices: {1}", startID, this.Vertices.Count);
 				foreach (var objID in this.Vertices[startID]) {
 					var d = this.DB.Dist (this.DB [objID], q);
 					if (evaluated.Add(objID)) { 

@@ -102,24 +102,7 @@ namespace natix.SimilaritySearch
 			while (dseq.Count > 0) {
 				var refID = dseq.GetAnyItem ();
 				dseq.Remove (refID);
-				dseq.
-			}
-			var H = new HashSet<int> (subset);
-			for (int docID = 0; docID < n; ++docID) {
-				if (docID % 1000 == 0) {
-					Console.WriteLine ("== Vor {0}/{1}, num_centers: {2}, db: {3}", docID + 1, n, num_centers, db.Name);
-				}
-				if (H.Contains(docID)) {
-					continue;
-				}
-				var near = new Result(1);
-				for (var centerID = 0; centerID < num_centers; ++centerID) {
-					var node = this.node_list[centerID];
-					var d = this.DB.Dist(this.DB[node.refID], this.DB[docID]);
-					near.Push(centerID, d);
-				}
-				var _near = near.First;
-				this.node_list[_near.docid].Add(docID, _near.dist);
+				//dseq.xxxxxxxx aqui xxxxxxxx
 			}
 		}
 
