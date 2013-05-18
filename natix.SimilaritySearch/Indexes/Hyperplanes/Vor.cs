@@ -119,17 +119,6 @@ namespace natix.SimilaritySearch
 			}
 		}
 
-
-        /// <summary>
-        /// Search the specified q with radius qrad.
-        /// </summary>
-        public override IResult SearchRange (object q, double qrad)
-        {
-			var res = new ResultRange (qrad, this.DB.Count);
-			this.SearchKNN (q, this.DB.Count, res);
-			return res;
-        }
-        
         /// <summary>
         /// KNN search.
         /// </summary>

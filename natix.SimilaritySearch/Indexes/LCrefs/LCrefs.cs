@@ -80,14 +80,7 @@ namespace natix.SimilaritySearch
 			CompositeIO<Node>.LoadVector (Input, len, this.node_list);
 
 		}
-		
-		public override void Save (BinaryWriter Output)
-		{
-			base.Save (Output);
-			Output.Write (this.node_list.Count);
-			CompositeIO<Node>.SaveVector (Output, this.node_list);
-		}
-
+	
 		/// <summary>
 		/// Build the index
 		/// </summary>
@@ -95,28 +88,30 @@ namespace natix.SimilaritySearch
 		{
 			this.DB = db;
 			var n = this.DB.Count;
+			var bsize = n / num_centers;
 			// randomized has very good performance, even compared with more "intelligent" strategies
 			var dseq = new DynamicSequentialOrdered ();
 			dseq.Build (db, rand);
 			this.node_list = new List<Node> (num_centers);
+			var L = new List<ItemPair> (n);
 			while (dseq.Count > 0) {
 				var refID = dseq.GetAnyItem ();
 				dseq.Remove (refID);
-				//dseq.xxxxxxxx aqui xxxxxxxx
+				L.Clear ();
+				dseq.ComputeDistances (this.DB[refID], L);
+				var near = new Result(bsize);
+				var far = new Result (1);
+				dseq.AppendKExtremes (near, far, L);
+
+				var node = new Node (refID);
+				this.node_list.Add (node);
+				dseq.Remove (near);
+				foreach (var p in near) {
+					node.Add(p.docid, p.dist);
+				}
 			}
 		}
 
-
-        /// <summary>
-        /// Search the specified q with radius qrad.
-        /// </summary>
-        public override IResult SearchRange (object q, double qrad)
-        {
-			var res = new ResultRange (qrad, this.DB.Count);
-			this.SearchKNN (q, this.DB.Count, res);
-			return res;
-        }
-        
         /// <summary>
         /// KNN search.
         /// </summary>
@@ -124,21 +119,24 @@ namespace natix.SimilaritySearch
         {
 			int num_centers = this.node_list.Count;
 			var D = new double[num_centers];
-			var min_dist = double.MaxValue;
 			for (int centerID = 0; centerID < num_centers; ++centerID) {
 				var center_objID = this.node_list[centerID].refID;
 				var d = this.DB.Dist(q, this.DB[center_objID]);
 				D[centerID] = d;
-				min_dist = Math.Min (d, min_dist);
 				res.Push (center_objID, d);
 			}
 			for (int centerID = 0; centerID < num_centers; ++centerID) {
 				var node = this.node_list[centerID];
 				var rad = res.CoveringRadius;
-				if (min_dist + rad + rad >= D[centerID] && D[centerID] <= rad + node.cov) {
+				var dcq = D [centerID];
+				if (dcq <= rad + node.cov) {
 					foreach (var objID in node.bucket) {
 						var d = this.DB.Dist(q, this.DB[objID]);
 						res.Push(objID, d);
+					}
+					rad = res.CoveringRadius;
+					if (dcq + rad <= node.cov) {
+						break;
 					}
 				}
 			}
