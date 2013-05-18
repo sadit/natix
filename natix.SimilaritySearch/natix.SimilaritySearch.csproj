@@ -179,6 +179,7 @@
     <Compile Include="Indexes\ApproxRandom\LargeRandomizedSearch.cs" />
     <Compile Include="Indexes\ApproxRandom\ShortRandomizedSearch.cs" />
     <Compile Include="Indexes\ApproxGraph\ApproxGraphSeq.cs" />
+    <Compile Include="Indexes\LCrefs\LCrefs.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -194,6 +195,7 @@
     <Folder Include="Indexes\Hashing\" />
     <Folder Include="Indexes\ApproxGraph\" />
     <Folder Include="Indexes\ApproxRandom\" />
+    <Folder Include="Indexes\LCrefs\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\natix\natix.csproj">

@@ -87,6 +87,13 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// API build command
 		/// </summary>
+
+		public virtual void Build (MetricDB db, Random rand)
+		{
+			var sample = RandomSets.GetRandomPermutation (this.DB.Count, rand);
+			this.Build(db, sample);
+		}
+
 		public virtual void Build (MetricDB db, IList<int> sample = null)
         {
             this.DB = db;
