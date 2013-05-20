@@ -130,10 +130,5 @@ namespace natix.SimilaritySearch
 			}
 			return res;
 		}
-
-		public override IResult SearchRange (object q, double radius)
-		{
-            return this.SearchKNN(q, this.DB.Count, new ResultRange(radius));
-		}
 	}
 }

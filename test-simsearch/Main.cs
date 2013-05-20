@@ -144,7 +144,7 @@ namespace testsimsearch
 			// LC_PRNN
 			reslist.Add (this.TestLC ("Index.LC_PRNN." + nick, db, num_centers, new LC_PRNN (), queries, qstream));
 			// LC_ParallelBuild
-			reslist.Add (this.TestLC ("Index.LC_ParallelBuild." + nick, db, num_centers, new LC_ParallelBuild (), queries, qstream));
+			//  reslist.Add (this.TestLC ("Index.LC_ParallelBuild." + nick, db, num_centers, new LC_ParallelBuild (), queries, qstream));
 
 			/// 
 			/// Permutation Based Indexes

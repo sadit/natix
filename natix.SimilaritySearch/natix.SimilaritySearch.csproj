@@ -71,18 +71,12 @@
     <Compile Include="Indexes\LSH\LSC.cs" />
     <Compile Include="Indexes\LSH\MCCLSC.cs" />
     <Compile Include="Indexes\LSH\MLSC.cs" />
-    <Compile Include="Indexes\LC\LC_IRNN.cs" />
-    <Compile Include="Indexes\LC\LC_ParallelSearch.cs" />
-    <Compile Include="Indexes\LC\LC_PRNN.cs" />
-    <Compile Include="Indexes\LC\LC_RNN.cs" />
     <Compile Include="Indexes\LSH\LSC_H1.cs" />
     <Compile Include="Indexes\LSH\LSC_H8.cs" />
     <Compile Include="Indexes\LSH\MLSC_H1.cs" />
     <Compile Include="Indexes\LSH\MLSC_H8.cs" />
     <Compile Include="Indexes\LSH\LSC_CyclicH8.cs" />
     <Compile Include="Indexes\LSH\MLSC_CyclicH8.cs" />
-    <Compile Include="Indexes\LC\LC.cs" />
-    <Compile Include="Indexes\LC\LC_ParallelBuild.cs" />
     <Compile Include="Indexes\IndexGenericIO.cs" />
     <Compile Include="Spaces\NullSpace.cs" />
     <Compile Include="Indexes\PI\BinPerms.cs" />
@@ -101,21 +95,12 @@
     <Compile Include="Spaces\QString\QStringHammingSpace.cs" />
     <Compile Include="Spaces\QString\QStringLCSSpace.cs" />
     <Compile Include="Spaces\QString\QStringPrefixLengthSpace.cs" />
-    <Compile Include="Indexes\LC\PolyIndexLC_Adaptive.cs" />
     <Compile Include="Result\ResultPushStats.cs" />
-    <Compile Include="Indexes\LC\PolyIndexLC_Partial.cs" />
     <Compile Include="Indexes\IndexSingle.cs" />
-    <Compile Include="Indexes\LC\PolyIndexLC_Composite.cs" />
-    <Compile Include="Indexes\LC\PolyIndexLC.cs" />
     <Compile Include="Result\ResultRange.cs" />
-    <Compile Include="Indexes\LC\PolyIndexLC_Adaptive2.cs" />
-    <Compile Include="Indexes\LC\PolyIndexLC_AdaptiveProb.cs" />
     <Compile Include="Spaces\Bitmaps\BinQGramLarger.cs" />
     <Compile Include="DistanceHistogram.cs" />
-    <Compile Include="Indexes\LC\PolyIndexLC_ApproxGraph.cs" />
     <Compile Include="Spaces\Bitmaps\QGramH1.cs" />
-    <Compile Include="Indexes\LC\PolyIndexLC_ApproxGraphEager.cs" />
-    <Compile Include="Indexes\LC\PolyIndexLC_ApproxGraphRevLC.cs" />
     <Compile Include="Indexes\DynamicSequentialRandom.cs" />
     <Compile Include="Indexes\SAT\SAT.cs" />
     <Compile Include="Indexes\DynamicSequentialOrdered.cs" />
@@ -125,7 +110,6 @@
     <Compile Include="Indexes\SAT\SAT_ApproxSearch.cs" />
     <Compile Include="Indexes\SAT\SAT_Forest.cs" />
     <Compile Include="Result\ResultCheckDuplicates.cs" />
-    <Compile Include="Indexes\LC\LC_VorRNN.cs" />
     <Compile Include="ItemPair.cs" />
     <Compile Include="Indexes\SAT\SATSEQ.cs" />
     <Compile Include="Indexes\SAT\SATSEQ_ApproxSearch.cs" />
@@ -139,7 +123,6 @@
     <Compile Include="NTTArray8A.cs" />
     <Compile Include="Indexes\Pivots\LAESA_InternalPivots.cs" />
     <Compile Include="Indexes\Pivots\LAESA.cs" />
-    <Compile Include="Indexes\LC\LC_KVorRNN.cs" />
     <Compile Include="Indexes\Hyperplanes\DualVor.cs" />
     <Compile Include="Indexes\Hyperplanes\Vor.cs" />
     <Compile Include="Indexes\Hyperplanes\VorFar.cs" />
@@ -179,7 +162,24 @@
     <Compile Include="Indexes\ApproxRandom\LargeRandomizedSearch.cs" />
     <Compile Include="Indexes\ApproxRandom\ShortRandomizedSearch.cs" />
     <Compile Include="Indexes\ApproxGraph\ApproxGraphSeq.cs" />
-    <Compile Include="Indexes\LCrefs\LCrefs.cs" />
+    <Compile Include="Indexes\LCseq\LC_IRNN.cs" />
+    <Compile Include="Indexes\LCseq\LC_ParallelSearch.cs" />
+    <Compile Include="Indexes\LCseq\LC_PRNN.cs" />
+    <Compile Include="Indexes\LCseq\LC_RNN.cs" />
+    <Compile Include="Indexes\LCseq\LC.cs" />
+    <Compile Include="Indexes\LCseq\LC_ParallelBuild.cs" />
+    <Compile Include="Indexes\LCseq\PolyIndexLC_Adaptive.cs" />
+    <Compile Include="Indexes\LCseq\PolyIndexLC_Partial.cs" />
+    <Compile Include="Indexes\LCseq\PolyIndexLC_Composite.cs" />
+    <Compile Include="Indexes\LCseq\PolyIndexLC.cs" />
+    <Compile Include="Indexes\LCseq\PolyIndexLC_Adaptive2.cs" />
+    <Compile Include="Indexes\LCseq\PolyIndexLC_AdaptiveProb.cs" />
+    <Compile Include="Indexes\LCseq\PolyIndexLC_ApproxGraph.cs" />
+    <Compile Include="Indexes\LCseq\PolyIndexLC_ApproxGraphEager.cs" />
+    <Compile Include="Indexes\LCseq\PolyIndexLC_ApproxGraphRevLC.cs" />
+    <Compile Include="Indexes\LCseq\LC_VorRNN.cs" />
+    <Compile Include="Indexes\LCseq\LC_KVorRNN.cs" />
+    <Compile Include="Indexes\LC\LC.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -195,7 +195,7 @@
     <Folder Include="Indexes\Hashing\" />
     <Folder Include="Indexes\ApproxGraph\" />
     <Folder Include="Indexes\ApproxRandom\" />
-    <Folder Include="Indexes\LCrefs\" />
+    <Folder Include="Indexes\LC\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\natix\natix.csproj">

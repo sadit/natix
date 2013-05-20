@@ -118,24 +118,6 @@ namespace natix.SimilaritySearch
         }
 //		Sequential S;
 
-        public override IResult SearchRange (object q, double radius)
-        {
-			//Console.WriteLine ("SearchRange {0},{1}", this.DB.Count, radius);
-			var res = new ResultRange (radius, this.DB.Count);
-			return this.SearchKNN (q, this.DB.Count, res);
-//            var res = new Result (this.DB.Count);
-//            if (this.roSeqot != null) {
-//				var dist = this.DB.Dist(q, this.DB[this.root.objID]);
-//				if (dist <= radius) {
-//					res.Push (this.root.objID, dist);
-//				}
-//				if (this.root.Children.Count > 0 && dist <= radius + this.root.cov) {
-//					this.SearchRangeNode (this.root, q, radius, res);
-//				}
-//            }
-//            return res;
-        }
-
         protected virtual void SearchKNNNode (Node node, object q, IResult res)
         {
             // res.Push (node.objID, dist);
@@ -223,7 +205,8 @@ namespace natix.SimilaritySearch
             //Console.WriteLine("======== BUILD NODE: {0}", node.objID);
             ++count_step;
             if (count_step < 100 || count_step % 100 == 0) {
-				Console.WriteLine ("======== SAT {4} build_node: {0}, count_step: {1}/{2}, items_count: {3}, timestamp: {4}", node.objID, count_step, this.DB.Count, items.Count, this, DateTime.Now);
+				Console.WriteLine ("======== SAT {4} build_node: {0}, count_step: {1}/{2}, items_count: {3}, timestamp: {5}, db: {6}",
+				                   node.objID, count_step, this.DB.Count, items.Count, this, DateTime.Now, this.DB.Name);
             }
             var partition = new List< List< ItemPair > > ();
             //var cache = new Dictionary<int,double> (items.Count);

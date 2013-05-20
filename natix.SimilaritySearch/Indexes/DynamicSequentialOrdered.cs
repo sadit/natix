@@ -90,7 +90,7 @@ namespace natix.SimilaritySearch
 
 		public virtual void Build (MetricDB db, Random rand)
 		{
-			var sample = RandomSets.GetRandomPermutation (this.DB.Count, rand);
+			var sample = RandomSets.GetRandomPermutation (db.Count, rand);
 			this.Build(db, sample);
 		}
 
