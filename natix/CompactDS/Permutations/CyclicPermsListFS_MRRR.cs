@@ -23,31 +23,34 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public class CyclicPerms_MRRR : ListGenerator<int>, IPermutation
+	public class CyclicPermsListIFS_MRRR : ListGenerator<int>, IPermutation
 	{
-		protected IList<int> PERM; // permutation
-		protected IList<int> BACK;
+		protected ListIFS PERM; // permutation
+		protected ListIFS BACK;
 		protected Bitmap has_back; // bitmap marking if each items has a back pointer
 		
-		public CyclicPerms_MRRR () : base()
+		public CyclicPermsListIFS_MRRR () : base()
 		{
 		}
 
-		public CyclicPerms_MRRR (IList<int> perm, int t)
+		public CyclicPermsListIFS_MRRR (IList<int> perm, int t)
 		{
 			this.Build (perm, t, null);
 		}
 		
 		public void Build (IList<int> perm, int t,
-		                   ListIBuilder listperm_builder = null,
-		                   ListIBuilder listback_builder = null)
+		                   ListIBuilder listperm_builder = null)
 		{
 			t = Math.Max (t, 2);
-			this.PERM = perm;
-			int n = this.PERM.Count;
+			var numbits = ListIFS.GetNumBits (perm.Count-1);
+			this.PERM = new ListIFS (numbits);
+			foreach (var item in perm) {
+				this.PERM.Add (item);
+			}
+			int n = perm.Count;
 			var visited = new BitStream32 ();
 			visited.Write (false, n);
-			this.BACK = new List<int> ();
+			this.BACK = new ListIFS (numbits);
 			var back_indexes = new List<int> ();
 			for (int i = 0; i < n; i++) {
 				if (visited [i]) {
@@ -92,38 +95,20 @@ namespace natix.CompactDS
 			var bitmap = new GGMN ();
 			bitmap.Build (visited, 20);
 			this.has_back = bitmap;
-			/*for (int i = 0; i < n; i++) {
-				Console.Write ("{0}, ", this.PERM [i]);
-			}
-			Console.WriteLine ("<END>");
-			for (int i = 0; i < this.BACK.Count; i++) {
-				Console.Write ("{0}, ", this.BACK [i]);
-			}
-			Console.WriteLine ("<END>");
-			Console.WriteLine ("HAS_BACK: " + visited.ToString());
-			*/
-			if (listperm_builder == null) {
-				listperm_builder = ListIBuilders.GetListIFS ();
-			}
-			if (listback_builder == null) {
-				listback_builder = ListIBuilders.GetListIFS ();
-			}
-			this.PERM = listperm_builder(this.PERM, this.PERM.Count-1);
-			this.BACK = listback_builder(this.BACK, this.PERM.Count-1);
 		}
 	
 		public virtual void Save (BinaryWriter Output)
 		{
 			ListIGenericIO.Save (Output, this.PERM);
 			ListIGenericIO.Save (Output, this.BACK);
-			BitmapGenericIO.Save (Output, this.has_back);
+			GenericIO<Bitmap>.Save (Output, this.has_back);
 		}
 		
 		public virtual void Load (BinaryReader Input)
 		{
-			this.PERM = ListIGenericIO.Load (Input);
-			this.BACK = ListIGenericIO.Load (Input);
-			this.has_back = BitmapGenericIO.Load (Input);
+			this.PERM = (ListIFS)ListIGenericIO.Load (Input);
+			this.BACK = (ListIFS)ListIGenericIO.Load (Input);
+			this.has_back = GenericIO<Bitmap>.Load (Input);
 		}
 		
 		public override int Count {
@@ -136,7 +121,12 @@ namespace natix.CompactDS
 		{
 			return this.PERM [index];
 		}
-		
+
+		public int Direct (int index)
+		{
+			return this.PERM [index];
+		}
+
 		public override void SetItem (int index, int u)
 		{
 			throw new NotSupportedException ("SetItem");

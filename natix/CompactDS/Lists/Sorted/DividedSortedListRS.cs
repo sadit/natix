@@ -24,10 +24,10 @@ namespace natix.CompactDS
 {
 	public class DividedSortedListRS : ListGenerator<int>
 	{
-		public IRankSelect B;
+		public Bitmap B;
 		public int divisor;
 		
-		public DividedSortedListRS (IRankSelect rsbitmap, int div)
+		public DividedSortedListRS (Bitmap rsbitmap, int div)
 		{
 			this.B = rsbitmap;
 			this.divisor = div;

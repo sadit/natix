@@ -151,7 +151,6 @@
     <Compile Include="Indexes\Hashing\MKnrLSH.cs" />
     <Compile Include="Indexes\Hashing\KnrLSHQueryExpansion.cs" />
     <Compile Include="Indexes\Hashing\MNappHash.cs" />
-    <Compile Include="Indexes\Hashing\NappHash.cs" />
     <Compile Include="Indexes\Hashing\ShortPerms.cs" />
     <Compile Include="Spaces\Bitmaps\BinQGramList.cs" />
     <Compile Include="Spaces\Bitmaps\BinQGramArray.cs" />
@@ -180,6 +179,10 @@
     <Compile Include="Indexes\LCseq\LC_VorRNN.cs" />
     <Compile Include="Indexes\LCseq\LC_KVorRNN.cs" />
     <Compile Include="Indexes\LC\LC.cs" />
+    <Compile Include="Indexes\LC\PMI_Partial.cs" />
+    <Compile Include="Indexes\LC\PMI.cs" />
+    <Compile Include="Indexes\Hashing\NappHash.cs" />
+    <Compile Include="Indexes\Hashing\MetricShellHash.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

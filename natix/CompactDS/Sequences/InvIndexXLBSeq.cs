@@ -24,14 +24,14 @@ using System.Text.RegularExpressions;
 namespace natix.CompactDS
 {
 
-	public class InvIndexXLBSeq : IRankSelectSeq
+	public class InvIndexXLBSeq : Sequence
 	{
 		/// <summary>
 		/// Inverted index
 		/// </summary>
 		// public IList< IList< int > > InvIndex;
-		public IList<IRankSelect> InvIndex;
-		public IRankSelect Lens;
+		public Bitmap[] InvIndex;
+		public Bitmap Lens;
 		IPermutation Perm;
 		/// <summary>
 		/// The size in words (entities) of the text
@@ -46,7 +46,7 @@ namespace natix.CompactDS
 		
 		public int Sigma {
 			get {
-				return this.InvIndex.Count;
+				return this.InvIndex.Length;
 			}
 		}
 		
@@ -78,7 +78,7 @@ namespace natix.CompactDS
 			}
 			pos = 0;
 			this.N = sequence.Count;
-			this.InvIndex = new IRankSelect[alphabet_size];
+			this.InvIndex = new Bitmap[alphabet_size];
 			var lens = new BitStream32 ();
 			for (int i = 0; i < alphabet_size; i++) {
 				if (i % 1000 == 0) {
@@ -152,7 +152,7 @@ namespace natix.CompactDS
 			return this.InvIndex[symbol].Select1 (rank);
 		}
 		
-		public IRankSelect Unravel (int symbol)
+		public Bitmap Unravel (int symbol)
 		{
 			return this.InvIndex[symbol];
 		}		
@@ -164,13 +164,13 @@ namespace natix.CompactDS
 		/// </summary>
 		public void Save (BinaryWriter Output)
 		{
-			int vocsize = this.InvIndex.Count;
+			int vocsize = this.InvIndex.Length;
 			Output.Write ((int)this.N);
 			Output.Write ((int)vocsize);
 			foreach (var L in this.InvIndex) {
-				RankSelectGenericIO.Save (Output, L);
+				GenericIO<Bitmap>.Save (Output, L);
 			}
-			RankSelectGenericIO.Save (Output, this.Lens);
+			GenericIO<Bitmap>.Save (Output, this.Lens);
 			this.Perm.Save (Output);
 		}
 
@@ -178,21 +178,17 @@ namespace natix.CompactDS
 		{
 			this.N = Input.ReadInt32 ();
 			int vocsize = Input.ReadInt32 ();
-			this.InvIndex = new IRankSelect[vocsize];
+			this.InvIndex = new Bitmap[vocsize];
 			for (int i = 0; i < vocsize; i++) {
-				this.InvIndex [i] = RankSelectGenericIO.Load (Input);
+				this.InvIndex [i] = GenericIO<Bitmap>.Load (Input);
 			}
-			this.Lens = RankSelectGenericIO.Load (Input);
+			this.Lens = GenericIO<Bitmap>.Load (Input);
 			var p = new ListGen_MRRR ();
 			p.Load (Input);
 			p.SetPERM (this.GetNotIdxPERM ());
 			this.Perm = p;
 		}
-
-        public IList<int> GetRawSeq ()
-        {
-            return RankSelectSeqGenericIO.ToIntArray(this, false);
-        }
+	
 
 	}
 }

@@ -35,9 +35,9 @@ namespace natix.SimilaritySearch
 		/// Matrix. One vector per LSH function 
 		/// </summary>
 		protected ushort[] H;
-		protected IRankSelectSeq Seq;
+		protected Sequence Seq;
 
-		public IRankSelectSeq GetSeq ()
+		public Sequence GetSeq ()
 		{
 			return this.Seq;
 		}
@@ -54,7 +54,7 @@ namespace natix.SimilaritySearch
 			var c = Input.ReadInt32 ();
 			this.H = new ushort[c];
 			PrimitiveIO<ushort>.ReadFromFile(Input, c, this.H);
-			this.Seq = RankSelectSeqGenericIO.Load(Input);
+			this.Seq = GenericIO<Sequence>.Load(Input);
 		}
 
 		public override void Save (BinaryWriter Output)
@@ -62,7 +62,7 @@ namespace natix.SimilaritySearch
 			base.Save(Output);
 			Output.Write((int) this.H.Length);
 			PrimitiveIO<ushort>.WriteVector(Output, this.H);
-			RankSelectSeqGenericIO.Save(Output, this.Seq);
+			GenericIO<Sequence>.Save(Output, this.Seq);
 		}
 
 		public virtual void Build (MetricDB db, int sampleSize,
@@ -120,7 +120,7 @@ namespace natix.SimilaritySearch
 		{
 			int hash = this.ComputeHash (q);
 			HashSet<int > Q = new HashSet<int> ();
-			IRankSelect L = this.Seq.Unravel (hash);
+			Bitmap L = this.Seq.Unravel (hash);
 			var len = L.Count1;
 			for (int i = 1; i <= len; i++) {
 				Q.Add (L.Select1 (i));

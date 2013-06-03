@@ -25,11 +25,11 @@ namespace natix.CompactDS
 		/// <summary>
 		/// Decodes the next integer (pointed by context ctx) from the bit stream
 		/// </summary>
-		int Decode (IBitStream stream, BitStreamCtx ctx);
+		int Decode (BitStream32 stream, BitStreamCtx ctx);
 		/// <summary>
 		/// Encodes "u" into the specified "stream"
 		/// </summary>
-		void Encode (IBitStream stream, int u);
+		void Encode (BitStream32 stream, int u);
 	}
 }
 

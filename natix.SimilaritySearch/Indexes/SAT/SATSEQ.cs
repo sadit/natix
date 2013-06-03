@@ -22,7 +22,7 @@ namespace natix.SimilaritySearch
 {
     public class SATSEQ : BasicIndex
     {
-		public IRankSelectSeq SEQ;
+		public Sequence SEQ;
 		public List<double> COV;
 		public int root;
 		public GGMN COV_ZERO;
@@ -99,7 +99,7 @@ namespace natix.SimilaritySearch
         {
             base.Load (Input);
 			this.root = Input.ReadInt32 ();
-			this.SEQ = RankSelectSeqGenericIO.Load (Input);
+			this.SEQ = GenericIO<Sequence>.Load (Input);
 			var len = Input.ReadInt32 ();
 			this.COV = new List<double> (len);
 			PrimitiveIO<double>.ReadFromFile (Input, len, this.COV);
@@ -111,7 +111,7 @@ namespace natix.SimilaritySearch
         {
             base.Save(Output);
 			Output.Write (this.root);
-			RankSelectSeqGenericIO.Save (Output, this.SEQ);
+			GenericIO<Sequence>.Save (Output, this.SEQ);
 			Output.Write (this.COV.Count);
 			PrimitiveIO<double>.WriteVector (Output, this.COV);
 			this.COV_ZERO.Save (Output);

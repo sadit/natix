@@ -23,8 +23,9 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public abstract class RankSelectBase // : IRankSelect
+	public abstract class Bitmap : ILoadSave
 	{
+
 		public abstract int Count {
 			get;
 		}
@@ -35,7 +36,7 @@ namespace natix.CompactDS
 			}
 		}
 
-		public abstract void AssertEquality (RankSelectBase other);
+		public abstract void AssertEquality (Bitmap other);
 //		
 //		public virtual bool this[int pos]
 //		{

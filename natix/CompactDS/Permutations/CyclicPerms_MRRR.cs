@@ -27,7 +27,7 @@ namespace natix.CompactDS
 	{
 		protected IList<int> PERM; // permutation
 		protected IList<int> BACK;
-		protected IRankSelect has_back; // bitmap marking if each items has a back pointer
+		protected Bitmap has_back; // bitmap marking if each items has a back pointer
 		
 		public CyclicPerms_MRRR () : base()
 		{
@@ -116,14 +116,14 @@ namespace natix.CompactDS
 		{
 			ListIGenericIO.Save (Output, this.PERM);
 			ListIGenericIO.Save (Output, this.BACK);
-			RankSelectGenericIO.Save (Output, this.has_back);
+			GenericIO<Bitmap>.Save (Output, this.has_back);
 		}
 		
 		public virtual void Load (BinaryReader Input)
 		{
 			this.PERM = ListIGenericIO.Load (Input);
 			this.BACK = ListIGenericIO.Load (Input);
-			this.has_back = RankSelectGenericIO.Load (Input);
+			this.has_back = GenericIO<Bitmap>.Load (Input);
 		}
 		
 		public override int Count {
@@ -132,16 +132,22 @@ namespace natix.CompactDS
 			}
 		}
 		
-		public override int GetItem (int index)
+		public override int GetItem (int i)
 		{
-			return this.PERM [index];
+			return this.PERM [i];
 		}
-		
+
 		public override void SetItem (int index, int u)
 		{
 			throw new NotSupportedException ("SetItem");
 		}
-		
+
+
+		public int Direct (int index)
+		{
+			return this.PERM [index];
+		}
+
 		public int Inverse (int i)
 		{
 			int j = i;

@@ -30,7 +30,7 @@ namespace natix.CompactDS
 	{
 		public IIEncoder32 ENCODER;
 		public BitStream32 DIFFS;
-		public IRankSelect MARKS;
+		public Bitmap MARKS;
 		public IList<int> ABSPOS;
 		public IList<long> OFFSETS;
 		public short BLOCKSIZE;
@@ -93,7 +93,7 @@ namespace natix.CompactDS
 		{
 			this.ENCODER = IEncoder32GenericIO.Load(Input);
 			this.BLOCKSIZE = Input.ReadInt16();
-			this.MARKS = RankSelectGenericIO.Load (Input);
+			this.MARKS = GenericIO<Bitmap>.Load (Input);
 			this.ABSPOS = ListIGenericIO.Load(Input);
 			this.OFFSETS = PrimitiveIO<long>.ReadFromFile(Input, this.ABSPOS.Count, null);
 			this.DIFFS = new BitStream32();
@@ -104,7 +104,7 @@ namespace natix.CompactDS
 		{
 			IEncoder32GenericIO.Save(Output, this.ENCODER);
 			Output.Write((Int16) this.BLOCKSIZE);
-			RankSelectGenericIO.Save(Output, this.MARKS);
+			GenericIO<Bitmap>.Save(Output, this.MARKS);
 			ListIGenericIO.Save(Output, this.ABSPOS);
 			PrimitiveIO<long>.WriteVector(Output, this.OFFSETS);
 			this.DIFFS.Save(Output);

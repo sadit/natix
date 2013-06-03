@@ -24,7 +24,7 @@ namespace natix.CompactDS
 {
 	public class ListEqRL : ListGenerator<int>, ILoadSave
 	{
-		IRankSelect runs;
+		Bitmap runs;
 		IList<int> heads;
 		
 		
@@ -34,7 +34,7 @@ namespace natix.CompactDS
 			}
 		}
 		
-		public IRankSelect Runs {
+		public Bitmap Runs {
 			get {
 				return this.runs;
 			}
@@ -75,13 +75,13 @@ namespace natix.CompactDS
 		public void Load (BinaryReader Input)
 		{
 			this.heads = ListIGenericIO.Load (Input);
-			this.runs = RankSelectGenericIO.Load (Input);
+			this.runs = GenericIO<Bitmap>.Load (Input);
 		}
 		
 		public void Save (BinaryWriter Output)
 		{
 			ListIGenericIO.Save (Output, this.heads);
-			RankSelectGenericIO.Save (Output, this.runs);
+			GenericIO<Bitmap>.Save (Output, this.runs);
 		}
 		
 		public override int Count {

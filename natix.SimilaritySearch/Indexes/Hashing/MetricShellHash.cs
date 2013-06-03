@@ -22,126 +22,162 @@ using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
-	public class HyperSelectMetricHash : BasicIndex
+	public class MetricShellHash : BasicIndex
 	{
-		public int K;
 		public MetricDB R;
-		public List<List<int>> INVINDEX;
-		public override void Save (BinaryWriter Output)
+		public List<int[]> S;
+		public int MAXCAND = int.MaxValue;
+		public List<List<int>> InvIndex = new List<List<int>>();
+		public MetricShellHash () : base()
 		{
-			base.Save(Output);
-			Output.Write(this.K);
-			//Output.Write(this.MAXCAND);
-			IndexGenericIO.Save(Output, this.R);
-			for (int i = 0, sigma = this.R.DB.Count; i < sigma; ++i) {
-				var list = this.INVINDEX[i];
-				Output.Write(list.Count);
-				PrimitiveIO<int>.WriteVector(Output, list);
+		}
+
+		public void CreateInvIndex()
+		{
+			this.InvIndex = new List<List<int>> ();
+			for (int refID = 0; refID < this.R.Count; ++refID) {
+				this.InvIndex.Add (new List<int>());
+			}
+			for (int objID = 0; objID < this.DB.Count; ++objID) {
+				var seq = this.S [objID];
+				foreach (var c in seq) {
+					this.InvIndex [c].Add (objID);
+				}
 			}
 		}
 
 		public override void Load (BinaryReader Input)
 		{
-			base.Load(Input);
-			this.K = Input.ReadInt32 ();
-			this.R = IndexGenericIO.Load(Input);
-			int sigma = this.R.DB.Count;
-			this.INVINDEX = new List<List<int>> (sigma);
-			for (int i = 0; i < sigma; ++i) {
-				var len = Input.ReadInt32 ();
-				var list = new List<int> (len);
-				 PrimitiveIO<int>.ReadFromFile(Input, len, list);
-				this.INVINDEX.Add(list);
+			base.Load (Input);
+			this.R = SpaceGenericIO.Load (Input, false);
+			var len = Input.ReadInt32 ();
+			this.S = new List<int[]> (len);
+			for (int objID = 0; objID < len; ++objID) {
+				var size = Input.ReadInt16 ();
+				var seq = new int[size];
+				PrimitiveIO<int>.ReadFromFile (Input, size, seq);
+				this.S.Add (seq);
+			}
+			this.CreateInvIndex ();
+		}
+
+		public override void Save (BinaryWriter Output)
+		{
+			base.Save (Output);
+			SpaceGenericIO.Save(Output, this.R, false);
+			Output.Write ((int) this.S.Count);
+			foreach (var seq in this.S) {
+				Output.Write ((short) seq.Length);
+				PrimitiveIO<int>.WriteVector (Output, seq);
 			}
 		}
-
-		public HyperSelectMetricHash () : base()
+		public void Build (MetricDB db, int num_refs, Random rand)
 		{
+			this.Build (db, new SampleSpace ("", db, num_refs, rand));
 		}
 
-		public void Build (MetricDB db, int k, int num_refs, Random rand)
-		{
-			var sample = new SampleSpace("", db, num_refs, rand);
-			var I = new SAT_Distal();
-			I.Build(sample, rand);
-			this.Build(db, k, I);
-		}
-
-		public void Build (MetricDB db, int k, Index ref_index)
+		public void Build (MetricDB db, MetricDB sample)
 		{
 			this.DB = db;
-			this.K = k;
-			this.R = ref_index;
-			int sigma = this.R.DB.Count;
-			this.INVINDEX = new List<List<int>> (sigma);
-			for (int i = 0; i < sigma; ++i) {
-				this.INVINDEX.Add(new List<int>());
+			this.R = sample;
+			var n = this.DB.Count;
+			this.S = new List<int[]> (n);
+			for (int i = 0; i < n; ++i) {
+				this.S.Add(null);
 			}
-			var A = new int[this.DB.Count][];
 			int count = 0;
 			var compute_one = new Action<int>(delegate(int objID) {
-				var u = this.GetKnr(this.DB[objID], this.K);
-				A[objID] = u;
+				var u = this.GetMetricShell(this.DB[objID]);
+				this.S[objID] = u;
 				++count;
 				if (count % 1000 == 0) {
-					Console.WriteLine ("==== {0}/{1} db: {2}, k: {3}", count, this.DB.Count, this.DB.Name, k);
+					Console.WriteLine ("==== {0} {1}/{2} db: {3}, k: {4}", this, count, this.DB.Count, this.DB.Name, u.Length);
 				}
 			});
 			ParallelOptions ops = new ParallelOptions();
 			ops.MaxDegreeOfParallelism = -1;
 			Parallel.ForEach(new ListGen<int>((int i) => i, this.DB.Count), ops, compute_one);
+			this.CreateInvIndex ();
+		}
 
-			for (int objID = 0; objID < this.DB.Count; ++objID) {
-				var u = A[objID];
-				for (int i = 0; i < this.K; ++i) {
-					this.INVINDEX[u[i]].Add (objID);
+
+		public int[] GetMetricShell (object q)
+		{
+			var seq = new List<int> ();
+			var idx = new DynamicSequentialOrdered ();
+			// optimize the following:
+			idx.Build (this.R, RandomSets.GetIdentity (this.R.Count));
+			List<ItemPair> cache = new List<ItemPair>(this.R.Count);
+			// Console.WriteLine ("START GetMetricShell");
+			while (idx.Count > 0) {
+				cache.Clear();
+				DynamicSequential.Stats stats;
+				int min_objID, max_objID;
+				idx.ComputeDistances(q, cache, out stats, out min_objID, out max_objID);
+				for (int i = 0; i < cache.Count; ++i) {
+					var obj_min = this.DB [min_objID];
+					var obj_cur = this.DB [cache[i].objID];
+					if (cache[i].dist >= this.DB.Dist(obj_min, obj_cur)) {
+						idx.Remove (cache[i].objID);
+					}
 				}
+				//Console.WriteLine ("min: {0}, min_dist: {1}, refs_size: {2}", min_objID, stats.min, idx.Count);
+				seq.Add (min_objID);
 			}
+			return seq.ToArray ();
 		}
 
-		public int[] GetKnr (object q, int number_near_references)
+		public virtual Result GetNear(int[] seq)
 		{
-            this.internal_numdists-=this.R.Cost.Internal;
-			var res = this.R.SearchKNN(q, number_near_references);
-            this.internal_numdists+=this.R.Cost.Internal;
-			var qseq = new int[res.Count];
-			int i = 0;
-			foreach (var s in res) {
-				qseq[i] = s.docid;
-				++i;
+			var cand = new Result (this.MAXCAND);
+			var n = this.DB.Count;
+			for (int objID = 0; objID < n; ++objID) {
+				/*var d = Jaccard (seq, this.S [objID]);
+				if (d < 1) {
+					cand.Push (objID, d);
+				}*/
+				var d = StringSpace<int>.PrefixLength(seq, this.S[objID]);
+				// var d = StringSpace<int>.LCS(seq, this.S[objID]);
+				cand.Push (objID, d);
 			}
-			return qseq;
-		}
-
-		public virtual List<int>[] GetNear(object q, int ksearch)
-		{
-			var near = new List<int> [ksearch];
-			var knrseq = this.GetKnr(q, ksearch);
-			for (int i = 0; i < ksearch; ++i) {
-				near[i] = this.INVINDEX[knrseq[i]];
-			}
-			return near;
+			return cand;
 		}
 
 		public override IResult SearchKNN (object q, int knn, IResult res)
 		{
-			var list = this.GetNear (q, this.K);
-			if (list.Length == 1) {
-				foreach (var objID in list[0]) {
-					double d = this.DB.Dist (q, this.DB [objID]);
-					res.Push (objID, d);
-				}
-			} else {
-				var near = new HashSet<int> ();
-				foreach (var L in list) {
-					near.UnionWith(L);
-				}
-				foreach (var objID in near) {
-					double d = this.DB.Dist (q, this.DB [objID]);
-					res.Push (objID, d);
+			var qseq = this.GetMetricShell(q);
+			var cand = this.GetNear (qseq);
+			Console.WriteLine ("=== num_candidates: {0}", cand.Count);
+			foreach (var pair in cand) {
+				double d = this.DB.Dist (q, this.DB [pair.docid]);
+				res.Push (pair.docid, d);
+			}
+			// 	Console.WriteLine (cand);
+			return res;
+		}
+
+		double Jaccard (int[] qseq, int[] useq)
+		{
+			var h = new HashSet<int> (qseq);
+			h.IntersectWith (useq);
+			double j = h.Count;
+			j /= (qseq.Length + useq.Length);
+			return 1.0 - j;
+		}
+	
+		string AsString(IList<int> array)
+		{
+			var s = new System.Text.StringBuilder ();
+			s.Append ("[");
+			for (int i = 0; i < array.Count; ++i) {
+				if (i + 1 == array.Count) {
+					s.Append (array[i].ToString());
+				} else {
+					s.Append (array[i].ToString() + ", ");
 				}
 			}
-			return res;
+			s.Append("]");
+			return s.ToString ();
 		}
 	}
 }

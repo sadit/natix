@@ -23,14 +23,14 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public class PlainSortedList : Bitmap
+	public class SortedList : Bitmap
 	{
 		protected int N;
 		protected List<int> sortedList;
 		
 		public override void AssertEquality (Bitmap _other)
 		{
-			var other = (PlainSortedList)_other;
+			var other = (SortedList)_other;
 			if (this.N != other.N) {
 				throw new ArgumentException ("Parameter PlainSortedList.N have differences");
 			}
@@ -52,7 +52,7 @@ namespace natix.CompactDS
 			PrimitiveIO<int>.ReadFromFile (br, len, this.sortedList);
 		}
 		
-		public PlainSortedList ()
+		public SortedList () : base()
 		{		
 		}
 	

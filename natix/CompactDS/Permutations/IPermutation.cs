@@ -30,6 +30,7 @@ namespace natix.CompactDS
 		/// Returns the \pi^{-1}(i)
 		/// </summary>
 		int Inverse (int i);
+		int Direct (int i);
 	}
 }
 

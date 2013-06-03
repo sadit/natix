@@ -67,7 +67,7 @@ namespace natix.SimilaritySearch
         public virtual void Build (PivotGroup g, string filename)
         {
 			this.Pivs = g.Pivs;
-			var num_groups = g.Items.Length;
+//			var num_groups = g.Items.Length;
 			this.DiskItems = new DiskList64<ItemPair> (filename, 1024);
 			foreach (var p in g.Items) {
 				this.DiskItems.Add(p);

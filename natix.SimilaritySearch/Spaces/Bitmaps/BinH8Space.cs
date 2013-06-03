@@ -29,7 +29,7 @@ namespace natix.SimilaritySearch
 	public class BinH8Space : MetricDB
 	{
 		public List<byte> DATA;
-		public IRankSelect LENS;
+		public Bitmap LENS;
 		int numdist;
 
 		/// <summary>
@@ -45,7 +45,7 @@ namespace natix.SimilaritySearch
 			var len = Input.ReadInt32 ();
 			this.DATA = new List<byte> (len);
 			PrimitiveIO<byte>.ReadFromFile(Input, len, this.DATA);
-			this.LENS = RankSelectGenericIO.Load(Input);
+			this.LENS = GenericIO<Bitmap>.Load(Input);
 		}
 
 		public void Save(BinaryWriter Output)
@@ -53,7 +53,7 @@ namespace natix.SimilaritySearch
 			Output.Write(this.Name);
 			Output.Write((int) this.DATA.Count);
 			PrimitiveIO<byte>.WriteVector(Output, this.DATA);
-			RankSelectGenericIO.Save(Output, this.LENS);
+			GenericIO<Bitmap>.Save(Output, this.LENS);
 		}
 
 		/// <summary>

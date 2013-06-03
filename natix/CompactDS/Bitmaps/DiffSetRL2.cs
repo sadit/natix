@@ -26,7 +26,7 @@ namespace natix.CompactDS
 	/// <summary>
 	/// This is similar to DiffSetRL but with core changes to support filled blocks
 	/// </summary>
-	public class DiffSetRL2 : RankSelectBase
+	public class DiffSetRL2 : Bitmap
 	{
 		// static IIntegerEncoder Coder = new EliasDelta ();
 		static int AccStart = -1;
@@ -36,11 +36,11 @@ namespace natix.CompactDS
 		int N;
 		int M;
 		protected short B = 31;
-		IList<int> Samples;
-		IList<long> Offsets;
+		List<int> Samples;
+		List<long> Offsets;
 		// int run_len = 0;
 		
-		public DiffSetRL2 ()
+		public DiffSetRL2 () : base()
 		{
 			this.Samples = new List<int> ();
 			this.Offsets = new List<long> ();
@@ -110,8 +110,8 @@ namespace natix.CompactDS
 				sa.Load (R);
 				this.Offsets = new SortedListSArray (sa);
 			} else {*/
-			this.Samples = new int[ num_samples ];
-			this.Offsets = new long[ num_samples ];
+			this.Samples = new List<int>( num_samples );
+			this.Offsets = new List<long>( num_samples );
 			PrimitiveIO<int>.ReadFromFile (R, num_samples, this.Samples);
 			PrimitiveIO<long>.ReadFromFile (R, num_samples, this.Offsets);
 			//}
@@ -125,7 +125,7 @@ namespace natix.CompactDS
 
 		}
 		
-		public override void AssertEquality (IRankSelect _other)
+		public override void AssertEquality (Bitmap _other)
 		{
 			DiffSetRL2 other = _other as DiffSetRL2;
 			if (this.N != other.N) {
@@ -150,7 +150,7 @@ namespace natix.CompactDS
 			// Console.WriteLine ("**** Select1> rank: {0}", rank);
 			return this.BackendSelect1 (rank, new BitStreamCtxRL ());
 		}
-		
+
 		int ReadNext (BitStreamCtxRL ctx)
 		{
 			if (ctx.run_len > 0) {
@@ -269,7 +269,7 @@ namespace natix.CompactDS
 			}
 			int start_index = -1;
 			if (this.Samples.Count > 0) {
-				start_index = GenericSearch.FindFirst<int> (pos, this.Samples);
+				start_index = Search.FindFirst<int> (pos, this.Samples);
 			}
 			// reset run_len
 			ctx.run_len = 0;

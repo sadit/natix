@@ -107,26 +107,40 @@ namespace natix.SimilaritySearch
         public static List<ItemPair> ComputeDistances (MetricDB db, IEnumerable<int> sample, object piv, List<ItemPair> output)
         {
             Stats stats;
-            return ComputeDistances (db, sample, piv, output, out stats);
+			int m, M;
+            return ComputeDistances (db, sample, piv, output, out stats, out m, out M);
         }
 
-        public static List<ItemPair> ComputeDistances (MetricDB db, IEnumerable<int> sample, object piv, List<ItemPair> output, out Stats stats)
+		public static List<ItemPair> ComputeDistances (MetricDB db, IEnumerable<int> sample, object piv, List<ItemPair> output, out Stats stats)
+		{
+			int m, M;
+			return ComputeDistances (db, sample, piv, output, out stats, out m, out M);
+		}
+
+        public static List<ItemPair> ComputeDistances (MetricDB db, IEnumerable<int> sample, object piv, List<ItemPair> output, out Stats stats, out int min_objID, out int max_objID)
         {
             if (output == null) {
                 output = new List<ItemPair>();
             }
             //var L = new Item[this.DOCS.Count];
-            stats = default(Stats);
+			max_objID = min_objID = -1;
+	        stats = default(Stats);
             stats.min = double.MaxValue;
             stats.max = 0;
             double mean = 0;
             var count = 0;
             foreach (var objID in sample) {
                 var dist = db.Dist(piv, db[objID]);
-                mean += dist;
+				mean += dist;
                 output.Add( new ItemPair(objID, dist) );
-                stats.min = Math.Min (dist, stats.min);
-                stats.max = Math.Max (dist, stats.max);
+				if (dist < stats.min) {
+					stats.min = dist;
+					min_objID = objID;
+				}
+				if (dist > stats.max) {
+					stats.max = dist;
+					max_objID = objID;
+				}
                 ++count;
             }
             stats.mean = mean / count;
@@ -139,15 +153,22 @@ namespace natix.SimilaritySearch
             return output;
         }
 
+		public List<ItemPair> ComputeDistances (object piv, List<ItemPair> output, out Stats stats, out int min_objID, out int max_objID)
+		{
+			return DynamicSequential.ComputeDistances(this.DB, this.Iterate(), piv, output, out stats, out min_objID, out max_objID);
+		}
+
         public List<ItemPair> ComputeDistances (object piv, List<ItemPair> output, out Stats stats)
         {
-            return DynamicSequential.ComputeDistances(this.DB, this.Iterate(), piv, output, out stats);
+			int m, M;
+            return DynamicSequential.ComputeDistances(this.DB, this.Iterate(), piv, output, out stats, out m, out M);
         }
 
         public List<ItemPair> ComputeDistances (object piv, List<ItemPair> output)
         {
             Stats stats;
-            return DynamicSequential.ComputeDistances(this.DB, this.Iterate(), piv, output, out stats);
+			int m, M;
+			return DynamicSequential.ComputeDistances(this.DB, this.Iterate(), piv, output, out stats, out m, out M);
         }
 
         public static void SortByDistance (List<ItemPair> output)

@@ -119,21 +119,8 @@ namespace natix.SimilaritySearch
 			}
 		}
 
-		public IList<Tdoc> DOCS;
+		public List<Tdoc> DOCS;
 		int numdist;
-
-		public void Build (string listname)
-		{
-			if (!File.Exists (listname + ".bin")) {
-				this.Build(File.ReadAllLines(listname));
-				using (var Output = new BinaryWriter(File.OpenWrite(listname + ".bin"))) {
-					this.Save(Output);
-				}
-			}
-			using (var Input = new BinaryReader(File.OpenRead(listname + ".bin"))) {
-				this.Load (Input);
-			}
-		}
 
 		/// <summary>
 		/// Constructor
@@ -144,22 +131,23 @@ namespace natix.SimilaritySearch
 			this.numdist = 0;
 		}
 
-		public void Build (IList<Tdoc> docs)
+		public void Build (string name, List<Tdoc> docs)
 		{
+			this.Name = name;
 			this.DOCS = docs;
 		}
 
-		void Build (IList<string> filenames)
+		public void Build (string name, IList<string> filenames)
 		{
-			foreach(var fname in filenames) {
-				int pc = 1 + filenames.Count / 100;
-				for (int i = 0; i < filenames.Count; i++) {
-					if ((i % pc) == 0) {
-						Console.WriteLine ("Loading document: {0}, name: {1}, advance: {2:0.00}%", i, filenames [i], i * 100.0 / filenames.Count);
-					}
-					var docvec = this.ParseFromString (fname, false);
-					this.DOCS.Add (docvec);
+			this.Name = name;
+			int pc = 1 + filenames.Count / 100;
+			for (int i = 0; i < filenames.Count; i++) {
+				var fname = filenames[i];
+				if ((i % pc) == 0) {
+					Console.WriteLine ("Loading document: {0}, name: {1}, advance: {2:0.00}%", i, filenames [i], i * 100.0 / filenames.Count);
 				}
+				var docvec = this.ParseFromFile (fname, false);
+				this.DOCS.Add (docvec);
 			}
 		}
 

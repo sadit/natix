@@ -25,7 +25,7 @@ namespace  natix.SimilaritySearch
 {
 	public class AudioSpace : MetricDB
 	{
-		public IRankSelect LENS;
+		public Bitmap LENS;
 		public int SymbolSize;
 		public int Q;
 		byte[] Data;
@@ -37,7 +37,7 @@ namespace  natix.SimilaritySearch
 
 		public void Save(BinaryWriter Output)
 		{
-			RankSelectGenericIO.Save (Output, this.LENS);
+			GenericIO<Bitmap>.Save (Output, this.LENS);
 			Output.Write ((int) this.SymbolSize);
 			Output.Write ((int) this.Q);
 			Output.Write ((int) this.Data.Length);
@@ -47,7 +47,7 @@ namespace  natix.SimilaritySearch
 
 		public void Load (BinaryReader Input)
 		{
-			this.LENS = RankSelectGenericIO.Load(Input);
+			this.LENS = GenericIO<Bitmap>.Load(Input);
 			this.SymbolSize = Input.ReadInt32();
 			this.Q = Input.ReadInt32();
 			var len = Input.ReadInt32 ();

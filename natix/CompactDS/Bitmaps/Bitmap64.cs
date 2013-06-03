@@ -23,8 +23,12 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public abstract class RankSelectBase64
+	public abstract class Bitmap64 : ILoadSave
 	{
+		public Bitmap64() 
+		{
+		}
+
 		public abstract long Count {
 			get;
 		}
@@ -35,7 +39,7 @@ namespace natix.CompactDS
 			}
 		}
 		
-		public abstract void AssertEquality (RankSelectBase64 other);
+		public abstract void AssertEquality (Bitmap64 other);
 		
 		public virtual long Select1 (long rank, UnraveledSymbolXLB ctx)
 		{

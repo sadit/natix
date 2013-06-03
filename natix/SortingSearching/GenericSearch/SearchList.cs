@@ -13,8 +13,6 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
-//   Original filename: natix/SortingSearching/GenericSearch.cs
-// 
 using System;
 using System.Collections.Generic;
 
@@ -26,26 +24,26 @@ namespace natix.SortingSearching
 		/// Given a sorted array L, it finds the last entry u where L[u] <= query.
 		/// It returns min-1 if query < L[u]for every L[u] in the array.
 		/// </summary>
-		public static int FindLast<T> (T query, T[] data) where T: IComparable
+		public static int FindLast<T> (T query, List<T> data) where T: IComparable
 		{
-			return FindLast<T> (query, data, 0, data.Length);
+			return FindLast<T> (query, data, 0, data.Count);
 		}
 
-		public static int FindFirst<T> (T query, T[] data) where T : IComparable
+		public static int FindFirst<T> (T query, List<T> data) where T : IComparable
 		{
-			return FindFirst<T> (query, data, 0, data.Length);
+			return FindFirst<T> (query, data, 0, data.Count);
 		}
 
 		/// <summary>
 		/// Find the last entry u where L[u] <= query. It returns min-1 if query < L[u] for every L[u] in the array.
 		/// </summary>
 
-		public static int FindLast<T> (T query, T[] data, int min, int max) where T : IComparable
+		public static int FindLast<T> (T query, List<T> data, int min, int max) where T : IComparable
 		{
 			return FindLast<T> (query, data, min, max, (x, y) => x.CompareTo (y));
 		}
 		
-		public static int FindFirst<T> (T query, T[] data, int min, int max) where T : IComparable
+		public static int FindFirst<T> (T query, List<T> data, int min, int max) where T : IComparable
 		{
 			return FindFirst<T> (query, data, min, max, (x, y) => x.CompareTo (y));
 		}
@@ -53,20 +51,20 @@ namespace natix.SortingSearching
 		/// <summary>
 		/// Find the last entry u where u <= query. It returns min-1 if query < L[u] for every L[u] in the array.
 		/// </summary>
-		public static int FindLast<T> (T query, T[] data, Comparison<T> cmpfun)
+		public static int FindLast<T> (T query, List<T> data, Comparison<T> cmpfun)
 		{
-			return FindLast<T> (query, data, 0, data.Length, cmpfun);
+			return FindLast<T> (query, data, 0, data.Count, cmpfun);
 		}
 		
-		public static int FindFirst<T> (T query, T[] data, Comparison<T> cmpfun)
+		public static int FindFirst<T> (T query, List<T> data, Comparison<T> cmpfun)
 		{
-			return FindFirst<T> (query, data, 0, data.Length, cmpfun);
+			return FindFirst<T> (query, data, 0, data.Count, cmpfun);
 		}
 
 		/// <summary>
 		/// Find the last u where L[u] <= query. It returns min-1 if query < L[u] for every L[u] in the array.
 		/// </summary>
-		public static int FindLast<T> (T query, T[] data, int min, int max, Comparison<T> cmpfun)
+		public static int FindLast<T> (T query, List<T> data, int min, int max, Comparison<T> cmpfun)
 		{
 			int cmp = 0;
 			int mid;
@@ -91,7 +89,7 @@ namespace natix.SortingSearching
 		/// <summary>
 		/// Finds u such that data[u] <= query, if data[u] is duplicated, then the first entry is retrieved.
 		/// </summary>
-		public static int FindFirst<T> (T query, T[] data, int min, int max, Comparison<T> cmpfun)
+		public static int FindFirst<T> (T query, List<T> data, int min, int max, Comparison<T> cmpfun)
 		{
 			//int _min = min;
 			//int _max = max;

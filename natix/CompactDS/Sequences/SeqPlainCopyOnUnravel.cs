@@ -26,7 +26,7 @@ namespace natix.CompactDS
 		{
 		}
 
-		public override IRankSelect Unravel (int sym)
+		public override Bitmap Unravel (int sym)
         {
             var L = new List<int> ();
             var n = this.SEQ.Count;
@@ -35,7 +35,7 @@ namespace natix.CompactDS
                     L.Add (i);
                 }
             }
-            var slist = new PlainSortedList();
+            var slist = new SortedList();
             slist.Build(L, n);
             return slist;
 		}

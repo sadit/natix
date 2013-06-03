@@ -22,11 +22,11 @@ using System.Collections.Generic;
 
 namespace natix.CompactDS
 {
-	public class BitStream32 : IBitStream
+	public class BitStream32
 	{
 		// long Offset;
 		long N;
-		IList<uint> Buffer;
+		public List<uint> Buffer;
 		
 		public void AssertEquality (object obj)
 		{
@@ -41,32 +41,26 @@ namespace natix.CompactDS
 			}
 			Assertions.AssertIList<uint>(this.Buffer, B.Buffer, "BitStream32.Buffer");
 		}
-		
-		public IList<UInt32> GetIList32 ()
-		{
-			return this.Buffer;
-		}
-		
-		public IList<UInt64> GetIList64 ()
-		{
-			return new ListGen<UInt64> (delegate(int i) {
-				i <<= 1;
-				UInt64 item = this.Buffer[i];
-				UInt64 tmp = 0;
-				if (i+1 < this.Buffer.Count) {
-					tmp = this.Buffer[i+1];
-				}
-				item |= tmp << 32;
-				return item;
-			}, (int)Math.Ceiling(this.Buffer.Count / 2.0));
-		}
-
-//		public long CurrentOffset {
-//			get {
-//				return this.Offset;
-//			}
+//		
+//		public IList<UInt32> GetIList32 ()
+//		{
+//			return this.Buffer;
 //		}
-		
+//		
+//		public IList<UInt64> GetIList64 ()
+//		{
+//			return new ListGen<UInt64> (delegate(int i) {
+//				i <<= 1;
+//				UInt64 item = this.Buffer[i];
+//				UInt64 tmp = 0;
+//				if (i+1 < this.Buffer.Count) {
+//					tmp = this.Buffer[i+1];
+//				}
+//				item |= tmp << 32;
+//				return item;
+//			}, (int)Math.Ceiling(this.Buffer.Count / 2.0));
+//		}
+
 		public BitStream32 ()
 		{
 			this.Buffer = new List<UInt32> ();
@@ -81,19 +75,19 @@ namespace natix.CompactDS
 			this.Buffer = new List<UInt32> (buffersizeuint);
 		}
 		
-		public BitStream32 (IList<uint> buffer)
-		{
-			this.Buffer = buffer;
-			//this.Offset = this.N = (uint)(buffer.Count << 5);
-			this.N = (uint)(buffer.Count << 5);
-		}
-		
-		public BitStream32 (IList<byte> buffer) : this((int)Math.Ceiling(buffer.Count/4.0))
-        {
-            for (int i = 0; i < buffer.Count; ++i) {
-                this.Write(buffer[i], 8);
-            }
-        }
+//		public BitStream32 (IList<uint> buffer)
+//		{
+//			this.Buffer = buffer;
+//			//this.Offset = this.N = (uint)(buffer.Count << 5);
+//			this.N = (uint)(buffer.Count << 5);
+//		}
+//		
+//		public BitStream32 (IList<byte> buffer) : this((int)Math.Ceiling(buffer.Count/4.0))
+//        {
+//            for (int i = 0; i < buffer.Count; ++i) {
+//                this.Write(buffer[i], 8);
+//            }
+//        }
 
 		public BitStream32 (BitStream32 bstream)
 		{
@@ -403,7 +397,7 @@ namespace natix.CompactDS
 			this.N = r.ReadInt64 ();
 			int numitems = (int)Math.Ceiling (this.N / 32.0);
 			// Console.WriteLine ("BitStream32.Load N: {0}, num_items: {1}", this.N, numitems);
-			this.Buffer = new uint[numitems];
+			this.Buffer = new List<uint>(numitems);
 			// this.Seek (0);
 			PrimitiveIO<uint>.ReadFromFile (r, numitems, this.Buffer);
 		}

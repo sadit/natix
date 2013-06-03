@@ -26,7 +26,7 @@ namespace natix.CompactDS
         public SkipListRank<int>[] Char_SA;
         public SkipList2<SkipListRank<int>.DataRank>.Node[] SA_pointers;
         public int[] A;
-        public IRankSelect newF;
+        public Bitmap newF;
         public IList<int> charT;
 		// int alphabet_numbits;
 	

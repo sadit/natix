@@ -20,11 +20,11 @@ using System.IO;
 
 namespace natix.CompactDS
 {
-	public class FakeBitmap : RankSelectBase
+	public class FakeBitmap : Bitmap
 	{
 		public BitStream32 B;
 		
-		public FakeBitmap ()
+		public FakeBitmap () : base()
 		{
 			this.B = new BitStream32 ();
 		}
@@ -39,10 +39,9 @@ namespace natix.CompactDS
 			this.B.Write (b);
 		}
 		
-		public bool this[long i] {
-			get {
-				return this.B[i];
-			}
+		public override bool Access(int i)
+		{
+			return this.B[i];
 		}
 		
 		public override int Rank1 (int i)
@@ -50,9 +49,15 @@ namespace natix.CompactDS
 			throw new NotSupportedException ();
 		}
 
+		public override int Select1 (int i)
+		{
+			throw new NotSupportedException ();
+		}
+
+
 		public override int Count {
 			get {
-				return (int) this.B.CountBits;
+				return (int)this.B.CountBits;
 			}
 		}
 		
@@ -61,8 +66,8 @@ namespace natix.CompactDS
 				throw new NotSupportedException ();
 			}
 		}
-		
-		public override void AssertEquality (IRankSelect other)
+
+		public override void AssertEquality (Bitmap other)
 		{
 			throw new NotSupportedException ();
 		}

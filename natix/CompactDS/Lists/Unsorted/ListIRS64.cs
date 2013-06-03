@@ -28,7 +28,7 @@ namespace natix.CompactDS
 	/// </summary>
 	public class ListIRS64 : ListGenerator<int>, ILoadSave
 	{
-		public IRankSelect64 XLB;
+		public Bitmap64 XLB;
 		public int MAXVALUE;
 
 		public ListIRS64()
@@ -71,13 +71,13 @@ namespace natix.CompactDS
 
 		public virtual void Load (BinaryReader Input)
 		{
-			this.XLB = RankSelect64GenericIO.Load(Input);
+			this.XLB = GenericIO<Bitmap64>.Load(Input);
 			this.MAXVALUE = Input.ReadInt32();
 		}
 
 		public virtual void Save (BinaryWriter Output)
 		{
-			RankSelect64GenericIO.Save(Output, this.XLB);
+			GenericIO<Bitmap64>.Save(Output, this.XLB);
 			Output.Write ((int)this.MAXVALUE);
 		}
 

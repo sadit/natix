@@ -90,17 +90,19 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Build the index
 		/// </summary>
-		public virtual void Build (MetricDB db, int num_centers, Random rand, SequenceBuilder seq_builder = null)
+		public virtual void Build (MetricDB db, int num_centers, Random rand)
 		{
 			this.DB = db;
 			var n = this.DB.Count;
 			// randomized has very good performance, even compared with more "intelligent" strategies
 			this.node_list = new List<Node> (num_centers);
 			var subset = RandomSets.GetRandomSubSet (num_centers, this.DB.Count, rand);
+			var H = new HashSet<int> (subset);
 			for (int centerID = 0; centerID < num_centers; ++centerID) {
 				this.node_list.Add (new Node (subset [centerID]));
 			}
-			var H = new HashSet<int> (subset);
+			var IDX = new SAT_Distal ();
+			IDX.Build (new SampleSpace("", db, subset), rand);
 			for (int docID = 0; docID < n; ++docID) {
 				if (docID % 1000 == 0) {
 					Console.WriteLine ("== Vor {0}/{1}, num_centers: {2}, db: {3}", docID + 1, n, num_centers, db.Name);
@@ -108,13 +110,14 @@ namespace natix.SimilaritySearch
 				if (H.Contains(docID)) {
 					continue;
 				}
-				var near = new Result(1);
-				for (var centerID = 0; centerID < num_centers; ++centerID) {
-					var node = this.node_list[centerID];
-					var d = this.DB.Dist(this.DB[node.refID], this.DB[docID]);
-					near.Push(centerID, d);
-				}
-				var _near = near.First;
+//				var near = new Result(1);
+//				for (var centerID = 0; centerID < num_centers; ++centerID) {
+//					var node = this.node_list[centerID];
+//					var d = this.DB.Dist(this.DB[node.refID], this.DB[docID]);
+//					near.Push(centerID, d);
+//				}
+//				var _near = near.First;
+				var _near = IDX.SearchKNN (this.DB[docID], 1, new Result (1)).First;
 				this.node_list[_near.docid].Add(docID, _near.dist);
 			}
 		}

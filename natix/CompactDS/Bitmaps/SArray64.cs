@@ -26,13 +26,13 @@ namespace natix.CompactDS
 	/// <summary>
 	/// sarray. ALENEX 2007. Okanohara & Sadakane. Practical Rank & Select.
 	/// </summary>
-	public class SArray64 : RankSelectBase64
+	public class SArray64 : Bitmap64
 	{
 		long N;
-		public IRankSelect H;
+		public Bitmap H;
 		public ListIFS L;
 				
-		public override void AssertEquality (IRankSelect64 obj)
+		public override void AssertEquality (Bitmap64 obj)
 		{
 			var other = obj as SArray64;
 			if (this.N != other.N) {
@@ -62,7 +62,7 @@ namespace natix.CompactDS
 			}
 		}
 				
-		public SArray64 ()
+		public SArray64 () : base()
 		{
 		}
 		
@@ -131,7 +131,7 @@ namespace natix.CompactDS
 			this.Build( orderedList, n, z, H_builder);
 		}
 
-		public void Build (IBitStream bitmap, BitmapFromBitStream H_builder)
+		public void Build (BitStream32 bitmap, BitmapFromBitStream H_builder)
 		{
 			IList<long> L = new List<long> ();
 			for (int i = 0; i < bitmap.CountBits; i++) {
@@ -145,14 +145,14 @@ namespace natix.CompactDS
 		public override void Save (BinaryWriter output)
 		{
 			output.Write ((long)this.N);
-			RankSelectGenericIO.Save (output, this.H);
+			GenericIO<Bitmap>.Save (output, this.H);
 			this.L.Save (output);
 		}
 		
 		public override void Load (BinaryReader input)
 		{
 			this.N = input.ReadInt64 ();
-			this.H = RankSelectGenericIO.Load (input);
+			this.H = GenericIO<Bitmap>.Load (input);
 			var list = new ListIFS ();
 			list.Load (input);
 			this.L = list;

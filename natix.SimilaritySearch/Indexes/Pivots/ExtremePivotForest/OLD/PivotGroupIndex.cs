@@ -120,7 +120,7 @@ namespace natix.SimilaritySearch
         public override IResult SearchKNN (object q, int K, IResult res)
         {       
             var l = this.GROUPS.Length;
-            var n = this.DB.Count;
+            //var n = this.DB.Count;
 			short[] A = new short[this.DB.Count]; 
 			int num_groups = this.GROUPS.Length;
 			for (short groupID = 0; groupID < l; ++groupID) {

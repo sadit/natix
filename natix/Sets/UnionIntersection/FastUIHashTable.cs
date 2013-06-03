@@ -27,7 +27,7 @@ namespace natix.Sets
 		{
 		}
 		
-		public IList<int> ComputeUI (IList<IList<IRankSelect>> sets)
+		public IList<int> ComputeUI (IList<IList<Bitmap>> sets)
 		{
 			var A = new Dictionary<int, int> ();
 			var lambda = sets.Count;

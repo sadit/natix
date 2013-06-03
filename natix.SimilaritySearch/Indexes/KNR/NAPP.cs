@@ -147,5 +147,6 @@ namespace natix.SimilaritySearch
 			this.SearchKNN(q, this.DB.Count, res);
 			return res;
 		}
+
 	}
 }

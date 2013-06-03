@@ -29,7 +29,7 @@ namespace natix.Sets
 			this.N = N;
 		}
 		
-		public IList<int> ComputeUI (IList<IList<IRankSelect>> sets)
+		public IList<int> ComputeUI (IList<IList<Bitmap>> sets)
 		{
 			byte[] A = new byte[this.N];
 			var lambda = sets.Count;

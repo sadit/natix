@@ -29,7 +29,7 @@ namespace natix.CompactDS
 		protected IIEncoder32 Coder;
 		protected IList<int> Offsets;
 		protected int M;
-		public IBitStream Stream;
+		public BitStream32 Stream;
 		public int BlockSize = 127;
 		
 		public IIEncoder32 Encoder {

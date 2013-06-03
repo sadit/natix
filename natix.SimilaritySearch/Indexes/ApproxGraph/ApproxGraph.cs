@@ -85,7 +85,7 @@ namespace natix.SimilaritySearch
 			this.Vertices = new List<Vertex> (n);
 			for (int objID = 0; objID < n; ++objID) {
 				if (objID % 1000 == 0) {
-					Console.WriteLine ("XXX==== {0} DB: {1}, Arity: {2}, RepeatSearch: {3}, objID: {4}", this, db.Name, arity, repeat_search, objID);
+					Console.WriteLine ("XXX==== {0} DB: {1}, Arity: {2}, RepeatSearch: {3}, objID: {4}/{5}", this, db.Name, arity, repeat_search, objID, db.Count);
 				}
 				this.AddObjID(objID);
 			}

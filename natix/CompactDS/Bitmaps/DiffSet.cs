@@ -23,7 +23,7 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public class DiffSet : RankSelectBase
+	public class DiffSet : Bitmap
 	{
 		// static IIEncoder32 Coder = new EliasGamma();
 		static int AccStart = -1;
@@ -32,10 +32,10 @@ namespace natix.CompactDS
 		int N;
 		int M;
 		protected short B = 31;
-		IList<int> Samples;
-		IList<long> Offsets;
+		List<int> Samples;
+		List<long> Offsets;
 		
-		public DiffSet ()
+		public DiffSet () : base()
 		{
 			this.Samples = new List<int> ();
 			this.Offsets = new List<long> ();
@@ -48,13 +48,6 @@ namespace natix.CompactDS
 			this.B = B;
 		}
 
-		public override bool Access (int pos)
-		{
-			int found_pos;
-			this.BackendAccessRank1 (pos, out found_pos, new BitStreamCtx ());
-			return pos == found_pos;
-		}
-		
 		public override int Count {
 			get {
 				return this.N;
@@ -79,8 +72,8 @@ namespace natix.CompactDS
 			this.M = R.ReadInt32 ();
 			this.B = R.ReadInt16 ();
 			int num_samples = this.M / this.B;
-			this.Samples = new int[ num_samples ];
-			this.Offsets = new long[ num_samples ];
+			this.Samples = new List<int>( num_samples );
+			this.Offsets = new List<long>( num_samples );
 			PrimitiveIO<int>.ReadFromFile (R, num_samples, this.Samples);
 			PrimitiveIO<long>.ReadFromFile (R, num_samples, this.Offsets);
 			// Console.WriteLine ("xxxxxx  load samples.count {0}. N: {1}, M: {2}, B: {3}", this.Samples.Count, this.N, this.M, this.B);
@@ -89,7 +82,7 @@ namespace natix.CompactDS
 			this.Stream.Load (R);
 		}
 		
-		public override void AssertEquality (IRankSelect _other)
+		public override void AssertEquality (Bitmap _other)
 		{
 			DiffSet other = _other as DiffSet;
 			if (this.N != other.N) {
@@ -150,7 +143,7 @@ namespace natix.CompactDS
 		/// Extract 'count' differences starting from 'start_index', it saves the output in 'output'.
 		/// Returns the previous absolute value to start_index (start_index - 1), i.e. the reference
 		/// </summary>
-		public int ExtractFrom (int start_index, int count, IList<int> output)
+		public int ExtractFrom (int start_index, int count, List<int> output)
 		{
 			int acc;
 			BitStreamCtx ctx = new BitStreamCtx ();
@@ -171,7 +164,14 @@ namespace natix.CompactDS
 			}
 			return acc;
 		}
+
 		
+		public override bool Access (int pos)
+		{
+			int found_pos;
+			this.BackendAccessRank1 (pos, out found_pos, new BitStreamCtx ());
+			return pos == found_pos;
+		}
 		
 		/// <summary>
 		/// Returns the position of the rank-th enabled bit
@@ -210,7 +210,7 @@ namespace natix.CompactDS
 			return acc;
 		}
 		
-		int SeqAccessRank1 (int acc, int pos, int max, out int found_pos, BitStreamCtx ctx)
+		int SeqAccessRank1 (int acc, long pos, int max, out int found_pos, BitStreamCtx ctx)
 		{
 			int i = 0;
 			while (i < max && acc < pos) {
@@ -232,7 +232,7 @@ namespace natix.CompactDS
 			int rank = this.BackendAccessRank1 (pos, out select_pos, new BitStreamCtx());
 			return rank;
 		}
-		
+
 		int BackendAccessRank1 (int pos, out int found_pos, BitStreamCtx ctx)
 		{
 			if (pos < 0) {
@@ -242,7 +242,7 @@ namespace natix.CompactDS
 			this.ResetReader ();
 			int start_index = -1;
 			if (this.Samples.Count > 0) {
-				start_index = GenericSearch.FindFirst<int> (pos, this.Samples);
+				start_index = Search.FindFirst<int> (pos, this.Samples);
 			}
 			int count;
 			if (start_index < 0) {
@@ -264,7 +264,7 @@ namespace natix.CompactDS
 				
 		public void Add (int current)
 		{
-			this.Add (current, this.Select1 (this.Count1));
+			this.Add (current, (int)this.Select1 (this.Count1));
 		}
 				
 		/// <summary>

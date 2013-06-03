@@ -29,13 +29,13 @@ namespace natix.SimilaritySearch
 		{
 		}
 
-		public IRankSelectSeq[] SEQ;
+		public Sequence[] SEQ;
 				
 		public override void Load_DIST (BinaryReader Input)
 		{
-			this.SEQ = new IRankSelectSeq[this.PIVS.Count];
+			this.SEQ = new Sequence[this.PIVS.Count];
 			for (int i = 0; i < this.PIVS.Count; ++i) {
-				this.SEQ[i] = RankSelectSeqGenericIO.Load(Input);
+				this.SEQ[i] = GenericIO<Sequence>.Load(Input);
 			}
 			this.EmulateDIST();
 		}
@@ -43,7 +43,7 @@ namespace natix.SimilaritySearch
 		public override void Save_DIST (BinaryWriter Output)
 		{
 			for (int i = 0; i < this.PIVS.Count; ++i) {
-				RankSelectSeqGenericIO.Save (Output, this.SEQ[i]);
+				GenericIO<Sequence>.Save (Output, this.SEQ[i]);
 			}
 		}
 		
@@ -58,7 +58,7 @@ namespace natix.SimilaritySearch
 				seq_builder = SequenceBuilders.GetSeqPlain (32);
 			}
 			base.Build (idx, num_pivs, num_rings, null);
-			this.SEQ = new IRankSelectSeq[num_pivs];
+			this.SEQ = new Sequence[num_pivs];
 			var build_one_pivot = new Action<int>(delegate(int p) {
 				var D = this.DIST[p];
 				this.SEQ[p] = seq_builder(D, this.MAX_SYMBOL+1);

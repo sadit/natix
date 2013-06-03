@@ -28,7 +28,7 @@ namespace natix.CompactDS
 	/// </summary>
 	public class ListRankSelectSeq : ListGenerator<int>, ILoadSave
 	{
-		public IRankSelectSeq S;
+		public Sequence S;
 
 		public ListRankSelectSeq()
 		{
@@ -49,19 +49,19 @@ namespace natix.CompactDS
 
 		}
 
-		public virtual void Build (IRankSelectSeq seq)
+		public virtual void Build (Sequence seq)
 		{
 			this.S = seq;
 		}
 
 		public virtual void Load (BinaryReader Input)
 		{
-			this.S = RankSelectSeqGenericIO.Load(Input);
+			this.S = GenericIO<Sequence>.Load(Input);
 		}
 
 		public virtual void Save (BinaryWriter Output)
 		{
-			RankSelectSeqGenericIO.Save(Output, this.S);
+			GenericIO<Sequence>.Save(Output, this.S);
 		}
 
 		public override int GetItem (int index)

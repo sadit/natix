@@ -31,7 +31,7 @@ namespace natix.Sets
 		/// </summary>
 		
 		// IList<int> ComputeUI (IList<IList<IList<int>>> sets);
-		IList<int> ComputeUI (IList<IList<IRankSelect>> sets);
+		IList<int> ComputeUI (IList<IList<Bitmap>> sets);
 	}
 }
 

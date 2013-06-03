@@ -44,7 +44,7 @@ namespace natix.CompactDS
 		}
 
 
-		public void Encode (IBitStream stream, long u, long N)
+		public void Encode (BitStream32 stream, long u, long N)
 		{
 			long min = 0;
 			long max = N - 1;
@@ -64,7 +64,7 @@ namespace natix.CompactDS
 			} while (min < max);
 		}
 		
-		public long Decode (IBitStream stream, long N, BitStreamCtx ctx)
+		public long Decode (BitStream32 stream, long N, BitStreamCtx ctx)
 		{
 			long min = 0;
 			long max = N - 1;
@@ -83,13 +83,13 @@ namespace natix.CompactDS
 			return min;	
 		}
 		
-		public void Encode (IBitStream stream, long u)
+		public void Encode (BitStream32 stream, long u)
 		{
 			this.Encode (stream, u, this.MaxValue);
 		}
 
 	
-		public long Decode (IBitStream stream, BitStreamCtx ctx)
+		public long Decode (BitStream32 stream, BitStreamCtx ctx)
 		{
 			return this.Decode (stream, this.MaxValue, ctx);
 		}

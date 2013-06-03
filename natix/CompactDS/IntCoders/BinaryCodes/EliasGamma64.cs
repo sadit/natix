@@ -45,7 +45,7 @@ namespace natix.CompactDS
 		}
 
 		static UnaryCoding unary = new UnaryCoding();
-		public void Encode (IBitStream Buffer, long u)
+		public void Encode (BitStream32 Buffer, long u)
 		{
 			if (u < 1) {
 				throw new ArgumentOutOfRangeException (String.Format ("Invalid range for elias gamma coding, u: {0}", u));
@@ -61,7 +61,7 @@ namespace natix.CompactDS
 			}
 		}
 		
-		public long Decode (IBitStream Buffer, BitStreamCtx ctx)
+		public long Decode (BitStream32 Buffer, BitStreamCtx ctx)
 		{
 			int numbits = unary.Decode (Buffer, ctx);
 			if (numbits == 0) {

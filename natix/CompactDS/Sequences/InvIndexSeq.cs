@@ -24,13 +24,13 @@ using System.Text.RegularExpressions;
 namespace natix.CompactDS
 {
 
-	public class InvIndexSeq : IRankSelectSeq
+	public class InvIndexSeq : Sequence
 	{
 		/// <summary>
 		/// Inverted index
 		/// </summary>
 		// public IList< IList< int > > InvIndex;
-		public IList<IRankSelect> InvIndex;
+		public IList<Bitmap> InvIndex;
 		/// <summary>
 		/// The size in words (entities) of the text
 		/// </summary>
@@ -74,7 +74,7 @@ namespace natix.CompactDS
 			}
 			pos = 0;
 			this.N = sequence.Count;
-			this.InvIndex = new IRankSelect[alphabet_size];
+			this.InvIndex = new Bitmap[alphabet_size];
 			for (int i = 0; i < alphabet_size; i++) {
 				if (i % 1000 == 0) {
 					Console.WriteLine ("*** compressing invlist {0}/{1}", i, alphabet_size);
@@ -85,11 +85,6 @@ namespace natix.CompactDS
 			invindex = null;
 		}
 
-        public IList<int> GetRawSeq ()
-        {
-            return RankSelectSeqGenericIO.ToIntArray(this, false);
-        }
-		
 		public int Access (int pos)
 		{
 			for (int i = 0; i < this.InvIndex.Count; i++) {
@@ -119,7 +114,7 @@ namespace natix.CompactDS
 			return this.InvIndex[symbol].Select1 (rank);
 		}
 		
-		public IRankSelect Unravel (int symbol)
+		public Bitmap Unravel (int symbol)
 		{
 			return this.InvIndex[symbol];
 		}		
@@ -135,7 +130,7 @@ namespace natix.CompactDS
 			Output.Write ((int)this.N);
 			Output.Write ((int)vocsize);
 			foreach (var L in this.InvIndex) {
-				RankSelectGenericIO.Save (Output, L);
+				GenericIO<Bitmap>.Save (Output, L);
 			}
 		}
 
@@ -143,9 +138,9 @@ namespace natix.CompactDS
 		{
 			this.N = Input.ReadInt32 ();
 			int vocsize = Input.ReadInt32 ();
-			this.InvIndex = new IRankSelect[vocsize];
+			this.InvIndex = new Bitmap[vocsize];
 			for (int i = 0; i < vocsize; i++) {
-				this.InvIndex[i] = RankSelectGenericIO.Load (Input);
+				this.InvIndex[i] = GenericIO<Bitmap>.Load (Input);
 			}
 		}
 	}

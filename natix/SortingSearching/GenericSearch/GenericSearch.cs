@@ -20,7 +20,7 @@ using System.Collections.Generic;
 
 namespace natix.SortingSearching
 {
-	public partial class GenericSearch
+	public class GenericSearch
 	{
 		/// <summary>
 		/// Given a sorted array L, it finds the last entry u where L[u] <= query.

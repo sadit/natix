@@ -28,7 +28,7 @@ namespace natix.InformationRetrieval
 	{
 		public IList<string> FileNames;
 		public IList<string> Voc;
-		public IRankSelectSeq Seq;
+		public Sequence Seq;
 		public BasicTokenizer InputTokenizer;
 		protected int sep_symbol;
 		
@@ -36,7 +36,7 @@ namespace natix.InformationRetrieval
 		{
 		}
 		
-		public IRankSelectSeq SeqIndex {
+		public Sequence SeqIndex {
 			get {
 				return this.Seq;
 			}
@@ -87,7 +87,7 @@ namespace natix.InformationRetrieval
 			}
 			this.FileNames = File.ReadAllLines (basename + ".names");
 			using (var input = new BinaryReader(File.OpenRead(basename + ".seq"))) {
-				this.Seq = RankSelectSeqGenericIO.Load (input);
+				this.Seq = GenericIO<Sequence>.Load (input);
 			}
 			using (var input = new BinaryReader(File.OpenRead(basename + ".voc"))) {
 				var size = input.ReadInt32 ();
@@ -110,7 +110,7 @@ namespace natix.InformationRetrieval
 				}
 			}
 			using (var output = new BinaryWriter(File.Create(basename + ".seq"))) {
-				RankSelectSeqGenericIO.Save (output, this.Seq);
+				GenericIO<Sequence>.Save (output, this.Seq);
 			}
 			using (var output = new BinaryWriter(File.Create(basename + ".voc"))) {
 				output.Write ((int)this.Voc.Count);

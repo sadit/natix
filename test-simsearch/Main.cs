@@ -134,17 +134,17 @@ namespace testsimsearch
 			///
 			/// The List of Clusters and variants
 			/// 
-
-			// LC_RNN
-			reslist.Add (this.TestLC ("Index.LC_RNN." + nick, db, num_centers, new LC_RNN (), queries, qstream));
+//
+//			// LC_RNN
+//			reslist.Add (this.TestLC ("Index.LC_RNN." + nick, db, num_centers, new LC_RNN (), queries, qstream));
 			// LC
 			reslist.Add (this.TestLC ("Index.LC." + nick, db, num_centers, new LC (), queries, qstream));
-			// LC_IRNN
-			reslist.Add (this.TestLC ("Index.LC_IRNN." + nick, db, num_centers, new LC_IRNN (), queries, qstream));
-			// LC_PRNN
-			reslist.Add (this.TestLC ("Index.LC_PRNN." + nick, db, num_centers, new LC_PRNN (), queries, qstream));
-			// LC_ParallelBuild
-			//  reslist.Add (this.TestLC ("Index.LC_ParallelBuild." + nick, db, num_centers, new LC_ParallelBuild (), queries, qstream));
+//			// LC_IRNN
+//			reslist.Add (this.TestLC ("Index.LC_IRNN." + nick, db, num_centers, new LC_IRNN (), queries, qstream));
+//			// LC_PRNN
+//			reslist.Add (this.TestLC ("Index.LC_PRNN." + nick, db, num_centers, new LC_PRNN (), queries, qstream));
+//			// LC_ParallelBuild
+//			//  reslist.Add (this.TestLC ("Index.LC_ParallelBuild." + nick, db, num_centers, new LC_ParallelBuild (), queries, qstream));
 
 			/// 
 			/// Permutation Based Indexes

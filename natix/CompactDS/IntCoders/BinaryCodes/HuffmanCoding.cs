@@ -37,7 +37,7 @@ namespace natix.CompactDS
 			this.Huffman = huffmantree;
 		}
 		
-		public int Decode (IBitStream stream, BitStreamCtx ctx)
+		public int Decode (BitStream32 stream, BitStreamCtx ctx)
 		{
 			HuffmanInner node = this.Huffman.Root;
 			while (true) {
@@ -56,7 +56,7 @@ namespace natix.CompactDS
 			}
 		}
 		
-		public void Encode (IBitStream stream, int u)
+		public void Encode (BitStream32 stream, int u)
 		{
 			var size = this.Huffman.Encode (stream, u);
 			if (size == 0) {

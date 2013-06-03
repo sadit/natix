@@ -59,7 +59,7 @@ namespace natix.CompactDS
 		}
 
 		static UnaryCoding unary = new UnaryCoding();
-		public void Encode (IBitStream Buffer, int u)
+		public void Encode (BitStream32 Buffer, int u)
 		{
 			if (u < 1) {
 				throw new ArgumentOutOfRangeException (String.Format ("Invalid range for elias gamma coding, u: {0}", u));
@@ -70,7 +70,7 @@ namespace natix.CompactDS
 			Buffer.Write (u, log2);
 		}
 		
-		public int Decode (IBitStream Buffer, BitStreamCtx ctx)
+		public int Decode (BitStream32 Buffer, BitStreamCtx ctx)
 		{
 			// int numbits = unary.Decode (Buffer, ctx);
 			// the idea is to replace unary coder by explicit inline code such that (hopefully)

@@ -23,17 +23,17 @@ namespace natix.CompactDS
 	/// <summary>
 	/// A multiary wavelet tree (implementation with pointers/references)
 	/// </summary>
-	public class WTM : IRankSelectSeq
+	public class WTM : Sequence
 	{
 		// static INumericManager<T> Num = (INumericManager<T>)NumericManager.Get (typeof(T));
 		ISymbolCoder SymbolCoder;
 		// BitStream32 CoderStream;
 		WTM_Inner Root;
-		IList<WTM_Leaf> Alphabet;
+		WTM_Leaf[] Alphabet;
 		
 		public int Sigma {
 			get {
-				return this.Alphabet.Count;
+				return this.Alphabet.Length;
 			}
 		}
 		
@@ -114,7 +114,7 @@ namespace natix.CompactDS
 		
 		public void Save (BinaryWriter Output)
 		{
-			Output.Write ((int)this.Alphabet.Count);
+			Output.Write ((int)this.Alphabet.Length);
 			SymbolCoderGenericIO.Save(Output, this.SymbolCoder);
 			// Console.WriteLine ("Output.Position: {0}", Output.BaseStream.Position);
 			this.SaveNode (Output, this.Root);
@@ -136,7 +136,7 @@ namespace natix.CompactDS
 				Output.Write (true);
 				var arity = asInner.CHILDREN.Length;
 				Output.Write ((int)arity);
-				RankSelectSeqGenericIO.Save(Output, asInner.SEQ);
+				GenericIO<Sequence>.Save(Output, asInner.SEQ);
 				for (int i = 0; i < arity; ++i) {
 					var child = asInner.CHILDREN[i];
 					if (child == null) {
@@ -161,7 +161,7 @@ namespace natix.CompactDS
 			if (isInner) {
 				var arity = Input.ReadInt32 ();
 				var node = new WTM_Inner (arity, parent, false);
-				node.SEQ = RankSelectSeqGenericIO.Load(Input);
+				node.SEQ = GenericIO<Sequence>.Load(Input);
 				node.CHILDREN = new WTM_Node[arity];
 				for (int i = 0; i < arity; ++i) {
 					if (Input.ReadBoolean()) {
@@ -277,15 +277,11 @@ namespace natix.CompactDS
 			}
 		}
 		
-		public IRankSelect Unravel (int symbol)
+		public Bitmap Unravel (int symbol)
 		{
 			return new UnraveledSymbol (this, symbol);
 		}
-		
-        public IList<int> GetRawSeq ()
-        {
-            return RankSelectSeqGenericIO.ToIntArray(this, true);
-        }
+
 
 		//  Helping classes
 		public class WTM_Node
@@ -299,7 +295,7 @@ namespace natix.CompactDS
 		
 		public class WTM_Inner : WTM_Node
 		{
-			public IRankSelectSeq SEQ;
+			public Sequence SEQ;
 			public WTM_Node[] CHILDREN;
 			
 			public WTM_Inner (int arity, WTM_Inner parent, bool building) : base(parent)

@@ -23,11 +23,11 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public class GolynskiMunroRaoSeq : IRankSelectSeq
+	public class GolynskiMunroRaoSeq : Sequence
 	{
-		IList<IPermutation> perms;
-		IRankSelect B; // counter in blocks
-		IRankSelect X; // counter per symbol
+		IPermutation[] perms;
+		Bitmap B; // counter in blocks
+		Bitmap X; // counter per symbol
 		// IList<int> Xacc; // accumulated rank for each row in X
 		int sigma;
 		int n;
@@ -51,26 +51,21 @@ namespace natix.CompactDS
 			}
 		}
 	
-        public IList<int> GetRawSeq ()
-        {
-            return RankSelectSeqGenericIO.ToIntArray(this, true);
-        }
-
 		public GolynskiMunroRaoSeq ()
 		{
 		}
 		
-		void Print1Perm (IList<int> p)
+		void Print1Perm (IPermutation p)
 		{
-			foreach (var u in p) {
-				Console.Write ("<{0}>, ", u);
+			for (int i = 0; i < p.Count; ++i) {
+				Console.Write ("<{0}>, ", p.Direct(i));
 			}
 			Console.WriteLine ("<END>");
 		}
 		
 		void PrintPerms ()
 		{
-			for (int i = 0; i < this.perms.Count; i++) {
+			for (int i = 0; i < this.perms.Length; i++) {
 				Console.WriteLine ("===== permutation of block {0}", i);
 				this.Print1Perm (this.perms [i]);
 				Console.WriteLine ();
@@ -107,8 +102,8 @@ namespace natix.CompactDS
 				lists [i] = new List<int> ();
 			}
 			int num_blocks = (int)Math.Ceiling (this.n * 1.0 / this.sigma);
-			this.perms = new List<IPermutation> (num_blocks);
-			for (int i = 0; i < this.n; i+= this.sigma) {
+			this.perms = new IPermutation[num_blocks];
+			for (int i = 0, I = 0; i < this.n; i+= this.sigma, ++I) {
 				// writing block separators
 				foreach (var b in X_stream) {
 					b.Write (true);
@@ -130,7 +125,7 @@ namespace natix.CompactDS
 					}
 				}
 				var _perm = perm_builder(P);
-				this.perms.Add (_perm);
+				this.perms[I] = _perm;
 			}
 			var _X_stream = X_stream [0];
 			
@@ -184,7 +179,7 @@ namespace natix.CompactDS
 			// rank1 + rank0 - 1 = sp
 			var rank1_B = sp - rank0_B + 1;
 			// access to the desired select position, relative to this block
-			var s = this.perms [block_id] [(rank1_B % this.sigma) + rel_rank - 1];
+			var s = this.perms [block_id].Direct( (rank1_B % this.sigma) + rel_rank - 1);
 			s += sp_block;
 			return s;
 		}
@@ -217,7 +212,7 @@ namespace natix.CompactDS
 			return block_rank + rel_rank;
 		}
 		
-		public IRankSelect Unravel (int symbol)
+		public Bitmap Unravel (int symbol)
 		{
 			return new UnraveledSymbol (this, symbol);
 		}
@@ -229,10 +224,10 @@ namespace natix.CompactDS
 			var c = Input.ReadInt32 ();
 			this.perms = new IPermutation[c];
 			for (int i = 0; i < c; i++) {
-				this.perms [i] = PermutationGenericIO.Load (Input);
+				this.perms [i] = GenericIO<IPermutation>.Load (Input);
 			}
-			this.B = RankSelectGenericIO.Load (Input);
-			this.X = RankSelectGenericIO.Load (Input);
+			this.B = GenericIO<Bitmap>.Load (Input);
+			this.X = GenericIO<Bitmap>.Load (Input);
 			/*var len = Input.ReadInt32 ();
 			this.Xacc = new int[len];
 			PrimitiveIO<int>.ReadFromFile (Input, len, this.Xacc);*/
@@ -243,12 +238,12 @@ namespace natix.CompactDS
 		{
 			Output.Write ((int)this.n);
 			Output.Write ((int)this.sigma);
-			Output.Write ((int)this.perms.Count);
+			Output.Write ((int)this.perms.Length);
 			foreach (var p in this.perms) {
-				PermutationGenericIO.Save (Output, p);
+				GenericIO<IPermutation>.Save (Output, p);
 			}
-			RankSelectGenericIO.Save (Output, this.B);
-			RankSelectGenericIO.Save (Output, this.X);
+			GenericIO<Bitmap>.Save (Output, this.B);
+			GenericIO<Bitmap>.Save (Output, this.X);
 			/*Output.Write ((int)this.Xacc.Count);
 			PrimitiveIO<int>.WriteVector (Output, this.Xacc);*/
 		}

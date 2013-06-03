@@ -23,10 +23,10 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public class SeqSinglePerm : IRankSelectSeq
+	public class SeqSinglePerm : Sequence
 	{
 		public IPermutation PERM;
-		public IRankSelect LENS;
+		public Bitmap LENS;
 		
 		public int Count {
 			get {
@@ -147,27 +147,23 @@ namespace natix.CompactDS
 			}
 		}
 		
-		public IRankSelect Unravel (int symbol)
+		public Bitmap Unravel (int symbol)
 		{
 			return new UnraveledSymbolSSP (this, symbol);
 		}
 		
 		public void Load (BinaryReader Input)
 		{
-			this.PERM = PermutationGenericIO.Load (Input);
-			this.LENS = RankSelectGenericIO.Load (Input);
+			this.PERM = GenericIO<IPermutation>.Load (Input);
+			this.LENS = GenericIO<Bitmap>.Load (Input);
 		}
 		
 		public void Save (BinaryWriter Output)
 		{
-			PermutationGenericIO.Save (Output, this.PERM);
-			RankSelectGenericIO.Save (Output, this.LENS);
+			GenericIO<IPermutation>.Save (Output, this.PERM);
+			GenericIO<Bitmap>.Save (Output, this.LENS);
 		}
 
-        public IList<int> GetRawSeq ()
-        {
-            return RankSelectSeqGenericIO.ToIntArray(this, false);
-        }
 
         public class UnraveledSymbolSSP : UnraveledSymbol
         {

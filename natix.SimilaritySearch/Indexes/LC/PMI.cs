@@ -27,86 +27,55 @@ using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
-	public abstract class PMI_Partial : BasicIndex
-	{
-		public IList<LC> LC_LIST;
 
-		public PMI_Partial ()
+	public class PMI : PMI_Partial
+	{
+
+		public PMI () : base()
 		{
 		}
 
-        protected virtual Action BuildOneClosure (IList<LC> output, int i, MetricDB db, int numcenters, Random rand)
+		public PMI(PMI pmi, int lambda = 0) : base()
+		{
+			this.Build (pmi, lambda);
+		}
+
+    	public virtual void Build (PMI pmi, int lambda = 0)
+    	{
+	        this.Build(pmi.LC_LIST, lambda);
+	    }
+
+        public virtual void Build (MetricDB db, int numcenters, int lambda, int seed)
         {
-            var action = new Action(delegate () {
-                var lc = new LC ();
-                lc.Build (db, numcenters, rand);
-                output[i] = lc;
-            });
-            return action;
+            var A = new List<Action> ();
+            this.LC_LIST = new LC[lambda];
+            for (int i = 0; i < lambda; ++i) {
+                A.Add(this.BuildOneClosure(this.LC_LIST, i, db, numcenters, new Random(seed+i)));
+            }
+            var ops = new ParallelOptions();
+            ops.MaxDegreeOfParallelism = -1;
+            Parallel.ForEach(A, ops, (action) => action());
+        }
+       
+        public override SearchCost Cost {
+            get {
+                this.internal_numdists = 0;
+                foreach (var lc in this.LC_LIST) {
+                    var _internal = lc.Cost.Internal;
+                    this.internal_numdists += _internal;
+                }
+                return base.Cost;
+            }
         }
 
-		public virtual void Build (IList<LC> indexlist, int max_instances = 0)
+        public override IResult SearchKNN (object q, int K, IResult res)
         {
-            if (max_instances <= 0) {
-                max_instances = indexlist.Count;
-            }
-			this.LC_LIST = new List<LC>();
-			for (int i = 0; i < max_instances; ++i) {
-                var lc = indexlist[i];
-	            this.LC_LIST.Add(lc);
-			}
-		}
-
-		public override MetricDB DB {
-			get {
-				return this.LC_LIST[0].DB;
-			}
-			set {
-			}
-		}
-
-		public override void Save (BinaryWriter Output)
-		{
-			Output.Write((int) this.LC_LIST.Count);
-			for (int i = 0; i < this.LC_LIST.Count; ++i) {
-				IndexGenericIO.Save(Output, this.LC_LIST[i]);
-			}
-		}
-
-		public override void Load (BinaryReader Input)
-		{
-			var count = Input.ReadInt32 ();
-			this.LC_LIST = new LC [count];
-			for (int i = 0; i < count; ++i) {
-				this.LC_LIST[i] = (LC)IndexGenericIO.Load(Input);
-			}
-			// this.UI_ALG = new FastUIArray8 (this.DB.Count);
-		}
-
-        protected virtual IResult PartialSearchKNN (object q, int K, IResult res, int max, Dictionary<int,double> cache, Action<int> on_intersection)
-        {
-            var queue_dist = new List<double>();
-            var queue_nodes = new List<LC.Node>();
-            for (int i = 0; i < max; ++i) {
-                var lc = this.LC_LIST[i];
-                lc.PartialSearchKNN (q, res, cache, queue_dist, queue_nodes);
-            }
-            byte[] A = new byte[ this.DB.Count ];
-            // int max = this.LC_LIST.Count;
-            // Sorting.Sort<double, LC.Node>(queue_dist, queue_nodes);
-            for (int x = 0; x < queue_dist.Count; ++x) {
-                var node = queue_nodes[x];
-                var dcq = queue_dist[x];
-				if (dcq <= res.CoveringRadius + node.cov) {
-					foreach (var item in node.bucket) {
-						A [item]++;	
-						if (A [item] == max) {
-							on_intersection (item);
-						}
-					}
-				}
-            }
-            return res;           
+            Action<int> on_intersection = delegate(int item) {
+                var dist = this.DB.Dist (q, this.DB [item]);
+                res.Push (item, dist);
+            };
+            var cache = new Dictionary<int, double>(this.LC_LIST[0].NODES.Count);
+            return this.PartialSearchKNN (q, res, this.LC_LIST.Count, cache, on_intersection);
         }
 	}
 }

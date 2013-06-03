@@ -23,7 +23,7 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public class DiffSet64 : RankSelectBase64
+	public class DiffSet64 : Bitmap64
 	{
 		public class Context
 		{
@@ -45,10 +45,10 @@ namespace natix.CompactDS
 		protected long N;
 		protected int M;
 		protected short B = 31;
-		IList<long> Samples;
-		IList<long> Offsets;
+		List<long> Samples;
+		List<long> Offsets;
 		
-		public DiffSet64 ()
+		public DiffSet64 () : base()
 		{
 			this.Samples = new List<long> ();
 			this.Offsets = new List<long> ();
@@ -118,8 +118,8 @@ namespace natix.CompactDS
 					this.Offsets = new SortedListSArray (sa);
 				}
 			} else {*/
-				this.Samples = new long[ num_samples ];
-				this.Offsets = new long[ num_samples ];
+				this.Samples = new List<long>( num_samples );
+				this.Offsets = new List<long>( num_samples );
 				PrimitiveIO<long>.ReadFromFile (Input, num_samples, this.Samples);
 				PrimitiveIO<long>.ReadFromFile (Input, num_samples, this.Offsets);
 //			}
@@ -127,7 +127,7 @@ namespace natix.CompactDS
 			this.Stream.Load (Input);
 		}
 		
-		public override void AssertEquality (IRankSelect64 _other)
+		public override void AssertEquality (Bitmap64 _other)
 		{
 			DiffSet64 other = _other as DiffSet64;
 			if (this.N != other.N) {

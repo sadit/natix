@@ -26,7 +26,7 @@ namespace natix.CompactDS
 	public class ListSDiff64 : ListGenerator<int>, ILoadSave
 	{
 		static IIEncoder32 Coder = new ZeroCoding(new EliasDelta(), 1);
-		public IBitStream Stream;
+		public BitStream32 Stream;
 		IList<long> Offsets;
 		public int BlockSize = 63;
 		int M;

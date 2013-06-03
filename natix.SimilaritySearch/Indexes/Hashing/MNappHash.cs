@@ -122,7 +122,6 @@ namespace natix.SimilaritySearch
 	
 			Console.WriteLine ("L.Count: {0}",L.Count);
 			var r = this.FilterCandidates(q,L);
-			
 			foreach (var pair in r) {
 				double d = this.DB.Dist (q, this.DB [pair.docid]);
 				res.Push (pair.docid, d);

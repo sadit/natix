@@ -47,14 +47,14 @@ namespace natix.CompactDS
 		{
 			//ListIGenericIO.Save (Output, this.PERM);
 			ListIGenericIO.Save (Output, this.BACK);
-			RankSelectGenericIO.Save (Output, this.has_back);
+			GenericIO<Bitmap>.Save (Output, this.has_back);
 		}
 		
 		public override void Load (BinaryReader Input)
 		{
 			//this.PERM = ListIGenericIO.Load (Input);
 			this.BACK = ListIGenericIO.Load (Input);
-			this.has_back = RankSelectGenericIO.Load (Input);
+			this.has_back = GenericIO<Bitmap>.Load (Input);
 		}		
 	}
 }

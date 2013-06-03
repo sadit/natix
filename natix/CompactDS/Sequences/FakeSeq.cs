@@ -20,16 +20,12 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public class FakeSeq : IRankSelectSeq
+	public class FakeSeq : Sequence
 	{
 		public IList<int> SEQ;
 		public int sigma; // upper bound
 		public int RealSigma; // real value
 
-        public IList<int> GetRawSeq ()
-        {
-            return this.SEQ;
-        }
 
 		public FakeSeq ()
 		{
@@ -92,7 +88,7 @@ namespace natix.CompactDS
 			}
 		}
 
-		public IRankSelect Unravel(int sym)
+		public Bitmap Unravel(int sym)
 		{
 			throw new NotSupportedException();
 		}

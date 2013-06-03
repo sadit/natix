@@ -25,17 +25,17 @@ namespace natix.CompactDS
 	/// <summary>
 	/// A wavelet tree (implementation with pointers/references)
 	/// </summary>
-	public class WaveletTree : IRankSelectSeq
+	public class WaveletTree : Sequence
 	{
 		// static INumericManager<T> Num = (INumericManager<T>)NumericManager.Get (typeof(T));
 		IIEncoder32 Coder = null;
 		// BitStream32 CoderStream;
 		WT_Inner Root;
-		IList<WT_Leaf> Alphabet;
+		WT_Leaf[] Alphabet;
 		
-		public int Sigma {
+		public  int Sigma {
 			get {
-				return this.Alphabet.Count;
+				return this.Alphabet.Length;
 			}
 		}
 		
@@ -130,7 +130,7 @@ namespace natix.CompactDS
 		
 		public void Save (BinaryWriter Output)
 		{
-			Output.Write ((int)this.Alphabet.Count);
+			Output.Write ((int)this.Alphabet.Length);
 			IEncoder32GenericIO.Save (Output, this.Coder);
 			// Console.WriteLine ("Output.Position: {0}", Output.BaseStream.Position);
 			this.SaveNode (Output, this.Root);
@@ -142,7 +142,7 @@ namespace natix.CompactDS
 			if (asInner != null) {
 				// isInner?
 				Output.Write (true);
-				RankSelectGenericIO.Save (Output, asInner.B);
+				GenericIO<Bitmap>.Save (Output, asInner.B);
 				// since it uses pointers the extra-space by booleans is a better reflect of the
 				// memory usage than a compact representation of the node
 				if (asInner.Left == null) {
@@ -180,7 +180,7 @@ namespace natix.CompactDS
 			var isInner = Input.ReadBoolean ();
 			if (isInner) {
 				var node = new WT_Inner (parent, false);
-				node.B = RankSelectGenericIO.Load (Input);
+				node.B = GenericIO<Bitmap>.Load (Input);
 				var hasLeft = Input.ReadBoolean ();
 				if (hasLeft) {
 					node.Left = this.LoadNode (Input, node);
@@ -222,15 +222,11 @@ namespace natix.CompactDS
 			}
 		}
 		
-		public int Count {
+		public  int Count {
 			get { return (int)this.Root.B.Count; }
 		}
 
-		public int this[int index] {
-			get { return this.Access (index); }
-		}
-
-		public int Rank (int symbol, int position)
+		public  int Rank (int symbol, int position)
 		{
 			var coderstream = new BitStream32 ();
 			this.Coder.Encode (coderstream, symbol);
@@ -258,7 +254,7 @@ namespace natix.CompactDS
 			return position + 1;
 		}
 
-		public int Select (int symbol, int rank)
+		public  int Select (int symbol, int rank)
 		{
 			var coderstream = new BitStream32 ();
 			this.Coder.Encode (coderstream, symbol);
@@ -281,7 +277,7 @@ namespace natix.CompactDS
 			return rank - 1;
 		}
 
-		public int Access (int position)
+		public  int Access (int position)
 		{
 			var node = this.Root;
 			WT_Inner tmp;
@@ -304,13 +300,8 @@ namespace natix.CompactDS
 				}
 			}
 		}
-		
-        public IList<int> GetRawSeq ()
-        {
-            return RankSelectSeqGenericIO.ToIntArray(this, true);
-        }
 
-		public IRankSelect Unravel (int symbol)
+		public  Bitmap Unravel (int symbol)
 		{
 			return new UnraveledSymbol (this, symbol);
 		}
@@ -328,7 +319,7 @@ namespace natix.CompactDS
 		
 		public class WT_Inner : WT_Node
 		{
-			public IRankSelect B;
+			public Bitmap B;
 			public WT_Node Left;
 			public WT_Node Right;
 			

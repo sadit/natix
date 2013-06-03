@@ -101,11 +101,11 @@ namespace natix.SimilaritySearch
 				var dqp = D[ pivID ];
 				// checking near ball radius
 				var rad = res.CoveringRadius;
-				if (dqp <= piv.last_near + res.CoveringRadius) {
+				if (dqp <= piv.last_near + rad) {
 					for (int j = 0; j < piv.num_near; ++j, ++abs_pos) {
 						var item = this.Items [abs_pos];
 						var abs_diff = Math.Abs(item.dist - dqp);
-						if (A[item.objID] == rank && abs_diff <= res.CoveringRadius) {
+						if (A[item.objID] == rank && abs_diff <= rad) {
 							++A[item.objID];
 							Linf[item.objID] = (float)Math.Max(Linf[item.objID], abs_diff);
 						}
@@ -114,11 +114,11 @@ namespace natix.SimilaritySearch
 					abs_pos += piv.num_near;
 				}
 				// checking external radius
-				if (dqp + res.CoveringRadius >= piv.first_far) {
+				if (dqp + rad >= piv.first_far) {
 					for (int j = 0; j < piv.num_far; ++j, ++abs_pos) {
 						var item = this.Items [abs_pos];
 						var abs_diff = Math.Abs(item.dist - dqp);
-						if (A[item.objID] == rank && abs_diff <= res.CoveringRadius) {
+						if (A[item.objID] == rank && abs_diff <= rad) {
 							++A[item.objID];
 							Linf[item.objID] = (float)Math.Max(Linf[item.objID], abs_diff);
 						}

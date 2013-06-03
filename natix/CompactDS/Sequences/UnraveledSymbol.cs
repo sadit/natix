@@ -23,15 +23,15 @@ namespace natix.CompactDS
 	/// <summary>
 	/// Unraveled symbol 
 	/// </summary>
-	public class UnraveledSymbol : RankSelectBase
+	public class UnraveledSymbol : Bitmap
 	{
-		public IRankSelectSeq seqindex;
+		public Sequence seqindex;
 		public int symbol;
 	
 		/// <summary>
 		/// Asserts the equality.
 		/// </summary>
-		public override void AssertEquality (IRankSelect other)
+		public override void AssertEquality (Bitmap other)
 		{
 			throw new NotSupportedException ();
 		}
@@ -57,7 +57,7 @@ namespace natix.CompactDS
 		/// Creates an unraveled symbol using "_symbol" over "_seqindex"
 		/// </summary>
 
-		public UnraveledSymbol (IRankSelectSeq _seqindex, int _symbol)
+		public UnraveledSymbol (Sequence _seqindex, int _symbol)
 		{
 			this.seqindex = _seqindex;
 			this.symbol = _symbol;

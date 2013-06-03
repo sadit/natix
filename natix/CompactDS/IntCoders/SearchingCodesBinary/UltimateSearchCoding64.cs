@@ -35,7 +35,7 @@ namespace natix.CompactDS
 		{
 		}
 				
-		public void Encode (IBitStream stream, long u)
+		public void Encode (BitStream32 stream, long u)
 		{
 			long min = 0;
 			long check;
@@ -60,7 +60,7 @@ namespace natix.CompactDS
 			}
 		}
 		
-		public long Decode (IBitStream stream, BitStreamCtx ctx)
+		public long Decode (BitStream32 stream, BitStreamCtx ctx)
 		{
 			long min = 0;
 			long check;

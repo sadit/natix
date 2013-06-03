@@ -37,6 +37,11 @@ namespace natix.CompactDS
 			return this.P [i];
 		}
 
+		public int Direct (int i)
+		{
+			return this.P [i];
+		}
+
 		public override void SetItem (int i, int v)
 		{
 			throw new NotSupportedException ();

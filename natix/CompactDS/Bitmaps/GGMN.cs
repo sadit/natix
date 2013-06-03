@@ -23,7 +23,7 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public class GGMN : RankSelectBase
+	public class GGMN : Bitmap
 	{
 		/// <summary>
 		/// The bitmap to index rank, select, access.
@@ -34,11 +34,11 @@ namespace natix.CompactDS
 		/// *** Storage:
 		/// n + o(n)
 		/// </summary>
-		protected IList<uint> BitBlocks;
+		protected uint[] BitBlocks;
 		/// <summary>
 		/// Absolute values
 		/// </summary>
-		protected IList<uint> Abs;
+		protected uint[] Abs;
 		/// <summary>
 		/// How many uint items exists per absolute register.
 		/// </summary>
@@ -48,17 +48,17 @@ namespace natix.CompactDS
 		/// </summary>
 		int N;
 		
-		public IList<uint> GetBitBlocks ()
+		public uint[] GetBitBlocks ()
 		{
 			return this.BitBlocks;
 		}
 
-		public void SetBitBlocks (IList<uint> bit_blocks)
+		public void SetBitBlocks (uint[] bit_blocks)
 		{
 			this.BitBlocks = bit_blocks;
 		}
 		
-		public override void AssertEquality (IRankSelect obj)
+		public override void AssertEquality (Bitmap obj)
 		{
 			var other = obj as GGMN;
 			if (this.N != other.N) {
@@ -75,10 +75,10 @@ namespace natix.CompactDS
 		{
 			bw.Write ((int)this.N);
 			bw.Write ((short)this.B);
-			bw.Write ((int)this.Abs.Count);
+			bw.Write ((int)this.Abs.Length);
 			PrimitiveIO<uint>.WriteVector (bw, this.Abs);
 			if (save_bitmap) {
-				bw.Write ((int)this.BitBlocks.Count);
+				bw.Write ((int)this.BitBlocks.Length);
 				PrimitiveIO<uint>.WriteVector (bw, this.BitBlocks);
 			}
 		}
@@ -110,54 +110,33 @@ namespace natix.CompactDS
 		
 		public override int Count {
 			get {
-				return (int)this.N;
+				return this.N;
 			}
 		}
 		
-		public override bool this[int i] {
-			get {
-				return BitAccess.GetBit (this.BitBlocks, i);
-			}
+		public override bool Access(int i)
+		{
+			return BitAccess.GetBit (this.BitBlocks, i);
 		}
 		
-		public GGMN ()
+		public GGMN () : base()
 		{
 		}
 		
-		public void Build (IBitStream bitmap, short B)
+		public void Build (BitStream32 bitmap, short B)
 		{
-			this.BuildBackend (bitmap.GetIList32(), (int)bitmap.CountBits, B);
+			this.BuildBackend (bitmap.Buffer.ToArray(), (int)bitmap.CountBits, B);
 		}
 		
-		public void Build (IList<int> orderedList, short B)
-		{
-			int n = 0;
-			if (orderedList.Count > 0) {
-				n = orderedList[orderedList.Count - 1] + 1;
-			}
-			this.Build (orderedList, n, B);
-		}
-		
-		public void Build (IList<int> orderedList, int N, short B)
-		{
-			BitStream32 b = new BitStream32 ();
-			PlainSortedList s = new PlainSortedList ();
-			s.Build (orderedList, (int)N);
-			for (int i = 0; i < N; i++) {
-				b.Write (s[i]);
-			}
-			this.Build (b, B);
-		}
-		
-		public void BuildBackend (IList<uint> bitblocks, int N, short BlockSize)
+		public void BuildBackend (uint[] bitblocks, int N, short BlockSize)
 		{
 			this.BitBlocks = bitblocks;
 			this.B = BlockSize;
 			this.N = N;
-			this.Abs = new uint[this.BitBlocks.Count / this.B];
+			this.Abs = new uint[this.BitBlocks.Length / this.B];
 			uint abs = 0;
-			for (int index = 0, absindex = 0; absindex < this.Abs.Count; absindex++) {
-				int count = Math.Min ((int)this.B, (bitblocks.Count - index));
+			for (int index = 0, absindex = 0; absindex < this.Abs.Length; absindex++) {
+				int count = Math.Min ((int)this.B, (bitblocks.Length - index));
 				int rank = BitAccess.Rank1(this.BitBlocks, index, count, -1);
 				abs += (uint)rank;
 				this.Abs[absindex] = abs;
@@ -202,8 +181,8 @@ namespace natix.CompactDS
 				return -1;
 			}
 			int absindex = -1;
-			if (this.Abs.Count > 0) {
-				absindex = GenericSearch.FindFirst<uint> ((uint)rank, this.Abs);
+			if (this.Abs.Length > 0) {
+				absindex = Search.FindFirst<uint> ((uint)rank, this.Abs);
 			}
 			if (absindex >= 0 && this.Abs[absindex] == rank) {
 				absindex--;
@@ -216,7 +195,7 @@ namespace natix.CompactDS
 				//return ((startindex)<<5) +
 				//	BitAccess.Select1 (this.BitBlocks, startindex, this.AbsBlockSize, rank - (int)this.Abs[absindex]);
 				int rel = 0;
-				if (this.BitBlocks.Count != startindex) {
+				if (this.BitBlocks.Length != startindex) {
 					rel = BitAccess.Select1 (this.BitBlocks, startindex, this.B, rank - (int)this.Abs[absindex]);
 				}
 				return (startindex << 5) + rel;

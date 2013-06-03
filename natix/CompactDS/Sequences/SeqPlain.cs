@@ -20,10 +20,10 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public class SeqPlain : IRankSelectSeq
+	public class SeqPlain : Sequence
 	{
 		public IList<int> SEQ;
-		public IRankSelect X;
+		public Bitmap X;
 		int sigma;
 		short B;
 
@@ -82,7 +82,7 @@ namespace natix.CompactDS
 		public void Load(BinaryReader Input)
 		{
 			this.SEQ = ListIGenericIO.Load(Input);
-			this.X = RankSelectGenericIO.Load(Input);
+			this.X = GenericIO<Bitmap>.Load(Input);
 			this.sigma = Input.ReadInt32 ();
 			this.B = Input.ReadInt16 ();
 		}
@@ -90,7 +90,7 @@ namespace natix.CompactDS
 		public void Save(BinaryWriter Output)
 		{
 			ListIGenericIO.Save(Output, this.SEQ);
-			RankSelectGenericIO.Save(Output, this.X);
+			GenericIO<Bitmap>.Save(Output, this.X);
 			Output.Write ((int)this.sigma);
 			Output.Write ((short)this.B);
 		}
@@ -107,7 +107,7 @@ namespace natix.CompactDS
 			}
 		}
 
-		public virtual IRankSelect Unravel(int sym)
+		public virtual Bitmap Unravel(int sym)
 		{
             return new UnraveledSymbol(this, sym);
 		}
@@ -231,10 +231,6 @@ namespace natix.CompactDS
 //			}
 		}
 
-        public IList<int> GetRawSeq ()
-        {
-            return RankSelectSeqGenericIO.ToIntArray(this, true);
-        }
 
 	}
 }

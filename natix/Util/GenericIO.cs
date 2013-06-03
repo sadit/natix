@@ -1,5 +1,5 @@
 //
-//   Copyright 2012 Eric Sadit Tellez <sadit@dep.fie.umich.mx>
+//   Copyright 2013 Eric Sadit Tellez <sadit@dep.fie.umich.mx>
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -25,50 +25,39 @@ namespace natix
 	/// <summary>
 	/// Simple I/O output for objects implementing the ILoadSave interface
 	/// </summary>
-	public class CompositeIO<T> where T: ILoadSave, new()
-    {		
-		/// <summary>
-		/// Reads "numitems" vectors from rfile, store items in "output" (array or list)
-		/// </summary>
-		public static IList<T> LoadVector (BinaryReader Input, int numitems, IList<T> output = null)
+	public class GenericIO<T> where T: ILoadSave
+    {
+
+		public static T Load(string path)
 		{
-			if (output == null) {
-				output = new T[numitems];
-			}            
-            if (output.Count > 0) {
-                for (int i = 0; i < output.Count; i++) {
-                    //var u = default(T);
-                    var u = new T();
-                    u.Load(Input);
-                    output [i] = u;
-                }
-                numitems -= output.Count;
-            }
-            for (int i = 0; i < numitems; i++) {
-                //var u = default(T);
-                var u = new T();
-                u.Load(Input);
-                output.Add (u);
-            }
-			return output;
+			using (var Input = new BinaryReader(File.OpenRead(path))) {
+				return Load (Input);
+			}
 		}
 
-		/// <summary>
-		/// Write a single vector
-		/// </summary>
-		public static void SaveVector (BinaryWriter Output, IEnumerable<T> V)
+		public static void Save(string path, T obj)
 		{
-			foreach (T u in V) {
-                u.Save(Output);
+			using (var Output = new BinaryWriter(File.Create(path))) {
+				Save (Output, obj);
 			}
 		}
 
         public static T Load(BinaryReader Input)
         {
-            var new_item = new T();
-            new_item.Load(Input);
-            return new_item;
-        }
+			T new_object;
+			var typename = Input.ReadString ();
+			var type = Type.GetType (typename);
+			new_object = (T)Activator.CreateInstance (type);
+			new_object.Load (Input);
+			return new_object;
+		}
+
+		public static void Save (BinaryWriter Output, T obj)
+		{
+			Output.Write(obj.GetType().ToString());
+			obj.Save(Output);
+		}
+
 	}
 }
 

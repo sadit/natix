@@ -30,7 +30,7 @@ namespace natix.Sets
 			this.ialg = alg;
 		}
 		
-		public IList<int> ComputeUI (IList<IList<IRankSelect>> sets)
+		public IList<int> ComputeUI (IList<IList<Bitmap>> sets)
 		{
 			var L = new IList<int>[sets.Count];
 			int i = 0;
@@ -46,7 +46,7 @@ namespace natix.Sets
 			return new List<int> (u);
 		}
 		
-		IList<int> Union (IList<IRankSelect> disjoint_sets)
+		IList<int> Union (IList<Bitmap> disjoint_sets)
 		{
 			HashSet<int > S = new HashSet<int> ();
 			foreach (var rs in disjoint_sets) {

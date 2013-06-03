@@ -57,10 +57,10 @@ namespace natix.SimilaritySearch
 
 			this.Name = Input.ReadString ();
 			this.symlen = Input.ReadInt32 ();
-			int len = Input.ReadInt32 ();
-			this.pool.Capacity = len;
-			for (int i = 0; i < len; ++i) {
-				len = Input.ReadInt32 ();
+			int Len = Input.ReadInt32 ();
+			this.pool.Capacity = Len;
+			for (int i = 0; i < Len; ++i) {
+				var len = Input.ReadInt32 ();
 				var list = new byte[len];
 				PrimitiveIO<byte>.ReadFromFile(Input, len, list);
 				this.pool.Add (list);

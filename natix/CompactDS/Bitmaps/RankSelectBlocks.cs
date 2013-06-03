@@ -23,7 +23,7 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public class RankSelectBlocks : RankSelectBase
+	public class RankSelectBlocks : Bitmap
 	{
 		/// <summary>
 		/// The bitmap to index rank, select, access.
@@ -34,7 +34,7 @@ namespace natix.CompactDS
 		/// *** Storage:
 		/// n + o(n)
 		/// </summary>
-		IList<uint> BitBlocks;
+		uint[] BitBlocks;
 		int N;
 		/// <summary>
 		/// Absolute values
@@ -55,7 +55,7 @@ namespace natix.CompactDS
 		int bits_per_super_block;
 		int bits_per_block;
 		
-		public override void AssertEquality (IRankSelect obj)
+		public override void AssertEquality (Bitmap obj)
 		{
 			var other = obj as RankSelectBlocks;
 			if (this.SuperBlockSize != other.SuperBlockSize) {
@@ -82,8 +82,9 @@ namespace natix.CompactDS
 			get { return this.N; }
 		}
 
-		public override bool this[int i] {
-			get { return BitAccess.GetBit (this.BitBlocks, i); }
+		public override bool Access(int i)
+		{
+			return BitAccess.GetBit (this.BitBlocks, i);
 		}
 
 		public override void Save (BinaryWriter bw)
@@ -94,7 +95,7 @@ namespace natix.CompactDS
 			PrimitiveIO<int>.WriteVector (bw, this.SuperBlocks);
 			bw.Write (this.Blocks.Length);
 			PrimitiveIO<short>.WriteVector (bw, this.Blocks);
-			bw.Write(this.BitBlocks.Count);
+			bw.Write(this.BitBlocks.Length);
 			PrimitiveIO<uint>.WriteVector (bw, this.BitBlocks);
 			bw.Write (this.N);
 		}
@@ -116,7 +117,7 @@ namespace natix.CompactDS
 			this.SetState (bitblocks, numbits, sbsize, bsize, sblocks, blocks);
 		}		
 
-		void SetState (IList<uint> bitblocks, int numbits, short superBlockSize, short blockSize,
+		void SetState (uint[] bitblocks, int numbits, short superBlockSize, short blockSize,
 			int[] superBlocks, short[] blocks)
 		{
 			this.BitBlocks = bitblocks;
@@ -129,28 +130,28 @@ namespace natix.CompactDS
 			this.SuperBlocks = superBlocks;
 		}
 		
-		public RankSelectBlocks ()
+		public RankSelectBlocks () : base()
 		{
 		}
 		
 		public RankSelectBlocks (BitStream32 bitmap, short superBlockSize, short blockSize)
 		{
-			this.SetState (bitmap.GetIList32(), (int)bitmap.CountBits, superBlockSize, blockSize, null, null);
+			this.SetState (bitmap.Buffer.ToArray(), (int)bitmap.CountBits, superBlockSize, blockSize, null, null);
 			// Checking ranges of our data types
-			int bs = this.BitBlocks.Count;
+			int bs = this.BitBlocks.Length;
 			this.SuperBlocks = new int[bs / (this.SuperBlockSize * this.BlockSize)];
 			this.Blocks = new short[bs / this.BlockSize - this.SuperBlocks.Length];
 			int abs = 0;
 			short rel = 0;
 			//Console.WriteLine ("rel-rank: {0}, abs-rank: {1}, bitmap-ints: {2}", this.Blocks.Length, this.SuperBlocks.Length, this.Bitmap.CountUInt32);
-			var Lbuffer = bitmap.GetIList32 ();
+			var Lbuffer = bitmap.Buffer;
 			for (int relindex = 0, absindex = 0, index = 0, relcounter = this.SuperBlockSize - 1;
 				relindex <= this.Blocks.Length;
 				index += this.BlockSize,relcounter--) {
 				int count = Math.Min (this.BlockSize, bitmap.Count32 - index);
 				// Console.WriteLine ("index: {0}, count: {1}, block-size: {2}, super-block-size: {3}, bitmap-uintsize: {4}",
 				//	index, count, this.BlockSize, this.SuperBlockSize, bitmap.CountUInt32);
-				rel += (short)this.SeqRank1 (Lbuffer, index, count, -1);
+				rel += (short)BitAccess.Rank1 (Lbuffer, index, count, -1);
 				// Console.WriteLine ("absindex: {0}, abs: {1}, relcounter", absindex, abs, relcounter);
 				if (relcounter == 0) {
 					abs += rel;
@@ -183,16 +184,16 @@ namespace natix.CompactDS
 					i, this.Blocks[i], (i + 1) * 32 * this.BlockSize);
 			}*/
 		}
-		
-		protected virtual int SeqRank1 (IList<uint> B, int index, int count, int bitpos)
-		{
-			return BitAccess.Rank1 (B, index, count, bitpos);
-		}
-
-		protected virtual int SeqSelect1 (IList<uint> B, int index, int count, int rank)
-		{
-			return BitAccess.Select1 (B, index, count, rank);
-		}
+//		
+//		protected virtual int SeqRank1 (List<uint> B, int index, int count, int bitpos)
+//		{
+//			return BitAccess.Rank1 (B, index, count, bitpos);
+//		}
+//
+//		protected virtual int SeqSelect1 (List<uint> B, int index, int count, int rank)
+//		{
+//			return BitAccess.Select1 (B, index, count, rank);
+//		}
 
 		public override int Rank1 (int bit_index)
 		{
@@ -214,13 +215,12 @@ namespace natix.CompactDS
 			if (rel_index > abs_index) {
 				acc_rank += this.Blocks[rel_index - sba_index - 1];
 			}
-			var uuu = this.SeqRank1(this.BitBlocks, start_index, container_index - start_index,
-				(bit_index & 31));
+			var uuu = BitAccess.Rank1(this.BitBlocks, start_index, container_index - start_index, (bit_index & 31));
 			acc_rank += uuu;
 			return acc_rank;
 		}
 		
-		int SelectBackend (int I, IList<int> AbsRank, IList<short> RelRank, IList<uint> bitmap)
+		int SelectBackend (int I, int[] AbsRank, short[] RelRank, uint[] bitmap)
 		{
 			if (I < 1) {
 				return -1;
@@ -231,7 +231,7 @@ namespace natix.CompactDS
 			// 012345678901234567890123456789012345
 			// X         X         X         X     
 			// TODO: check selects for out of bounds
-			int abs_pos = GenericSearch.FindFirst<int> (I, AbsRank, 0, AbsRank.Count);
+			int abs_pos = GenericSearch.FindFirst<int> (I, AbsRank, 0, AbsRank.Length);
 			int pos = 0;
 			int min = 0;
 			if (abs_pos >= 0 && I == AbsRank[abs_pos]) {
@@ -247,7 +247,7 @@ namespace natix.CompactDS
 			}
 			int diff = 0;
 			{
-				int max = Math.Min (min + this.SuperBlockSize - 1, RelRank.Count);
+				int max = Math.Min (min + this.SuperBlockSize - 1, RelRank.Length);
 				int rel_pos = GenericSearch.FindFirst<short> ((short)I, RelRank, min, max);
 				if (rel_pos >= 0 && I == RelRank[rel_pos]) {
 					rel_pos--;
@@ -263,9 +263,9 @@ namespace natix.CompactDS
 			pos *= this.BlockSize;
 			if (I > 0) {
 				if (pos == 0) {
-					return this.SeqSelect1 (bitmap, 0, this.BlockSize, I);
+					return BitAccess.Select1 (bitmap, 0, this.BlockSize, I);
 				} else {
-					return (pos << 5) + this.SeqSelect1 (bitmap, pos, this.BlockSize, I);
+					return (pos << 5) + BitAccess.Select1 (bitmap, pos, this.BlockSize, I);
 				}
 			} else {
 				return pos << 5;
@@ -274,7 +274,7 @@ namespace natix.CompactDS
 
 		public override int Select1 (int I)
 		{
-			return this.SelectBackend (I, this.SuperBlocks, this.Blocks, this.BitBlocks);
+			return this.SelectBackend ((int)I, this.SuperBlocks, this.Blocks, this.BitBlocks);
 		}
 
 		int _Rank0_Abs (int i)
@@ -301,18 +301,18 @@ namespace natix.CompactDS
 			return (short)( a * this.bits_per_block - this.Blocks[i]);
 		}
 		
-		ListGen<int> AbsRankComp;
-		ListGen<short> RelRankComp;
-		ListGen<uint> BitmapComp;
-		
-		public override int Select0 (int I)
-		{
-			if (this.AbsRankComp == null) {
-				this.AbsRankComp = new ListGen<int> ((int i) => _Rank0_Abs (i), this.SuperBlocks.Length);
-				this.RelRankComp = new ListGen<short> ((int i) => _Rank0_Rel (i), this.Blocks.Length);
-				this.BitmapComp = new ListGen<uint> ((int i) => ~this.BitBlocks[i], this.BitBlocks.Count);
-			}
-			return this.SelectBackend (I, this.AbsRankComp, this.RelRankComp, this.BitmapComp);
-		}
+//		ListGen<int> AbsRankComp;
+//		ListGen<short> RelRankComp;
+//		ListGen<uint> BitmapComp;
+//		
+//		public override int Select0 (int I)
+//		{
+//			if (this.AbsRankComp == null) {
+//				this.AbsRankComp = new ListGen<int> ((int i) => _Rank0_Abs (i), this.SuperBlocks.Length);
+//				this.RelRankComp = new ListGen<short> ((int i) => _Rank0_Rel (i), this.Blocks.Length);
+//				this.BitmapComp = new ListGen<uint> ((int i) => ~this.BitBlocks[i], this.BitBlocks.Length);
+//			}
+//			return this.SelectBackend (I, this.AbsRankComp, this.RelRankComp, this.BitmapComp);
+//		}
 	}
 }

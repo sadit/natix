@@ -23,13 +23,13 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public class RRR : RankSelectBase
+	public class RRR : Bitmap
 	{
 		// we use the GN bitmap strategy
-		protected IList<int> Klasses;
-		IList<int> AbsRank;
+		protected ListIFS4 Klasses;
+		int[] AbsRank;
 		BitStream32 Offsets;
-		IList<int> AbsOffset;
+		int[] AbsOffset;
 		protected short BlockSize;
 		int N;
 		// we implement BinCoeffOffTable in multiple lists for simplicity,
@@ -57,7 +57,7 @@ namespace natix.CompactDS
 			return OffTable[klass].BinarySearch (b);
 		}
 		
-		static RRR ()
+		static RRR () 
 		{
 			var BinCoeff = new short[16]
 			{ 1, 15, 105, 455, 1365, 3003, 5005, 6435,
@@ -87,17 +87,17 @@ namespace natix.CompactDS
 		
 		virtual protected void InitClasses ()
 		{
-			this.Klasses = new ListIFS (4);
+			this.Klasses = new ListIFS4();
 		}
 		
 		virtual protected void SaveClasses (BinaryWriter Output)
 		{
-			(this.Klasses as ListIFS).Save (Output);
+			(this.Klasses as ListIFS4).Save (Output);
 		}
 		
 		virtual protected void LoadClasses (BinaryReader Input)
 		{
-			var c = new ListIFS ();
+			var c = new ListIFS4 ();
 			c.Load (Input);
 			this.Klasses = c;
 		}
@@ -112,25 +112,8 @@ namespace natix.CompactDS
 			var klass = this.Klasses[i];
 			return klass;
 		}
-		
-		public void Build (IList<int> orderedList, short blockSize)
-		{
-			var L = new PlainSortedList ();
-			L.Build (orderedList);
-			this.Build (L, blockSize);
-		}
-		
-		public void Build (IRankSelect RS, short blockSize)
-		{
-			// we need to store n bits, this is not the best solution!!
-			BitStream32 B = new BitStream32 ();
-			for (int i = 0, count = RS.Count; i < count; i++) {
-				B.Write (RS.Access(i));
-			}
-			this.Build (B, blockSize);
-		}
 
-		public void Build (IBitStream B, short blockSize)
+		public void Build (BitStream32 B, short blockSize)
 		{
 			this.N = (int)B.CountBits;
 			this.BlockSize = (short)blockSize;
@@ -155,7 +138,7 @@ namespace natix.CompactDS
 				}, D+1);			
 			}
 			this.AbsRank = new int[(int)Math.Ceiling(((float)L.Count) / this.BlockSize)];
-			this.AbsOffset = new int[ this.AbsRank.Count ];
+			this.AbsOffset = new int[ this.AbsRank.Length ];
 			int I = 0;
 			int acc = 0;
 			for (int i = 0; i < L.Count; i++) {
@@ -182,7 +165,7 @@ namespace natix.CompactDS
 			Output.Write ((short)this.BlockSize);
 			this.SaveClasses (Output);
 			this.Offsets.Save (Output);
-			Output.Write ((int)this.AbsOffset.Count);
+			Output.Write ((int)this.AbsOffset.Length);
 			PrimitiveIO<int>.WriteVector (Output, this.AbsRank);
 			PrimitiveIO<int>.WriteVector (Output, this.AbsOffset);
 		}
@@ -201,7 +184,7 @@ namespace natix.CompactDS
 			PrimitiveIO<int>.ReadFromFile (Input, len, this.AbsOffset);
 		}
 
-		public override void AssertEquality (IRankSelect _other)
+		public override void AssertEquality (Bitmap _other)
 		{
 			RRR other = _other as RRR;
 			if (other == null) {
@@ -266,12 +249,11 @@ namespace natix.CompactDS
 			return this.Rank1AccessBackend (pos, out last_bit);
 		}
 		
-		public override bool this[int pos] {
-			get {
-				bool last_bit;
-				this.Rank1AccessBackend (pos, out last_bit);
-				return last_bit;
-			}
+		public override bool Access(int pos)
+		{
+			bool last_bit;
+			this.Rank1AccessBackend (pos, out last_bit);
+			return last_bit;
 		}
 		
 		public override int Select1 (int rank)

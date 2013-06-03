@@ -29,7 +29,7 @@ namespace natix.CompactDS
 	public class ListIFS : ListGenerator<int>, ILoadSave
 	{
 		public BinaryCoding Coder;
-		public IBitStream Stream;
+		public BitStream32 Stream;
 		// int Counter;
 		
 		public static int GetNumBits (int maxvalue)
@@ -51,7 +51,7 @@ namespace natix.CompactDS
 			this.Build (numbits, stream);
 		}
 
-		public ListIFS (int numbits, IBitStream stream) : base()
+		public ListIFS (int numbits, BitStream32 stream) : base()
 		{
 			this.Build (numbits, stream);
 		}
@@ -62,7 +62,7 @@ namespace natix.CompactDS
 		}
 		
 	
-		public void Build (int numbits, IBitStream stream)
+		public void Build (int numbits, BitStream32 stream)
 		{
 			this.Coder = new BinaryCoding (numbits);
 			this.Stream = stream;

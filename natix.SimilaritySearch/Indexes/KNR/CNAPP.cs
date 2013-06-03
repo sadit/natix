@@ -27,7 +27,7 @@ namespace natix.SimilaritySearch
 		public int MINOCC;
 		// public int MAXCAND;
 		public Index R;
-		public IRankSelect[] INVINDEX;
+		public Bitmap[] INVINDEX;
 		public ITThresholdAlgorithm TThreshold = new LargeStepTThreshold(new DoublingSearch<int>());
 
 		public override void Save (BinaryWriter Output)
@@ -38,7 +38,7 @@ namespace natix.SimilaritySearch
 			//Output.Write(this.MAXCAND);
 			IndexGenericIO.Save(Output, this.R);
 			for (int i = 0, sigma = this.R.DB.Count; i < sigma; ++i) {
-				RankSelectGenericIO.Save(Output, this.INVINDEX[i]);
+				GenericIO<Bitmap>.Save(Output, this.INVINDEX[i]);
 			}
 		}
 
@@ -50,9 +50,9 @@ namespace natix.SimilaritySearch
 			//this.MAXCAND = Input.ReadInt32 ();
 			this.R = IndexGenericIO.Load(Input);
 			int sigma = this.R.DB.Count;
-			this.INVINDEX = new IRankSelect[sigma];
+			this.INVINDEX = new Bitmap[sigma];
 			for (int i = 0; i < sigma; ++i) {
-				this.INVINDEX[i] = RankSelectGenericIO.Load(Input);
+				this.INVINDEX[i] = GenericIO<Bitmap>.Load(Input);
 			}
 		}
 
@@ -71,7 +71,7 @@ namespace natix.SimilaritySearch
 			if (bitmap_builder == null) {
 				bitmap_builder = BitmapBuilders.GetDiffSetRL2(63, new EliasDelta());
 			}
-			this.INVINDEX = new IRankSelect[sigma];
+			this.INVINDEX = new Bitmap[sigma];
 			var list = new List<int>();
 			for (int i = 0; i < sigma; ++i) {
 				list.Clear();

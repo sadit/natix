@@ -27,9 +27,9 @@ namespace natix.CompactDS
 	/// <summary>
 	/// An InvIndexSeq implemented with a single (sparse, SArray64) eXtra Large bitmap
 	/// </summary>
-	public class SeqXLB : IRankSelectSeq
+	public class SeqXLB : Sequence
 	{
-		IRankSelect64 xl_bitmap;
+		Bitmap64 xl_bitmap;
 		int sigma;
 		IPermutation perm;
 			
@@ -93,14 +93,14 @@ namespace natix.CompactDS
 		public void Save (BinaryWriter Output)
 		{
 			Output.Write ((int)this.sigma);
-			RankSelect64GenericIO.Save (Output, this.xl_bitmap);
+			GenericIO<Bitmap64>.Save (Output, this.xl_bitmap);
 			this.perm.Save (Output);
 		}
 		
 		public void Load (BinaryReader Input)
 		{
 			this.sigma = Input.ReadInt32 ();
-			this.xl_bitmap = RankSelect64GenericIO.Load (Input);
+			this.xl_bitmap = GenericIO<Bitmap64>.Load (Input);
 			var p = new ListGen_MRRR ();
 			p.Load (Input);
 			p.SetPERM (this.GetNotIdxPERM ());
@@ -206,16 +206,12 @@ namespace natix.CompactDS
 			return (int)p;
 		}
 		
-		public IRankSelect Unravel (int symbol)
+		public Bitmap Unravel (int symbol)
 		{
 			return new UnraveledSymbolXLB(this, symbol);
 			// return new UnraveledSymbol (this, symbol);
 		}
 
-        public IList<int> GetRawSeq ()
-        {
-            return RankSelectSeqGenericIO.ToIntArray(this, false);
-        }
 
 	}
 }

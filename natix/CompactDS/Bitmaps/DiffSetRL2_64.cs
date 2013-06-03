@@ -26,7 +26,7 @@ namespace natix.CompactDS
 	/// <summary>
 	/// A DiffSetRL2 supporting items on [0,2^63]
 	/// </summary>
-	public class DiffSetRL2_64 : RankSelectBase64
+	public class DiffSetRL2_64 : Bitmap64
 	{
 		// static IIntegerEncoder Coder = new EliasDelta ();
 		static int AccStart = -1;
@@ -36,11 +36,11 @@ namespace natix.CompactDS
 		protected long N;
 		protected int M;
 		protected short B = 31;
-		IList<long> Samples;
-		IList<long> Offsets;
+		List<long> Samples;
+		List<long> Offsets;
 		// int run_len = 0;
 		
-		public DiffSetRL2_64 ()
+		public DiffSetRL2_64 () : base()
 		{
 			this.Samples = new List<long> ();
 			this.Offsets = new List<long> ();
@@ -113,10 +113,10 @@ namespace natix.CompactDS
 					this.Offsets = new SortedListSArray (sa);
 				}
 			} else {*/
-				this.Samples = new long[ num_samples ];
-				this.Offsets = new long[ num_samples ];
-				PrimitiveIO<long>.ReadFromFile (Input, num_samples, this.Samples);
-				PrimitiveIO<long>.ReadFromFile (Input, num_samples, this.Offsets);
+			this.Samples = new List<long>( num_samples );
+			this.Offsets = new List<long>( num_samples );
+			PrimitiveIO<long>.ReadFromFile (Input, num_samples, this.Samples);
+			PrimitiveIO<long>.ReadFromFile (Input, num_samples, this.Offsets);
 			//}
 			// POS = R.BaseStream.Position - POS;
 			// Console.WriteLine("=======*******=======>> POS: {0}", POS);
@@ -127,7 +127,7 @@ namespace natix.CompactDS
 
 		}
 		
-		public override void AssertEquality (IRankSelect64 _other)
+		public override void AssertEquality (Bitmap64 _other)
 		{
 			DiffSetRL2_64 other = _other as DiffSetRL2_64;
 			if (this.N != other.N) {

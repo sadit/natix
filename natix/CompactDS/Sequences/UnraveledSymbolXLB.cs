@@ -23,7 +23,7 @@ namespace natix.CompactDS
 	/// <summary>
 	/// Unraveled symbol 
 	/// </summary>
-	public class UnraveledSymbolXLB : RankSelectBase
+	public class UnraveledSymbolXLB : Bitmap
 	{
 		SeqXLB seqindex;
 		public int symbol;
@@ -33,7 +33,7 @@ namespace natix.CompactDS
 		/// <summary>
 		/// Asserts the equality.
 		/// </summary>
-		public override void AssertEquality (IRankSelect other)
+		public override void AssertEquality (Bitmap other)
 		{
 			throw new NotSupportedException ();
 		}

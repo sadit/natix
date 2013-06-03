@@ -26,13 +26,13 @@ namespace natix.CompactDS
 	/// <summary>
 	/// sarray. ALENEX 2007. Okanohara & Sadakane. Practical Rank & Select.
 	/// </summary>
-	public class SArray : RankSelectBase
+	public class SArray : Bitmap
 	{
 		int N;
-		public IRankSelect H;
+		public Bitmap H;
 		public ListIFS L;
 
-		public override void AssertEquality (IRankSelect obj)
+		public override void AssertEquality (Bitmap obj)
 		{
 			var other = obj as SArray;
 			if (this.N != other.N) {
@@ -62,7 +62,7 @@ namespace natix.CompactDS
 			}
 		}
 				
-		public SArray ()
+		public SArray () : base()
 		{
 		}
 		
@@ -132,7 +132,7 @@ namespace natix.CompactDS
 		}
 
 
-		public void Build (IBitStream bitmap, BitmapFromBitStream H_builder = null)
+		public void Build (BitStream32 bitmap, BitmapFromBitStream H_builder = null)
 		{
 			IList<int> L = new List<int> ();
 			for (int i = 0; i < bitmap.CountBits; i++) {
@@ -143,25 +143,25 @@ namespace natix.CompactDS
 			this.Build (L, (int)bitmap.CountBits, H_builder);
 		}
 		
-		public override void Save (BinaryWriter bw)
+		public override void Save (BinaryWriter Output)
 		{
-			bw.Write ((int)this.N);
-			RankSelectGenericIO.Save(bw, this.H);
-			this.L.Save (bw);
+			Output.Write ((int)this.N);
+			GenericIO<Bitmap>.Save (Output, this.H);
+			this.L.Save (Output);
 		}
 		
-		public override void Load (BinaryReader br)
+		public override void Load (BinaryReader Input)
 		{
-			this.N = br.ReadInt32 ();
-			this.H = RankSelectGenericIO.Load(br);
+			this.N = Input.ReadInt32 ();
+			this.H = GenericIO<Bitmap>.Load (Input);
 			var list = new ListIFS ();
-			list.Load (br);
+			list.Load (Input);
 			this.L = list;
 		}
 		
 		public override bool Access (int i)
 		{
-			int rank = this.Rank1 (i);
+			var rank = this.Rank1 (i);
 			return i == this.Select1 (rank);
 		}
 		
@@ -207,7 +207,7 @@ namespace natix.CompactDS
 			if (rank <= 0) {
 				return -1;
 			}
-			int pos_rank = this.H.Select1 (rank);
+			int pos_rank = (int)this.H.Select1 (rank);
 			// int high_weight = this.H.Rank0 (pos_rank) - 1;
 			int high_weight = pos_rank - rank;
 			return (high_weight << this.GetNumLowerBits ()) | ((int)this.L [rank - 1]);
@@ -219,7 +219,7 @@ namespace natix.CompactDS
 				return -1;
 			}
 			if (pos_rank == int.MinValue) {
-				pos_rank = this.H.Select1 (rank);
+				pos_rank = (int)this.H.Select1 (rank);
 			}
 			// int high_weight = this.H.Rank0 (pos_rank) - 1;
 			int high_weight = pos_rank - rank;
@@ -229,8 +229,8 @@ namespace natix.CompactDS
 		public IList<int> GetAsIList ()
 		{
 			return new ListGen<int> (delegate(int i) {
-				return this.Select1 (i + 1);
-			}, this.Count1);
+				return (int)this.Select1 (i + 1);
+			}, (int)this.Count1);
 		}
 
 	}

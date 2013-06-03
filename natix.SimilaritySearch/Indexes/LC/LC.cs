@@ -23,7 +23,7 @@ namespace natix.SimilaritySearch
 {
     public class LC : BasicIndex
     {
-		class Node : ILoadSave
+		public class Node : ILoadSave
 		{
 			public int refID;
 			public double cov;
@@ -66,7 +66,7 @@ namespace natix.SimilaritySearch
 
 		}
 
-		List<Node> node_list;
+		public List<Node> NODES;
 
 		public LC () : base()
         {
@@ -76,15 +76,15 @@ namespace natix.SimilaritySearch
 		{
 			base.Load (Input);
 			var len = Input.ReadInt32 ();
-			this.node_list = new List<Node> (len);
-			CompositeIO<Node>.LoadVector (Input, len, this.node_list);
+			this.NODES = new List<Node> (len);
+			CompositeIO<Node>.LoadVector (Input, len, this.NODES);
 		}
 
 		public override void Save (BinaryWriter Output)
 		{
 			base.Save (Output);
-			Output.Write (this.node_list.Count);
-			CompositeIO<Node>.SaveVector (Output, this.node_list);
+			Output.Write (this.NODES.Count);
+			CompositeIO<Node>.SaveVector (Output, this.NODES);
 		}
 	
 		/// <summary>
@@ -98,10 +98,10 @@ namespace natix.SimilaritySearch
 			// randomized has very good performance, even compared with more "intelligent" strategies
 			var dseq = new DynamicSequentialOrdered ();
 			dseq.Build (db, rand);
-			this.node_list = new List<Node> (num_centers);
+			this.NODES = new List<Node> (num_centers);
 			var L = new List<ItemPair> (n);
 			while (dseq.Count > 0) {
-				if (this.node_list.Count % 100 == 0) {
+				if (this.NODES.Count % 100 == 0) {
 					Console.WriteLine ("XXX {0}, num_centers: {1}, bsize: {5}, remain {2}/{3}, db: {4}, date-time: {6}", this, num_centers, dseq.Count, db.Count, db.Name, bsize, DateTime.Now);
 				}
 				var refID = dseq.GetAnyItem ();
@@ -112,7 +112,7 @@ namespace natix.SimilaritySearch
 				var far = new Result (1);
 				dseq.AppendKExtremes (near, far, L);
 				var node = new Node (refID);
-				this.node_list.Add (node);
+				this.NODES.Add (node);
 				dseq.Remove (near);
 				foreach (var p in near) {
 					node.Add(p.docid, p.dist);
@@ -125,17 +125,17 @@ namespace natix.SimilaritySearch
         /// </summary>
         public override IResult SearchKNN (object q, int K, IResult res)
         {
-			int num_centers = this.node_list.Count;
+			int num_centers = this.NODES.Count;
 			var D = new double[num_centers];
 			for (int centerID = 0; centerID < num_centers; ++centerID) {
-				var center_objID = this.node_list[centerID].refID;
+				var center_objID = this.NODES[centerID].refID;
 				var d = this.DB.Dist(q, this.DB[center_objID]);
 				D[centerID] = d;
 				res.Push (center_objID, d);
 			}
 			this.internal_numdists += num_centers;
 			for (int centerID = 0; centerID < num_centers; ++centerID) {
-				var node = this.node_list[centerID];
+				var node = this.NODES[centerID];
 				var rad = res.CoveringRadius;
 				var dcq = D [centerID];
 				if (dcq <= rad + node.cov) {
@@ -151,5 +151,26 @@ namespace natix.SimilaritySearch
 			}
 			return res;
         }
+
+		public void PartialSearchKNN (object q, IResult res, Dictionary<int,double> cache, List<double> queue_dist, List<Node> queue_nodes)
+		{
+			var sp = this.DB;
+			int numcenters = this.NODES.Count;
+			for (int center = 0; center < numcenters; center++) {
+				double dcq = -1;
+				var node = this.NODES [center];
+				if (!cache.TryGetValue (node.refID, out dcq)) {
+					++this.internal_numdists;
+					dcq = sp.Dist (sp [node.refID], q);
+					cache [node.refID] = dcq;
+					res.Push (node.refID, dcq);
+				}
+				if (dcq <= res.CoveringRadius + node.cov) {
+					queue_dist.Add(dcq);
+					queue_nodes.Add(node);
+				}
+			}
+		}
+
     }
 }

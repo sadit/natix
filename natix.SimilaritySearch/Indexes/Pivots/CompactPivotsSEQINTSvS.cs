@@ -42,7 +42,7 @@ namespace natix.SimilaritySearch
 			var m = this.PIVS.Count;
 			//var max = Math.Min (this.SEARCHPIVS, m);
 			var max = m;
-			var P = new TopK<Tuple<double, float, float, IRankSelectSeq>> (max);
+			var P = new TopK<Tuple<double, float, float, Sequence>> (max);
 			var A = new ushort[this.DB.Count];
 			var _PIVS = (this.PIVS as SampleSpace).SAMPLE;
 			for (int piv_id = 0; piv_id < m; ++piv_id) {
@@ -58,7 +58,7 @@ namespace natix.SimilaritySearch
 				var count = Math.Min(start_sym, Math.Abs(this.MAX_SYMBOL - end_sym));
 				P.Push (count, Tuple.Create (dqp, stddev, mean, seq));
 			}
-			var queue = new Queue<IEnumerator<IRankSelect>> ();
+			var queue = new Queue<IEnumerator<Bitmap>> ();
 			foreach (var p in P.Items.Traverse()) {
 				var tuple = p.Value;
 				var it = this.IteratePartsKNN(res, tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4).GetEnumerator();
@@ -88,7 +88,7 @@ namespace natix.SimilaritySearch
 			return res;
 		}
 
-		public IEnumerable<IRankSelect> IteratePartsKNN (IResult res, double dqp, float stddev, float mean, IRankSelectSeq seq)
+		public IEnumerable<Bitmap> IteratePartsKNN (IResult res, double dqp, float stddev, float mean, Sequence seq)
 		{
 			var sym = this.Discretize(dqp, stddev, mean);
 			yield return seq.Unravel(sym);
@@ -117,7 +117,7 @@ namespace natix.SimilaritySearch
 		public override IResult SearchRange (object q, double radius)
 		{
 			var m = this.PIVS.Count;
-			var P = new TopK<Tuple<double, int, int, IRankSelectSeq>> (m);
+			var P = new TopK<Tuple<double, int, int, Sequence>> (m);
 			for (int piv_id = 0; piv_id < m; ++piv_id) {
 				var dqp = this.DB.Dist (q, this.PIVS [piv_id]);
                 ++this.internal_numdists;

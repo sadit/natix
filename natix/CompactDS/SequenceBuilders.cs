@@ -22,7 +22,7 @@ using System.Collections.Generic;
 
 namespace natix.CompactDS
 {
-	public delegate IRankSelectSeq SequenceBuilder(IList<int> seq, int sigma);
+	public delegate Sequence SequenceBuilder(IList<int> seq, int sigma);
 	
 	public class SequenceBuilders
 	{

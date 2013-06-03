@@ -157,7 +157,7 @@ namespace natix
 			return Inv;
 		}
 
-		static Random _SeedGenerator = new Random();
+		static Random _random = new Random();
 		// static object _SeedMonitor = new object();
 		public static Random GetRandom (int random_seed = -1)
         {
@@ -172,7 +172,7 @@ namespace natix
 		{
 			int seed;
 			//lock (_SeedMonitor) {
-            seed = _SeedGenerator.Next();
+            seed = _random.Next();
 			// }
 			return seed;
 		}

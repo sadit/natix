@@ -311,14 +311,14 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Hamming distance
 		/// </summary>
-		public static double Dice (IList<T> a, IList<T> b)
+		public static double Dice (T[] a, T[] b)
 		{
 			// a & b are already sorted
 			// union
 			// intersection
 			int I = 0;
 			int cmp;
-			for (int ia = 0, ib = 0; ia < a.Count && ib < b.Count;) {
+			for (int ia = 0, ib = 0; ia < a.Length && ib < b.Length;) {
 				cmp = a[ia].CompareTo (b[ib]);
 				if (cmp == 0) {
 					I++;
@@ -330,19 +330,19 @@ namespace natix.SimilaritySearch
 					ib++;
 				}
 			}
-			return -(I * 2.0) / (a.Count + b.Count);
+			return -(I * 2.0) / (a.Length + b.Length);
 		}
 		/// <summary>
 		/// Knr Intersection distance
 		/// </summary>
-		public static double Intersection (IList<T> a, IList<T> b)
+		public static double Intersection (T[] a, T[] b)
 		{
 			// a & b are already sorted
 			// union
 			// intersection
 			int I = 0;
 			int cmp;
-			for (int ia = 0, ib = 0; ia < a.Count && ib < b.Count;) {
+			for (int ia = 0, ib = 0; ia < a.Length && ib < b.Length;) {
 				cmp = a[ia].CompareTo (b[ib]);
 				if (cmp == 0) {
 					I++;
@@ -360,9 +360,9 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Knr prefix length distance
 		/// </summary>
-		public static double PrefixLength (IList<T> a, IList<T> b)
+		public static double PrefixLength (T[] a, T[] b)
 		{
-			int i, min = Math.Min (a.Count, b.Count);
+			int i, min = Math.Min (a.Length, b.Length);
 			for (i = 0; i < min && a[i].CompareTo (b[i]) == 0; i++) {
 				//empty
 			}

@@ -21,8 +21,8 @@ namespace natix.CompactDS
 {
 	public class GraphSeq : IGraph
 	{
-		public IRankSelect LENS;
-		public IRankSelectSeq SEQ;
+		public Bitmap LENS;
+		public Sequence SEQ;
 		
 		public GraphSeq ()
 		{
@@ -86,14 +86,14 @@ namespace natix.CompactDS
 		
 		public void Save(BinaryWriter Output)
 		{
-			RankSelectGenericIO.Save(Output, this.LENS);
-			RankSelectSeqGenericIO.Save (Output, this.SEQ);
+			GenericIO<Bitmap>.Save(Output, this.LENS);
+			GenericIO<Sequence>.Save (Output, this.SEQ);
 		}
 		
 		public void Load (BinaryReader Input)
 		{
-			this.LENS = RankSelectGenericIO.Load (Input);
-			this.SEQ = RankSelectSeqGenericIO.Load (Input);
+			this.LENS = GenericIO<Bitmap>.Load (Input);
+			this.SEQ = GenericIO<Sequence>.Load (Input);
 		}
 		
 		

@@ -22,13 +22,13 @@ namespace natix.CompactDS
 {
 	public class SortedListRS64Cache : ListGenerator<long>
 	{
-		public IRankSelect64 B;
+		public Bitmap64 B;
 		public int prev_index = -1;
 		public long prev_value = -1;
 		public int count = -1;
 		public int shift;
 
-		public SortedListRS64Cache (IRankSelect64 rsbitmap, int shift = 0)
+		public SortedListRS64Cache (Bitmap64 rsbitmap, int shift = 0)
 		{
 			this.B = rsbitmap;
 			this.shift = shift;

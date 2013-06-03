@@ -51,7 +51,7 @@ namespace natix.CompactDS
 			this.Power = Input.ReadByte ();
 		}
 
-		public void Encode (IBitStream Buffer, int u)
+		public void Encode (BitStream32 Buffer, int u)
 		{
 			if (u < 0) {
 				throw new ArgumentOutOfRangeException (String.Format ("Invalid range for BlockCoding, u: {0}", u));
@@ -62,7 +62,7 @@ namespace natix.CompactDS
 			Buffer.Write(u, this.Power);
 		}
 		
-		public int Decode (IBitStream Buffer, BitStreamCtx ctx)
+		public int Decode (BitStream32 Buffer, BitStreamCtx ctx)
 		{
 			int skip = this.SkipCoder.Decode (Buffer, ctx);
 			int output = (int)Buffer.Read (this.Power, ctx);

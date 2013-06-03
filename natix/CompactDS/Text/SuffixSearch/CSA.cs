@@ -24,9 +24,9 @@ namespace natix.CompactDS
 	public class CSA : ITextIndex
 	{
 		public int[] charT;
-		public IRankSelect newF;
+		public Bitmap newF;
 		public IList<int> Psi;
-		public IRankSelect SA_marked;
+		public Bitmap SA_marked;
 		public ListIFS SA_samples;
 		public ListIFS SA_invsamples;
 		public short SA_sample_step;
@@ -57,7 +57,7 @@ namespace natix.CompactDS
 		public void Build (string sa_name, ListIBuilder list_builder = null)
 		{
 			using (var Input = new BinaryReader (File.OpenRead (sa_name + ".structs"))) {
-				this.newF = RankSelectGenericIO.Load (Input);
+				this.newF = GenericIO<Bitmap>.Load (Input);
 				int len = this.newF.Count1;
 				this.charT = new int[len];
 				// Console.WriteLine ("*****>> charT => {0} bytes", this.charT.Length * 4);
@@ -72,7 +72,7 @@ namespace natix.CompactDS
 			}
 			using (var Input = new BinaryReader (File.OpenRead (sa_name + ".samples"))) {
 				this.SA_sample_step = Input.ReadInt16 ();
-				this.SA_marked = RankSelectGenericIO.Load (Input);
+				this.SA_marked = GenericIO<Bitmap>.Load (Input);
 				var _samples = new ListIFS ();
 				_samples.Load (Input);
 				var _invsamples = new ListIFS ();
@@ -85,7 +85,7 @@ namespace natix.CompactDS
 		public void Save (string basename)
 		{
 			using (var Output = new BinaryWriter (File.Create (basename + ".idx"))) {
-				RankSelectGenericIO.Save (Output, this.newF);
+				GenericIO<Bitmap>.Save (Output, this.newF);
 				PrimitiveIO<int>.WriteVector (Output, this.charT);
 			}
 			using (var Output = new BinaryWriter (File.Create (basename + ".psi"))) {
@@ -93,7 +93,7 @@ namespace natix.CompactDS
 			}
 			using (var Output = new BinaryWriter (File.Create (basename + ".samples"))) {
 				Output.Write ((short)this.SA_sample_step);
-				RankSelectGenericIO.Save (Output, this.SA_marked);
+				GenericIO<Bitmap>.Save (Output, this.SA_marked);
 				this.SA_samples.Save (Output);
 				this.SA_invsamples.Save (Output);
 			}
@@ -102,7 +102,7 @@ namespace natix.CompactDS
 		public void Load (string basename)
 		{
 			using (var Input = new BinaryReader (File.OpenRead (basename + ".idx"))) {
-				this.newF = RankSelectGenericIO.Load (Input);
+				this.newF = GenericIO<Bitmap>.Load (Input);
 				this.charT = new int[this.newF.Count1];
 				PrimitiveIO<int>.ReadFromFile (Input, this.charT.Length, this.charT);
 			}
@@ -111,7 +111,7 @@ namespace natix.CompactDS
 			}
 			using (var Input = new BinaryReader (File.OpenRead (basename + ".samples"))) {
 				this.SA_sample_step = Input.ReadInt16 ();
-				this.SA_marked = RankSelectGenericIO.Load (Input);
+				this.SA_marked = GenericIO<Bitmap>.Load (Input);
 				var _samples = new ListIFS ();
 				_samples.Load (Input);
 				var _invsamples = new ListIFS ();

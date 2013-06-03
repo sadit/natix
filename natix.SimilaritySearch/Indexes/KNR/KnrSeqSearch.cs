@@ -27,7 +27,7 @@ namespace natix.SimilaritySearch
 		public int K;
 		public int MAXCAND;
 		public Index R;
-		public IRankSelectSeq SEQ;
+		public Sequence SEQ;
 
 		public KnrSeqSearch GetSortedByPrefix (SequenceBuilder seq_builder = null, ListIBuilder list_builder = null)
 		{
@@ -63,7 +63,7 @@ namespace natix.SimilaritySearch
 			Output.Write(this.K);
 			Output.Write(this.MAXCAND);
 			IndexGenericIO.Save(Output, this.R);
-			RankSelectSeqGenericIO.Save(Output, this.SEQ);
+			GenericIO<Sequence>.Save(Output, this.SEQ);
 		}
 
 		public override void Load (BinaryReader Input)
@@ -72,7 +72,7 @@ namespace natix.SimilaritySearch
 			this.K = Input.ReadInt32 ();
 			this.MAXCAND = Input.ReadInt32 ();
 			this.R = IndexGenericIO.Load(Input);
-			this.SEQ = RankSelectSeqGenericIO.Load(Input);
+			this.SEQ = GenericIO<Sequence>.Load(Input);
 		}
 
 		public KnrSeqSearch () : base()
@@ -203,10 +203,10 @@ namespace natix.SimilaritySearch
 
 		protected virtual IResult GetCandidates (int[] qseq, int maxcand)
 		{
-			var n = this.DB.Count;
-			if (n < 500000) {
-				//return this.GetCandidatesSmallDB (qseq, maxcand);
-			}
+//			var n = this.DB.Count;
+//			if (n < 500000) {
+//				//return this.GetCandidatesSmallDB (qseq, maxcand);
+//			}
 			var len_qseq = qseq.Length;
 			var ialg = new BaezaYatesIntersection<int> (new DoublingSearch<int> ());
 			IList<int> C = new SortedListRSCache (this.SEQ.Unravel (qseq [0]));

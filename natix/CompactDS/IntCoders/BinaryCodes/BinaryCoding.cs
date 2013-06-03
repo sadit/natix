@@ -56,7 +56,7 @@ namespace natix.CompactDS
 			this.numbits = (byte)numbits;
 		}
 			
-		public void Encode (IBitStream Buffer, int u)
+		public void Encode (BitStream32 Buffer, int u)
 		{
 			if (u < 0) {
 				var message = String.Format ("Negative numbers are not valid for BinaryCoding, u: {0}", u);
@@ -73,13 +73,13 @@ namespace natix.CompactDS
 			Buffer.Write(u, this.NumBits);
 		}
 		
-		public int Decode (IBitStream Buffer, BitStreamCtx ctx)
+		public int Decode (BitStream32 Buffer, BitStreamCtx ctx)
 		{
 			int number = (int)Buffer.Read (this.NumBits, ctx);
 			return number;
 		}
 		
-		public int ArrayGet (IBitStream Buffer, int pos)
+		public int ArrayGet (BitStream32 Buffer, int pos)
 		{
 			
 			long p = pos;
@@ -89,14 +89,14 @@ namespace natix.CompactDS
 			return number;
 		}
 		
-		public void ArraySet (IBitStream Buffer, int pos, int val)
+		public void ArraySet (BitStream32 Buffer, int pos, int val)
 		{
 			long p = pos;
 			p *= this.NumBits;
 			Buffer.WriteAt ((uint)val, this.NumBits, p);
 		}
 		
-		public void ArrayAdd (IBitStream Buffer, int val)
+		public void ArrayAdd (BitStream32 Buffer, int val)
 		{
 			Buffer.Write (val, this.NumBits); 
 		}

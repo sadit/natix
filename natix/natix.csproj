@@ -53,7 +53,6 @@
     <Compile Include="SortingSearching\Searching\BlockSearch.cs" />
     <Compile Include="SortingSearching\Searching\HintSearch.cs" />
     <Compile Include="SortingSearching\PriorityQueue.cs" />
-    <Compile Include="SortingSearching\GenericSearch.cs" />
     <Compile Include="SortingSearching\FastSortSqrt.cs" />
     <Compile Include="SortingSearching\InPlaceCountingSort.cs" />
     <Compile Include="SortingSearching\FastSortSubLinear.cs" />
@@ -67,20 +66,12 @@
     <Compile Include="FunLists\ListGenerator.cs" />
     <Compile Include="CompactDS\HuffmanTree.cs" />
     <Compile Include="CompactDS\BitStreams\BitAccess.cs" />
-    <Compile Include="CompactDS\BitStreams\BitAccess64.cs" />
-    <Compile Include="CompactDS\BitStreams\BitStream64.cs" />
     <Compile Include="CompactDS\BitStreams\BitStream32.cs" />
-    <Compile Include="CompactDS\BitStreams\IBitStream.cs" />
     <Compile Include="CompactDS\Bitmaps\DArray.cs" />
-    <Compile Include="CompactDS\Bitmaps\DArrayS0.cs" />
     <Compile Include="CompactDS\Bitmaps\DiffSet.cs" />
     <Compile Include="CompactDS\Bitmaps\DiffSetRL.cs" />
     <Compile Include="CompactDS\Bitmaps\DiffSetRL2.cs" />
-    <Compile Include="CompactDS\Bitmaps\IRankSelect.cs" />
-    <Compile Include="CompactDS\Bitmaps\PlainSortedList.cs" />
-    <Compile Include="CompactDS\Bitmaps\RankSelectBase.cs" />
     <Compile Include="CompactDS\Bitmaps\RankSelectBlocks.cs" />
-    <Compile Include="CompactDS\Bitmaps\RankSelectGenericIO.cs" />
     <Compile Include="CompactDS\Bitmaps\RankSelectUltimate.cs" />
     <Compile Include="CompactDS\Bitmaps\RRR.cs" />
     <Compile Include="CompactDS\Bitmaps\SArray.cs" />
@@ -95,7 +86,6 @@
     <Compile Include="CompactDS\Sequences\InvIndexSketchBuilder.cs" />
     <Compile Include="CompactDS\Bitmaps\GGMN.cs" />
     <Compile Include="CompactDS\Text\ITextIndex.cs" />
-    <Compile Include="CompactDS\Bitmaps\GGMN_S0.cs" />
     <Compile Include="CompactDS\Bitmaps\SL_Bitmap.cs" />
     <Compile Include="CompactDS\Permutations\CyclicPerms_MRRR.cs" />
     <Compile Include="CompactDS\SequenceBuilders.cs" />
@@ -107,14 +97,11 @@
     <Compile Include="CompactDS\Lists\Unsorted\ListRL.cs" />
     <Compile Include="CompactDS\Lists\Unsorted\ListRL2.cs" />
     <Compile Include="CompactDS\Lists\Unsorted\ListIGenericIO.cs" />
-    <Compile Include="CompactDS\Sequences\RankSelectSeqGenericIO.cs" />
-    <Compile Include="CompactDS\Sequences\IRankSelectSeq.cs" />
     <Compile Include="CompactDS\Sequences\UnraveledSymbolGolynskiRL.cs" />
     <Compile Include="CompactDS\BitmapBuilders.cs" />
     <Compile Include="CompactDS\Bitmaps\FakeBitmap.cs" />
     <Compile Include="CompactDS\Permutations\IPermutation.cs" />
     <Compile Include="CompactDS\PermutationBuilders.cs" />
-    <Compile Include="CompactDS\Permutations\PermutationGenericIO.cs" />
     <Compile Include="CompactDS\BitStreams\Bits.cs" />
     <Compile Include="FunLists\ListGen2.cs" />
     <Compile Include="SortingSearching\ComparerFromComparison.cs" />
@@ -166,14 +153,10 @@
     <Compile Include="CompactDS\IntCoders\OctetCodes\OctetReader.cs" />
     <Compile Include="CompactDS\IntCoders\OctetCodes\FinalTaggedByteCode.cs" />
     <Compile Include="CompactDS\IntCoders\BinaryCodes\EliasGamma32.cs" />
-    <Compile Include="CompactDS\Bitmaps\IRankSelect64.cs" />
-    <Compile Include="CompactDS\Bitmaps\RankSelectBase64.cs" />
     <Compile Include="CompactDS\Bitmaps\SArray64.cs" />
     <Compile Include="FunLists\ListGenerator64.cs" />
     <Compile Include="FunLists\ListGen64.cs" />
-    <Compile Include="SortingSearching\GenericSearch64.cs" />
     <Compile Include="CompactDS\Sequences\SeqXLB.cs" />
-    <Compile Include="CompactDS\Bitmaps\RankSelectFromRS64.cs" />
     <Compile Include="CompactDS\Permutations\ListGen_MRRR.cs" />
     <Compile Include="NDesk.Options\Options.cs" />
     <Compile Include="CompactDS\Bitmaps\DiffSetRL2_64.cs" />
@@ -184,7 +167,6 @@
     <Compile Include="CompactDS\IntCoders\SearchingCodesBinary\UltimateSearchCoding64.cs" />
     <Compile Include="CompactDS\IntCoders\BinaryCodes\IEncoder32GenericIO.cs" />
     <Compile Include="CompactDS\IntCoders\BinaryCodes\IEncoder64GenericIO.cs" />
-    <Compile Include="CompactDS\Bitmaps\RankSelect64GenericIO.cs" />
     <Compile Include="CompactDS\Bitmaps\DiffSet64.cs" />
     <Compile Include="CompactDS\Sequences\UnraveledSymbolXLB.cs" />
     <Compile Include="CompactDS\IntCoders\BinaryCodes\EliasGamma64.cs" />
@@ -251,6 +233,18 @@
     <Compile Include="Sets\Tthreshold\NTTArray8.cs" />
     <Compile Include="Util\CompositeIOA.cs" />
     <Compile Include="FunLists\Fun.cs" />
+    <Compile Include="CompactDS\BitStreams\BitAccessArray.cs" />
+    <Compile Include="CompactDS\BitStreams\BitAccessList.cs" />
+    <Compile Include="SortingSearching\GenericSearch\GenericSearch64.cs" />
+    <Compile Include="SortingSearching\GenericSearch\GenericSearch.cs" />
+    <Compile Include="SortingSearching\GenericSearch\Search.cs" />
+    <Compile Include="SortingSearching\GenericSearch\SearchList.cs" />
+    <Compile Include="CompactDS\Bitmaps\Bitmap.cs" />
+    <Compile Include="CompactDS\Bitmaps\Bitmap64.cs" />
+    <Compile Include="CompactDS\Sequences\Sequence.cs" />
+    <Compile Include="CompactDS\Permutations\CyclicPermsListFS_MRRR.cs" />
+    <Compile Include="CompactDS\Bitmaps\SortedList.cs" />
+    <Compile Include="Util\GenericIO.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -283,6 +277,7 @@
     <Folder Include="Sets\NumericIntersection\" />
     <Folder Include="CompactDS\Lists\Sorted\" />
     <Folder Include="CompactDS\Sequences\WTM_SymbolSplit\" />
+    <Folder Include="SortingSearching\GenericSearch\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>

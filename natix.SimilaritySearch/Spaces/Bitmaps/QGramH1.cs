@@ -23,11 +23,11 @@ namespace  natix.SimilaritySearch
 {
 	public class QGramH1 : ListGenerator<byte>
 	{
-		public IBitStream stream;
+		public BitStream32 stream;
 		public long start;
 		public int len;
 
-		public QGramH1 (IBitStream _stream, long _start, int _len)
+		public QGramH1 (BitStream32 _stream, long _start, int _len)
 		{
 			this.stream = _stream;
 			this.start = _start;

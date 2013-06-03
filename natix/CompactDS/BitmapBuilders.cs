@@ -21,9 +21,9 @@ using System.Collections.Generic;
 
 namespace natix.CompactDS
 {
-	public delegate IRankSelect64 BitmapFromList64(IList<long> L, long n);
-	public delegate IRankSelect BitmapFromList(IList<int> L);
-	public delegate IRankSelect BitmapFromBitStream(FakeBitmap stream);
+	public delegate Bitmap64 BitmapFromList64(IList<long> L, long n);
+	public delegate Bitmap BitmapFromList(IList<int> L);
+	public delegate Bitmap BitmapFromBitStream(FakeBitmap stream);
 	
 	public class BitmapBuilders
 	{
@@ -35,7 +35,7 @@ namespace natix.CompactDS
 		{
 			return delegate (IList<int> L) {
 				var rs = new GGMN ();
-				rs.Build (L, sample_step);
+				rs.Build (CreateBitStream32(L), sample_step);
 				return rs;
 			};
 		}
@@ -44,19 +44,19 @@ namespace natix.CompactDS
 		{
 			return delegate (IList<int> L) {
 				var rs = new RRR ();
-				rs.Build (L, block_size);
+				rs.Build (CreateBitStream32(L), block_size);
 				return rs;
 			};
 		}
 		
-		public static BitmapFromList GetRRRv2 (short block_size)
-		{
-			return delegate (IList<int> L) {
-				var rs = new RRRv2 ();
-				rs.Build (L, block_size);
-				return rs;
-			};
-		}
+//		public static BitmapFromList GetRRRv2 (short block_size)
+//		{
+//			return delegate (IList<int> L) {
+//				var rs = new RRRv2 ();
+//				rs.Build (CreateBitStream32(L), block_size);
+//				return rs;
+//			};
+//		}
 		
 		public static BitmapFromList GetSArray (BitmapFromBitStream H_builder = null)
 		{
@@ -70,8 +70,8 @@ namespace natix.CompactDS
 		public static BitmapFromList GetPlainSortedList ()
 		{
 			return delegate (IList<int> L) {
-				var rs = new PlainSortedList ();
-				rs.Build (L);
+				var rs = new SortedList ();
+				rs.Build (new List<int>(L));
 				return rs;
 			};
 		}
@@ -98,7 +98,7 @@ namespace natix.CompactDS
 		{
 			return delegate (IList<int> L) {
 				var rs = new DArray ();
-				rs.Build (L, b_rank, b_select);
+				rs.Build (CreateBitStream32(L), b_rank, b_select);
 				return rs;
 			};
 		}
@@ -115,7 +115,19 @@ namespace natix.CompactDS
 		{
 			return new SortedListRSCache (bitmap.GetGGMN (12));
 		}
-		
+
+		public static BitStream32 CreateBitStream32 (IList<int> L, int n = 0)
+		{
+			if (n == 0 && L.Count > 0) {
+				n = L[L.Count - 1] + 1;
+			}
+			var b = new BitStream32 ();
+			b.Write (false, n);
+			foreach (var p in L) {
+				b[p] = true;
+			}
+			return b;
+		}
 		
 		public static BitmapFromBitStream GetGGMN_wt (short sample_step)
 		{
@@ -142,14 +154,14 @@ namespace natix.CompactDS
 			};
 		}
 
-		public static BitmapFromBitStream GetRRRv2_wt (short sample_step)
-		{
-			return delegate (FakeBitmap b) {
-				var rs = new RRRv2 ();
-				rs.Build (b.B, sample_step);
-				return rs;
-			};
-		}
+//		public static BitmapFromBitStream GetRRRv2_wt (short sample_step)
+//		{
+//			return delegate (FakeBitmap b) {
+//				var rs = new RRRv2 ();
+//				rs.Build (b.B, sample_step);
+//				return rs;
+//			};
+//		}
 		
 		public static BitmapFromBitStream GetSArray_wt (BitmapFromBitStream H_builder = null)
 		{
@@ -163,8 +175,8 @@ namespace natix.CompactDS
 		public static BitmapFromBitStream GetPlainSortedList_wt ()
 		{
 			return delegate (FakeBitmap b) {
-				var rs = new PlainSortedList ();
-				rs.Build (CreateSortedList (b), b.Count);
+				var rs = new SortedList ();
+				rs.Build (new List<int>(CreateSortedList (b)), b.Count);
 				return rs;
 			};
 		}

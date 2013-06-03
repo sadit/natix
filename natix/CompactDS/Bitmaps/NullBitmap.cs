@@ -18,19 +18,23 @@ using System.IO;
 
 namespace natix.CompactDS
 {
-	public class NullBitmap : RankSelectBase
+	public class NullBitmap : Bitmap
 	{
 		
-		public NullBitmap ()
+		public NullBitmap () : base()
 		{
 		}
 		
-		public bool this[long i] {
-			get {
-                throw new NotSupportedException();
-			}
+		public override bool Access(int i)
+		{
+			throw new NotSupportedException();
 		}
-		
+
+		public override int Select1 (int i)
+		{
+			throw new NotSupportedException ();
+		}
+
 		public override int Rank1 (int i)
 		{
 			throw new NotSupportedException ();
@@ -48,7 +52,7 @@ namespace natix.CompactDS
 			}
 		}
 		
-		public override void AssertEquality (IRankSelect other)
+		public override void AssertEquality (Bitmap other)
 		{
 			throw new NotSupportedException ();
 		}

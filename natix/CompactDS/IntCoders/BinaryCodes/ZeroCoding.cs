@@ -39,12 +39,12 @@ namespace natix.CompactDS
 			this.Coder = coder;
 		}
 			
-		public void Encode (IBitStream Buffer, int u)
+		public void Encode (BitStream32 Buffer, int u)
 		{
 			this.Coder.Encode (Buffer, u + this.Smaller);
 		}
 		
-		public int Decode (IBitStream Buffer, BitStreamCtx ctx)
+		public int Decode (BitStream32 Buffer, BitStreamCtx ctx)
 		{
 			return this.Coder.Decode (Buffer, ctx) - this.Smaller;
 		}

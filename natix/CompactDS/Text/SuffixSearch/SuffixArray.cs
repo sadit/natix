@@ -34,7 +34,7 @@ namespace natix.CompactDS
 		public IList<int> Text;
 		public int[] SA;
 		public IList<int> charT;
-		public IRankSelect newF;
+		public Bitmap newF;
 		
 		public SuffixArray ()
 		{
@@ -64,7 +64,7 @@ namespace natix.CompactDS
 			Console.WriteLine ("Save_CSA_BWT destroys the SA, if you need the plain SA");
 			Console.WriteLine ("first save it and reload it after the call");
 			using (var Output = new BinaryWriter (File.Create (sa_name + ".structs"))) {
-				RankSelectGenericIO.Save (Output, this.newF);
+				GenericIO<Bitmap>.Save (Output, this.newF);
 				PrimitiveIO<int>.WriteVector (Output, this.charT);
 			}
 			using (var Output = new BinaryWriter (File.Create (sa_name + ".samples"))) {
@@ -85,7 +85,7 @@ namespace natix.CompactDS
 				}
 				GGMN G = new GGMN ();
 				G.Build (B, 8);
-				RankSelectGenericIO.Save (Output, G);
+				GenericIO<Bitmap>.Save (Output, G);
 				{
 					var _SA_samples = new ListIFS (numbits);
 					foreach (var u in SA_samples) {

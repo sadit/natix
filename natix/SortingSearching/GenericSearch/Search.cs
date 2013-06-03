@@ -13,14 +13,12 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
-//   Original filename: natix/SortingSearching/GenericSearch.cs
-// 
 using System;
 using System.Collections.Generic;
 
 namespace natix.SortingSearching
 {
-	public class SearchArray
+	public partial class Search
 	{
 		/// <summary>
 		/// Given a sorted array L, it finds the last entry u where L[u] <= query.
@@ -28,12 +26,12 @@ namespace natix.SortingSearching
 		/// </summary>
 		public static int FindLast<T> (T query, T[] data) where T: IComparable
 		{
-			return FindLast<T> (query, data, 0, data.Count);
+			return FindLast<T> (query, data, 0, data.Length);
 		}
 
 		public static int FindFirst<T> (T query, T[] data) where T : IComparable
 		{
-			return FindFirst<T> (query, data, 0, data.Count);
+			return FindFirst<T> (query, data, 0, data.Length);
 		}
 
 		/// <summary>
@@ -114,7 +112,7 @@ namespace natix.SortingSearching
 				mid--;
 			} else if (cmp > 0) {
 				if (mid < max) {
-					if (mid + 1 < data.Count && cmpfun (query, data[mid + 1]) == 0) {
+					if (mid + 1 < data.Length && cmpfun (query, data[mid + 1]) == 0) {
 						mid++;
 					}
 				}

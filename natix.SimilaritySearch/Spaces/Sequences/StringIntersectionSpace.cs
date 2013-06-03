@@ -39,7 +39,7 @@ namespace natix.SimilaritySearch
 		public override double Dist (object a, object b)
 		{
 			this.numdist++;
-			return StringSpace<T>.Intersection ((IList<T>)a, (IList<T>)b);
+			return StringSpace<T>.Intersection (this.CastToArray(a), this.CastToArray (b));
 		}
 	}
 }

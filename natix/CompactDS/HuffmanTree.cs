@@ -293,7 +293,7 @@ namespace natix.CompactDS
 		/// <summary>
 		/// Encode the specified symbol and save it to the stream
 		/// </summary>
-		public int Encode (IBitStream stream, int symbol)
+		public int Encode (BitStream32 stream, int symbol)
 		{
 			var s = this.Alphabet[symbol];
 			if (s == null) {
@@ -305,7 +305,7 @@ namespace natix.CompactDS
 			return size;
 		}
 		
-		int _Encode (HuffmanInner node, IBitStream stream, int size)
+		int _Encode (HuffmanInner node, BitStream32 stream, int size)
 		{
 			if (node.Parent == null) {
 				return size;

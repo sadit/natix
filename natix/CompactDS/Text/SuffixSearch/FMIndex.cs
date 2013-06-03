@@ -26,9 +26,9 @@ namespace natix.CompactDS
 	public class FMIndex : ITextIndex
 	{
 		public int[] charT;
-		public IRankSelect newF;
-		public IRankSelectSeq seqIndex;
-		public IRankSelect SA_marked;
+		public Bitmap newF;
+		public Sequence seqIndex;
+		public Bitmap SA_marked;
 		public ListIFS SA_samples;
 		public ListIFS SA_invsamples;
 		short SA_sample_step;
@@ -51,8 +51,8 @@ namespace natix.CompactDS
 		public void Build (string sa_name, SequenceBuilder seq_builder = null)
         {
             using (var Input = new BinaryReader (File.OpenRead (sa_name + ".structs"))) {
-                this.newF = RankSelectGenericIO.Load (Input);
-                int len = this.newF.Count1;
+                this.newF = GenericIO<Bitmap>.Load (Input);
+                int len = (int)this.newF.Count1;
                 this.charT = new int[len];
                 PrimitiveIO<int>.ReadFromFile (Input, len, this.charT);
             }
@@ -67,7 +67,7 @@ namespace natix.CompactDS
 			}
 			using (var Input = new BinaryReader (File.OpenRead (sa_name + ".samples"))) {
 				this.SA_sample_step = Input.ReadInt16 ();
-				this.SA_marked = RankSelectGenericIO.Load (Input);
+				this.SA_marked = GenericIO<Bitmap>.Load (Input);
 				var _samples = new ListIFS ();
 				_samples.Load (Input);
 				var _invsamples = new ListIFS ();
@@ -77,7 +77,7 @@ namespace natix.CompactDS
 			}
 		}
 		
-		public int TextLength{
+		public long TextLength{
 			get { return this.newF.Count - 1; }
 		}
 
@@ -91,16 +91,16 @@ namespace natix.CompactDS
 		public void Save (string basename)
 		{
 			using (var Output = new BinaryWriter (File.Create (basename + ".structs"))) {
-				RankSelectGenericIO.Save (Output, this.newF);
+				GenericIO<Bitmap>.Save (Output, this.newF);
 				PrimitiveIO<int>.WriteVector (Output, this.charT);
 			}
 			using (var Output = new BinaryWriter (File.Create (basename + ".bwt-index"))) {
 				Console.WriteLine ("Saving bwt-index {0}", this.seqIndex);
-				RankSelectSeqGenericIO.Save (Output, this.seqIndex);
+				GenericIO<Sequence>.Save (Output, this.seqIndex);
 			}
 			using (var Output = new BinaryWriter (File.Create (basename + ".structs-samples"))) {
 				Output.Write ((short)this.SA_sample_step);
-				RankSelectGenericIO.Save (Output, this.SA_marked);
+				GenericIO<Bitmap>.Save (Output, this.SA_marked);
 			}
 			using (var Output = new BinaryWriter (File.Create (basename + ".samples"))) {
 				this.SA_samples.Save (Output);
@@ -111,18 +111,18 @@ namespace natix.CompactDS
 		public void Load (string basename)
 		{
 			using (var Input = new BinaryReader (File.OpenRead (basename + ".structs"))) {
-				this.newF = RankSelectGenericIO.Load (Input);
+				this.newF = GenericIO<Bitmap>.Load (Input);
 				this.charT = new int[this.newF.Count1];
 				PrimitiveIO<int>.ReadFromFile (Input, this.charT.Length, this.charT);
 			}
 			// this.seqIndex = new WaveletTree ();
 			// this.seqIndex.Load (Input);
 			using (var Input = new BinaryReader (File.OpenRead (basename + ".bwt-index"))) {
-				this.seqIndex = RankSelectSeqGenericIO.Load (Input);
+				this.seqIndex = GenericIO<Sequence>.Load (Input);
 			}
 			using (var Input = new BinaryReader (File.OpenRead (basename + ".structs-samples"))) {
 				this.SA_sample_step = Input.ReadInt16 ();
-				this.SA_marked = RankSelectGenericIO.Load (Input);
+				this.SA_marked = GenericIO<Bitmap>.Load (Input);
 			}
 			using (var Input = new BinaryReader (File.OpenRead (basename + ".samples"))) {
 				var _samples = new ListIFS ();
@@ -149,14 +149,14 @@ namespace natix.CompactDS
 		public bool Search (IList<int> query, out int start_pos, out int end_pos)
 		{
 			start_pos = end_pos = -1;
-			int sp = 0;
-			int ep = this.newF.Count - 1;
+			var sp = 0;
+			var ep = (int)this.newF.Count - 1;
 			for (int m = query.Count - 1; m >= 0; m--) {
 				var c = this.GetCharId (query[m]);
 				if (c < 0) {
 					return false;
 				}
-				var abs_pos = this.newF.Select1 (c + 1);
+				var abs_pos = (int)this.newF.Select1 (c + 1);
 				sp = abs_pos + this.seqIndex.Rank (c, sp - 1);
 				ep = abs_pos + this.seqIndex.Rank (c, ep) - 1;
 			}
@@ -178,7 +178,7 @@ namespace natix.CompactDS
 		int LF (int i)
 		{
 			int c = this.seqIndex.Access (i);
-			int p = this.newF.Select1 (c + 1) - 1;
+			int p = (int)this.newF.Select1 (c + 1) - 1;
 			return p + this.seqIndex.Rank (c, i);
 		}
 		
@@ -211,13 +211,13 @@ namespace natix.CompactDS
 				++power;
 				suffix = this.LF (suffix);
 			}
-			int sample = (int)this.SA_samples[this.SA_marked.Rank1 (suffix) - 1];
+			int sample = (int)this.SA_samples[(int)this.SA_marked.Rank1 (suffix) - 1];
 			return sample + power;
 		}
 		
 		public IList<int> Extract (int start_pos, int len)
 		{
-			len = Math.Min (len, this.N - start_pos);
+			len = Math.Min (len, (int)this.N - start_pos);
 //			var O = new int[len];
 			// var O = new List<int>(len);
 			var O = new int[len];

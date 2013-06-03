@@ -17,6 +17,7 @@ using System.Text;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using natix;
 using natix.Sets;
 using natix.CompactDS;
 using natix.SortingSearching;
@@ -26,7 +27,7 @@ namespace cftdb
 {
 	public class Column
 	{
-		public IRankSelectSeq Seq;
+		public Sequence Seq;
 		public IList<string> Voc;
 		public int RecSep;
 
@@ -34,7 +35,7 @@ namespace cftdb
 		{
 		}
 
-		public Column (IRankSelectSeq seq, IList<string> voc, string recsep)
+		public Column (Sequence seq, IList<string> voc, string recsep)
 		{
 			this.Seq = seq;
 			this.Voc = voc;
@@ -43,7 +44,7 @@ namespace cftdb
 
 		public void Load(BinaryReader Input)
 		{
-			this.Seq = RankSelectSeqGenericIO.Load (Input);
+			this.Seq = GenericIO<Sequence>.Load (Input);
 			this.RecSep = Input.ReadInt32 ();
 			int len = Input.ReadInt32();
 			this.Voc = new string[len];
@@ -54,7 +55,7 @@ namespace cftdb
 
 		public void Save(BinaryWriter Output)
 		{
-			RankSelectSeqGenericIO.Save(Output, this.Seq);
+			GenericIO<Sequence>.Save(Output, this.Seq);
 			Output.Write((int)this.RecSep);
 			Output.Write((int)this.Voc.Count);
 			for (int i = 0; i < this.Voc.Count; ++i) {

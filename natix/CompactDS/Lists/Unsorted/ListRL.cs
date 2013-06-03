@@ -25,7 +25,7 @@ namespace natix.CompactDS
 	public class ListRL : ListGenerator<int>, ILoadSave
 	{
 		protected ListIFS headers;
-		protected IRankSelect runs;
+		protected Bitmap runs;
 		
 		public IList<int> Headers {
 			get {
@@ -33,7 +33,7 @@ namespace natix.CompactDS
 			}
 		}
 		
-		public IRankSelect Runs {
+		public Bitmap Runs {
 			get {
 				return this.runs;
 			}
@@ -105,13 +105,13 @@ namespace natix.CompactDS
 			var L = new ListIFS ();
 			L.Load (Input);
 			this.headers = L;
-			this.runs = RankSelectGenericIO.Load (Input);
+			this.runs = GenericIO<Bitmap>.Load (Input);
 		}
 
 		public virtual void Save (BinaryWriter Output)
 		{
 			this.headers.Save (Output);
-			RankSelectGenericIO.Save (Output, this.runs);
+			GenericIO<Bitmap>.Save (Output, this.runs);
 		}
 	}
 }

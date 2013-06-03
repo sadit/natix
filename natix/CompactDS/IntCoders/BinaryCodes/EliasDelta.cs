@@ -39,7 +39,7 @@ namespace natix.CompactDS
 		{
 		}
 		
-		public void Encode (IBitStream Buffer, int u)
+		public void Encode (BitStream32 Buffer, int u)
 		{
 			if (u < 1) {
 				throw new ArgumentOutOfRangeException (String.Format ("Invalid range for elias delta coding, u: {0}", u));
@@ -49,7 +49,7 @@ namespace natix.CompactDS
 			Buffer.Write (u, log2-1);
 		}
 		
-		public int Decode (IBitStream Buffer, BitStreamCtx ctx)
+		public int Decode (BitStream32 Buffer, BitStreamCtx ctx)
 		{
 			int len_code = gammacoder.Decode (Buffer, ctx);
 			len_code--;

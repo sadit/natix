@@ -25,12 +25,12 @@ namespace natix.CompactDS
 	/// <summary>
 	/// Bit access methods
 	/// </summary>
-	public partial class ArrayBit
+	public partial class BitAccess
 	{
 		/// <summary>
 		/// Gets the (i+1)th bit.
 		/// </summary>
-		public static bool GetBit (uint[] bitmap, long i)
+		public static bool GetBit (List<uint> bitmap, long i)
 		{
 			uint b = bitmap [(int)(i >> 5)];
 			int shift_right = (int)(i & 31);
@@ -40,7 +40,7 @@ namespace natix.CompactDS
 		/// <summary>
 		/// Enables the (i+1)th bit.
 		/// </summary>
-		public static void SetBit (uint[] bitmap, long i)
+		public static void SetBit (List<uint> bitmap, long i)
 		{
 			int quotient = (int)(i >> 5);
 			uint b = bitmap [quotient];
@@ -51,7 +51,7 @@ namespace natix.CompactDS
 		/// <summary>
 		/// Resets the (i+1)th bit.
 		/// </summary>
-		public static void ResetBit (uint[] bitmap, long i)
+		public static void ResetBit (List<uint> bitmap, long i)
 		{
 			int quotient = (int)(i >> 5);
 			uint b = bitmap [quotient];
@@ -62,7 +62,7 @@ namespace natix.CompactDS
 		/// <summary>
 		/// Select1 of rank, the bit sequences is bitmap. The search starts in start_bit, reviewing atmost max_count_bits.
 		/// </summary>
-		public static int Select1BitArgs (uint[] bitmap, int start_bit, int max_count_bits, int rank)
+		public static int Select1BitArgs (List<uint> bitmap, int start_bit, int max_count_bits, int rank)
 		{
 			// Console.WriteLine ("************** AAA start_bit: {0}, max_count_bits: {1}, rank: {2}", start_bit, max_count_bits, rank);
 			if (rank < 1) {
@@ -86,7 +86,7 @@ namespace natix.CompactDS
 		/// <summary>
 		/// Select1 of rank in bitmap. The boundaries are start and start+atmostcount
 		/// </summary>
-		public static int Select1 (uint[] bitmap, int start, int atmostcount, int rank)
+		public static int Select1 (List<uint> bitmap, int start, int atmostcount, int rank)
 		{
 			//Console.WriteLine ("--BitAccess.Select1 start: {0}, atmostcount: {1}, rank: {2}, array-size: {3}",
 			//	start, atmostcount, rank, bitmap.Count);
@@ -117,7 +117,7 @@ namespace natix.CompactDS
 					"BitAccess.Select1 rank: {0}. There are {1} items outside of the bounds", r, rank));
 		}
 		
-		public static int Rank1 (uint[] bitmap, int start, int count, int bitpos)
+		public static int Rank1 (List<uint> bitmap, int start, int count, int bitpos)
 		{
 			// Console.WriteLine ("--BitAccess.Rank1 start: {0}, count: {1}, bitexcess: {2}", start, count, bitpos);
 			int popcount = 0;
@@ -129,7 +129,7 @@ namespace natix.CompactDS
 				popcount += Bits.PopCount8[(u >> 16) & 255];
 				popcount += Bits.PopCount8[(u >> 24) & 255];
 			}
-			if (count < bitmap.Length && bitpos >= 0) {
+			if (count < bitmap.Count && bitpos >= 0) {
 				popcount += Rank1 (bitmap[count], bitpos);
 			}
 			return popcount;
@@ -140,7 +140,7 @@ namespace natix.CompactDS
 		/// <summary>
 		/// Gets the (i+1)th bit. Overload using bytes.
 		/// </summary>
-		public static bool GetBit (byte[] bitmap, int i)
+		public static bool GetBit (List<byte> bitmap, int i)
 		{
 			return (((bitmap [i >> 3] >> (i & 7)) & 1) != 0);
 		}
@@ -148,7 +148,7 @@ namespace natix.CompactDS
 		/// <summary>
 		/// Enalbes the (i+1)th bit.
 		/// </summary>
-		public static void SetBit (byte[] bitmap, int i)
+		public static void SetBit (List<byte> bitmap, int i)
 		{
 			byte b = bitmap [i >> 3];
 			b |= (byte)(1 << (i & 7));
@@ -158,7 +158,7 @@ namespace natix.CompactDS
 		/// <summary>
 		/// Resets the (i+1)th bit.  Overload using bytes.
 		/// </summary>
-		public static void ResetBit (byte[] bitmap, int i)
+		public static void ResetBit (List<byte> bitmap, int i)
 		{
 			byte b = bitmap[i >> 3];
 			b &= (byte)(~(1 << (i & 7)));

@@ -25,7 +25,7 @@ using natix.SortingSearching;
 namespace natix.CompactDS
 {
 
-	public class InvIndexSketches : IRankSelectSeq
+	public class InvIndexSketches : Sequence
 	{
 		/// <summary>
 		///  The size of the block for the sketch
@@ -39,7 +39,7 @@ namespace natix.CompactDS
 		/// Inverted index
 		/// </summary>
 		// public IList< IList< int > > InvIndex;
-		public IList<IRankSelect> InvIndex;
+		public IList<Bitmap> InvIndex;
 		/// <summary>
 		/// Vocabulary sorted by frequency
 		/// </summary>
@@ -65,11 +65,6 @@ namespace natix.CompactDS
 			get;
 			set;
 		}
-		
-        public IList<int> GetRawSeq ()
-        {
-            return RankSelectSeqGenericIO.ToIntArray(this, false);
-        }
 
 		public InvIndexSketches ()
 		{
@@ -78,10 +73,10 @@ namespace natix.CompactDS
 
 		public struct sort_pair
 		{
-			public IRankSelect invlist;
+			public Bitmap invlist;
 			public string word;
 			
-			public sort_pair (IRankSelect invlist, string word)
+			public sort_pair (Bitmap invlist, string word)
 			{
 				this.invlist = invlist;
 				this.word = word;
@@ -149,7 +144,7 @@ namespace natix.CompactDS
 			}
 			this.N = sequence.Count;
 			this.CreateSketch (invindex, max_freq + 1);
-			this.InvIndex = new IRankSelect[alphabet_size];
+			this.InvIndex = new Bitmap[alphabet_size];
 			for (int i = 0; i < alphabet_size; i++) {
 				Console.WriteLine ("*** compressing invlist {0}/{1}", i, alphabet_size);
 				this.InvIndex [i] = this.BitmapBuilder (invindex [i]);
@@ -219,7 +214,7 @@ namespace natix.CompactDS
 			return this.InvIndex[symbol].Select1 (rank);
 		}
 		
-		public IRankSelect Unravel (int symbol)
+		public Bitmap Unravel (int symbol)
 		{
 			return this.InvIndex[symbol];
 		}		
@@ -248,7 +243,7 @@ namespace natix.CompactDS
 			Console.WriteLine ("*** Saving {0} inverted lists", vocsize);
 			size = Output.BaseStream.Length;
 			foreach (var L in this.InvIndex) {
-				RankSelectGenericIO.Save (Output, L);
+				GenericIO<Bitmap>.Save (Output, L);
 			}
 			size = Output.BaseStream.Length - size;
 			Console.WriteLine ("***=== InvIndex size: {0} MB", size / (1 << 20));
@@ -271,9 +266,9 @@ namespace natix.CompactDS
 			PrimitiveIO<int>.ReadFromFile (Input, vocabulary_size, this.FreqPerm);
 			Console.WriteLine ("*** perms-size-bytes:", Input.BaseStream.Position - start_size);
 			start_size = Input.BaseStream.Position;
-			this.InvIndex = new IRankSelect[vocabulary_size];
+			this.InvIndex = new Bitmap[vocabulary_size];
 			for (int i = 0; i < this.InvIndex.Count; i++) {
-				this.InvIndex[i] = RankSelectGenericIO.Load (Input);
+				this.InvIndex[i] = GenericIO<Bitmap>.Load (Input);
 			}
 			Console.WriteLine ("*** invindex-size-bytes:", Input.BaseStream.Position - start_size);
 		}
