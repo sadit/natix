@@ -23,12 +23,12 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public class PlainSortedList : RankSelectBase
+	public class PlainSortedList : Bitmap
 	{
 		protected int N;
-		protected IList<int> sortedList;
+		protected List<int> sortedList;
 		
-		public override void AssertEquality (IRankSelect _other)
+		public override void AssertEquality (Bitmap _other)
 		{
 			var other = (PlainSortedList)_other;
 			if (this.N != other.N) {
@@ -48,30 +48,38 @@ namespace natix.CompactDS
 		{
 			this.N = br.ReadInt32 ();
 			int len = br.ReadInt32 ();
-			this.sortedList = new int[len];
+			this.sortedList = new List<int>(len);
 			PrimitiveIO<int>.ReadFromFile (br, len, this.sortedList);
 		}
 		
 		public PlainSortedList ()
 		{		
 		}
-		
-		public virtual void Build (IList<int> sortedList, int N)
+	
+		public void Add(int p)
 		{
-			this.sortedList = sortedList;
-			this.N = N;
-		}
-		
-		
-		public virtual void Build (IList<int> _sortedList)
-		{
-			int n = 0;
-			if (_sortedList.Count > 0) {
-				n = 1 + _sortedList [_sortedList.Count - 1];
+			if (this.sortedList.Count == 0) {
+				this.sortedList.Add (p);
+				return;
 			}
-			this.Build (_sortedList, n);
+			if (this.sortedList[this.sortedList.Count-1] >= p) {
+				throw new ArgumentOutOfRangeException ();
+			}
+			this.sortedList.Add (p);
+			if (p+1 > this.N) {
+				this.N = p + 1;
+			}
 		}
-		
+
+		public virtual void Build (List<int> sortedList, int n = 0)
+		{
+			if (n <= 0 && sortedList.Count > 0) {
+				n = 1 + sortedList [sortedList.Count - 1];
+			}
+			this.sortedList = sortedList;
+			this.N = n;
+		}
+
 		public override int Select1 (int rank)
 		{
 			if (rank < 1) {
@@ -85,12 +93,12 @@ namespace natix.CompactDS
 			if (pos < 0 || this.sortedList.Count < 1) {
 				return 0;
 			}
-			return 1 + GenericSearch.FindLast<int> (pos, this.sortedList);
+			return 1 + Search.FindLast<int> (pos, this.sortedList);
 		}
 		
 		public override bool Access (int i)
 		{
-			int rank = this.Rank1 (i);
+			var rank = this.Rank1 (i);
 			return i == this.Select1 (rank);
 		}
 
@@ -103,13 +111,6 @@ namespace natix.CompactDS
 		public override int Count1 {
 			get {
 				return this.sortedList.Count;
-			}
-		}
-		
-		public override bool this[int pos] {
-			get {
-				var r = this.Rank1 (pos);
-				return this.Select1 (r) == pos;
 			}
 		}
 	}

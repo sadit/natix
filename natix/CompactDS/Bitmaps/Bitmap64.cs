@@ -23,7 +23,7 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public abstract class RankSelectBase64 : IRankSelect64
+	public abstract class RankSelectBase64
 	{
 		public abstract long Count {
 			get;
@@ -35,7 +35,7 @@ namespace natix.CompactDS
 			}
 		}
 		
-		public abstract void AssertEquality (IRankSelect64 other);
+		public abstract void AssertEquality (RankSelectBase64 other);
 		
 		public virtual long Select1 (long rank, UnraveledSymbolXLB ctx)
 		{
@@ -50,13 +50,6 @@ namespace natix.CompactDS
 		public virtual bool Access (long pos, UnraveledSymbolXLB ctx)
 		{
 			return this.Access(pos);
-		}
-		
-		public virtual bool this[long pos]
-		{
-			get {
-				return this.Access (pos);
-			}
 		}
 		
 		public virtual bool Access (long pos)
@@ -81,7 +74,7 @@ namespace natix.CompactDS
 			return pos;
 		}
 
-		public virtual long Select1 (long rank)
+		public virtual long SimpleSelect1 (long rank)
 		{
 			if (rank <= 0L) {
 				return -1L;
@@ -96,9 +89,7 @@ namespace natix.CompactDS
 			return pos + 1L - this.Rank1 (pos);
 		}
 
-		public virtual long Rank1 (long pos)
-		{
-			return pos + 1L - this.Rank0 (pos);
-		}
+		public abstract long Rank1 (long pos);
+		public abstract long Select1 (long rank);
 	}
 }

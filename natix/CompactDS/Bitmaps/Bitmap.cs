@@ -23,7 +23,7 @@ using natix.SortingSearching;
 
 namespace natix.CompactDS
 {
-	public abstract class RankSelectBase : IRankSelect
+	public abstract class RankSelectBase // : IRankSelect
 	{
 		public abstract int Count {
 			get;
@@ -34,27 +34,30 @@ namespace natix.CompactDS
 				return this.Rank1 (this.Count-1);
 			}
 		}
-		
-		public abstract void AssertEquality (IRankSelect other);
-		
-		public virtual bool this[int pos]
-		{
-			get {
-				return this.Access (pos);
-			}
-		}
-		
-		public virtual bool Access (int pos)
-		{
-			if (pos > 0) {
-				return this.Rank1 (pos) != this.Rank1 (pos - 1);
-			} else {
-				return this.Rank1 (pos) == 1;
-			}
-		}
+
+		public abstract void AssertEquality (RankSelectBase other);
+//		
+//		public virtual bool this[int pos]
+//		{
+//			get {
+//				return this.Access (pos);
+//			}
+//		}
+//		
+//		public virtual bool Access (int pos)
+//		{
+//			if (pos > 0) {
+//				return this.Rank1 (pos) != this.Rank1 (pos - 1);
+//			} else {
+//				return this.Rank1 (pos) == 1;
+//			}
+//		}
 		
 		public abstract void Save (BinaryWriter bw);
 		public abstract void Load (BinaryReader br);
+		public abstract int Select1 (int rank);
+		public abstract int Rank1 (int pos);
+		public abstract bool Access (int pos);
 		
 		public virtual int Select0 (int rank)
 		{
@@ -62,11 +65,10 @@ namespace natix.CompactDS
 				return -1;
 			}
 			var G = new ListGen<int> ((int i) => this.Rank0 (i), this.Count);
-			int pos = GenericSearch.FindFirst<int> (rank, G);
-			return pos;
+			return GenericSearch.FindFirst<int> (rank, G);
 		}
 
-		public virtual int Select1 (int rank)
+		protected int SimpleSelect1 (int rank)
 		{
 			if (rank <= 0) {
 				return -1;
@@ -81,7 +83,7 @@ namespace natix.CompactDS
 			return pos + 1 - this.Rank1 (pos);
 		}
 
-		public virtual int Rank1 (int pos)
+		protected int SimpleRank1 (int pos)
 		{
 			return pos + 1 - this.Rank0 (pos);
 		}
