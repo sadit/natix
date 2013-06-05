@@ -20,12 +20,12 @@ using natix.CompactDS;
 
 namespace natix.SimilaritySearch
 {
-	public class LargeRandomizedSearch : BasicIndex
+	public class RandomizedSearch : BasicIndex
 	{
 		public int SampleSize ;
 		Random rand;
 
-		public LargeRandomizedSearch () : base()
+		public RandomizedSearch () : base()
 		{
 		}
 
