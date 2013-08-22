@@ -83,7 +83,7 @@ namespace natix.CompactDS
 				}
 				Output.Write ((byte)255);
 				Output.Write (seq.Count);
-				PrimitiveIO<int>.WriteVector (Output, seq);
+				PrimitiveIO<int>.SaveVector (Output, seq);
 			} else {
 				var S = seq as ILoadSave;
 				Output.Write (idType);
@@ -99,7 +99,7 @@ namespace natix.CompactDS
 			byte idType = Input.ReadByte ();
 			if (idType == 255) {
 				var len = Input.ReadInt32 ();
-				return PrimitiveIO<int>.ReadFromFile (Input, len, null);
+				return PrimitiveIO<int>.LoadVector (Input, len, null);
 			} else {
 				var type = Catalog [idType];
 				if (type == null) {

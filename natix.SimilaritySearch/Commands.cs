@@ -109,10 +109,14 @@ namespace natix.SimilaritySearch
 				long tstart = DateTime.Now.Ticks;
 				SearchCost startCost = index.Cost;
 				IResult res;
+				var qobj = qItem.QObj;
+				if (qobj == null) {
+					qobj = index.DB.Parse (qItem.QRaw, true);
+				}
 				if (qItem.QTypeIsRange) {
-					res = index.SearchRange (index.DB.Parse(qItem.QRaw, true), qItem.QArg);
+					res = index.SearchRange (qobj, qItem.QArg);
 				} else {
-					res = index.SearchKNN (index.DB.Parse(qItem.QRaw, true), (int)qItem.QArg);
+					res = index.SearchKNN (qobj, (int)qItem.QArg);
 				}
 				var qraw = qItem.QRaw;
 				if (qraw.Length > 1024) {

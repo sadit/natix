@@ -44,7 +44,7 @@ namespace natix.SimilaritySearch
 			this.Name = Input.ReadString();
 			var len = Input.ReadInt32 ();
 			this.DATA = new List<byte> (len);
-			PrimitiveIO<byte>.ReadFromFile(Input, len, this.DATA);
+			PrimitiveIO<byte>.LoadVector(Input, len, this.DATA);
 			this.LENS = GenericIO<Bitmap>.Load(Input);
 		}
 
@@ -52,7 +52,7 @@ namespace natix.SimilaritySearch
 		{
 			Output.Write(this.Name);
 			Output.Write((int) this.DATA.Count);
-			PrimitiveIO<byte>.WriteVector(Output, this.DATA);
+			PrimitiveIO<byte>.SaveVector(Output, this.DATA);
 			GenericIO<Bitmap>.Save(Output, this.LENS);
 		}
 

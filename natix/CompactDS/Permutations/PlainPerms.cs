@@ -72,15 +72,15 @@ namespace natix.CompactDS
 			int n = Input.ReadInt32 ();
 			this.P = new int[ n ];
 			this.Inv = new int[ n];
-			PrimitiveIO<int>.ReadFromFile (Input, n, this.P);
-			PrimitiveIO<int>.ReadFromFile (Input, n, this.Inv);
+			PrimitiveIO<int>.LoadVector (Input, n, this.P);
+			PrimitiveIO<int>.LoadVector (Input, n, this.Inv);
 		}
 		
 		public void Save (BinaryWriter Output)
 		{
 			Output.Write ((int)P.Count);
-			PrimitiveIO<int>.WriteVector (Output, this.P);
-			PrimitiveIO<int>.WriteVector (Output, this.Inv);
+			PrimitiveIO<int>.SaveVector (Output, this.P);
+			PrimitiveIO<int>.SaveVector (Output, this.Inv);
 		}
 	}
 }

@@ -59,11 +59,11 @@ namespace natix.SimilaritySearch
 		string Name {
 			get; set;
 		}
-
-		/// <summary>
-		/// Creates an empty result set 
-		/// </summary>
-		IResult CreateResult (int K, bool ceiling);
+//
+//		/// <summary>
+//		/// Creates an empty result set 
+//		/// </summary>
+//		IResult CreateResult (int K, bool ceiling);
 
 		/// <summary>
 		/// Returns the object numerated with docid

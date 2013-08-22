@@ -388,7 +388,7 @@ namespace natix.CompactDS
 		public void Save (BinaryWriter w)
 		{
 			w.Write ((long)this.N);
-			PrimitiveIO<uint>.WriteVector (w, this.Buffer);
+			PrimitiveIO<uint>.SaveVector (w, this.Buffer);
 		}
 
 		public void Load (BinaryReader r)
@@ -399,7 +399,7 @@ namespace natix.CompactDS
 			// Console.WriteLine ("BitStream32.Load N: {0}, num_items: {1}", this.N, numitems);
 			this.Buffer = new List<uint>(numitems);
 			// this.Seek (0);
-			PrimitiveIO<uint>.ReadFromFile (r, numitems, this.Buffer);
+			PrimitiveIO<uint>.LoadVector (r, numitems, this.Buffer);
 		}
 	}
 }

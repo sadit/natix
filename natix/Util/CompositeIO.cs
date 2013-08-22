@@ -30,13 +30,18 @@ namespace natix
 		/// <summary>
 		/// Reads "numitems" vectors from rfile, store items in "output" (array or list)
 		/// </summary>
-		public static IList<T> LoadVector (BinaryReader Input, int numitems, IList<T> output = null)
+		public static IList<T> LoadVector (BinaryReader Input, int _numitems, IList<T> output = null)
 		{
+			var numitems = _numitems;
 			if (output == null) {
 				output = new T[numitems];
-			}            
+			}
+			int pc = numitems / 100 + 1;
+			pc = Math.Max (1000, pc);
+			int advance = 0;
             if (output.Count > 0) {
-                for (int i = 0; i < output.Count; i++) {
+                for (int i = 0; i < output.Count; ++i, ++advance) {
+					//if (i % pc == 0) Console.WriteLine ("Loading {0} advance {1} from {2}", typeof(T), advance, _numitems);
                     //var u = default(T);
                     var u = new T();
                     u.Load(Input);
@@ -44,7 +49,8 @@ namespace natix
                 }
                 numitems -= output.Count;
             }
-            for (int i = 0; i < numitems; i++) {
+            for (int i = 0; i < numitems; i++, ++advance) {
+				//if (i % pc == 0) Console.WriteLine ("Loading {0} advance {1} from {2}", typeof(T), advance, _numitems);
                 //var u = default(T);
                 var u = new T();
                 u.Load(Input);

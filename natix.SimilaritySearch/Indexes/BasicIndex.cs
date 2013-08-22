@@ -73,7 +73,7 @@ namespace natix.SimilaritySearch
 		/// </summary>
 		public virtual IResult SearchKNN (object q, int K)
 		{
-			return this.SearchKNN (q, K, this.DB.CreateResult (Math.Abs (K), false));
+			return this.SearchKNN (q, K, new Result (Math.Abs (K), false));
 		}
 		
 		/// <summary>

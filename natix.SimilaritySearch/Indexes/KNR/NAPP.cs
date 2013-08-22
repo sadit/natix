@@ -25,7 +25,6 @@ namespace natix.SimilaritySearch
 	{
 		public int K;
 		public int MINOCC;
-		// public int MAXCAND;
 		public Index R;
 		public List<int[]> INVINDEX;
 		//public ITThresholdAlgorithm TThreshold = new LargeStepTThreshold(new DoublingSearch<int>());
@@ -41,7 +40,7 @@ namespace natix.SimilaritySearch
 			for (int i = 0, sigma = this.R.DB.Count; i < sigma; ++i) {
 				var list = this.INVINDEX[i];
 				Output.Write(list.Length);
-				PrimitiveIO<int>.WriteVector(Output, list);
+				PrimitiveIO<int>.SaveVector(Output, list);
 			}
 		}
 
@@ -56,7 +55,7 @@ namespace natix.SimilaritySearch
 			this.INVINDEX = new List<int[]> (sigma);
 			for (int i = 0; i < sigma; ++i) {
 				var len = Input.ReadInt32 ();
-				var list = PrimitiveIO<int>.ReadFromFile(Input, len, null) as int[];
+				var list = PrimitiveIO<int>.LoadVector(Input, len, null) as int[];
 				this.INVINDEX.Add(list);
 			}
 		}
@@ -93,15 +92,9 @@ namespace natix.SimilaritySearch
 
 		public int[] GetKnr (object q, int number_near_references)
 		{
-            this.internal_numdists-=this.R.Cost.Internal;
-			var res = this.R.SearchKNN(q, number_near_references);
-            this.internal_numdists+=this.R.Cost.Internal;
-			var qseq = new int[res.Count];
-			int i = 0;
-			foreach (var s in res) {
-				qseq[i] = s.docid;
-				++i;
-			}
+			this.internal_numdists-=this.R.Cost.Internal;
+			var qseq = KnrFP.GetFP (q, this.R, this.K);
+			this.internal_numdists+=this.R.Cost.Internal;
 			return qseq;
 		}
 
@@ -125,10 +118,13 @@ namespace natix.SimilaritySearch
 			var posting = this.GetPosting (qseq);
 			//int maxcand = this.MAXCAND;
 			//this.TThreshold.SearchTThreshold (posting, this.MINOCC, out docs, out card);	
-			var cand = new Result (this.MAXCAND);
+			var cand = new Result (Math.Abs(this.MAXCAND));
 			this.TThreshold.SearchTT (posting, this.MINOCC, cand);	
 //			Console.WriteLine ("XXXX : requested K: {0}, output K: {1}, posting-count: {2}, maxcand: {3}, minocc: {4}, cand-count: {5}",
 //			                   this.K, qseq.Length, posting.Length, this.MAXCAND, this.MINOCC, cand.Count);
+			if (this.MAXCAND < 0) {
+				return cand;
+			}
 			foreach (var p in cand) {
 				double d = this.DB.Dist (q, this.DB [p.docid]);
 				res.Push (p.docid, d);

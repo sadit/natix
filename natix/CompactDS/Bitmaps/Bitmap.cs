@@ -65,8 +65,37 @@ namespace natix.CompactDS
 			if (rank <= 0) {
 				return -1;
 			}
-			var G = new ListGen<int> ((int i) => this.Rank0 (i), this.Count);
-			return GenericSearch.FindFirst<int> (rank, G);
+//			var G = new ListGen<int> ((int i) => this.Rank0 (i), this.Count);
+//			return GenericSearch.FindFirst<int> (rank, G);
+			var n = this.Count;
+			int sp = 0;
+			int ep = n;
+			int cmp = 0;
+			int mid;
+			do {
+				mid = (sp >> 1) + (ep >> 1);
+				var rank_mid = this.Rank0 (mid);
+				cmp = rank.CompareTo(rank_mid);
+				if (cmp > 0) {
+					sp = mid + 1;
+				} else {
+					ep = mid;
+				}
+			} while (sp < ep);
+			if (cmp < 0) {
+				mid--;
+			} else if (cmp > 0) {
+				if (mid < ep) {
+					if (mid + 1 < n) {
+						var rank_mid = this.Rank0 (mid+1);
+						if (rank.CompareTo (rank_mid) == 0) {
+							mid++;
+						}
+					}
+				}
+			}
+			return mid;
+
 		}
 
 		protected int SimpleSelect1 (int rank)
@@ -74,8 +103,36 @@ namespace natix.CompactDS
 			if (rank <= 0) {
 				return -1;
 			}
-			var G = new ListGen<int> ((int i) => this.Rank1 (i), this.Count);
-			return GenericSearch.FindFirst<int> (rank, G);
+//			var G = new ListGen<int> ((int i) => this.Rank1 (i), this.Count);
+//			return GenericSearch.FindFirst<int> (rank, G);
+			var n = this.Count;
+			int sp = 0;
+			int ep = n;
+			int cmp = 0;
+			int mid;
+			do {
+				mid = (sp >> 1) + (ep >> 1);
+				var rank_mid = this.Rank1 (mid);
+				cmp = rank.CompareTo(rank_mid);
+				if (cmp > 0) {
+					sp = mid + 1;
+				} else {
+					ep = mid;
+				}
+			} while (sp < ep);
+			if (cmp < 0) {
+				mid--;
+			} else if (cmp > 0) {
+				if (mid < ep) {
+					if (mid + 1 < n) {
+						var rank_mid = this.Rank1 (mid+1);
+						if (rank.CompareTo (rank_mid) == 0) {
+							mid++;
+						}
+					}
+				}
+			}
+			return mid;
 		}
 
 		public virtual int Rank0 (int pos)
@@ -88,5 +145,6 @@ namespace natix.CompactDS
 		{
 			return pos + 1 - this.Rank0 (pos);
 		}
+
 	}
 }

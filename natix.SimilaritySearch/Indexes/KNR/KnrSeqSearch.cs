@@ -73,6 +73,7 @@ namespace natix.SimilaritySearch
 			this.MAXCAND = Input.ReadInt32 ();
 			this.R = IndexGenericIO.Load(Input);
 			this.SEQ = GenericIO<Sequence>.Load(Input);
+			Console.WriteLine ("=== Loading KnrSeqSearch {0} DB.Count: {1}, R: {2}, SEQ length: {3}, K: {4}", this, this.DB.Count, this.R, this.SEQ.Count, this.K);
 		}
 
 		public KnrSeqSearch () : base()
@@ -96,12 +97,12 @@ namespace natix.SimilaritySearch
 		public void BuildApprox (MetricDB db, int num_refs, int K=7, int maxcand=1024, SequenceBuilder seq_builder = null)
 		{
 			var sample = new SampleSpace ("", db, num_refs);
-			KnrSeqSearch inner = new KnrSeqSearch ();
+			var inner = new KnrSeqSearch ();
 			inner.Build (sample, 1024, K, int.MaxValue);
 			this.Build (db, new KnrSeqSearchFootrule(inner), K, maxcand, seq_builder);
 		}
 
-		public void Build (MetricDB db, int num_refs, int K=7, int maxcand=1024, SequenceBuilder seq_builder = null)
+		public void Build (MetricDB db, int num_refs, int K=7, int maxcand=1024, SequenceBuilder seq_builder=null)
 		{
 			var sample = new SampleSpace ("", db, num_refs);
 			var sat = new SAT_Distal ();
@@ -109,55 +110,42 @@ namespace natix.SimilaritySearch
 			this.Build (db, sat, K, maxcand, seq_builder);
 		}
 
-		public void Build (MetricDB db, Index refs, int K=7, int maxcand=1024, SequenceBuilder seq_builder = null)
+		public void Build (MetricDB db, Index refs, int K=7, int maxcand=1024, SequenceBuilder seq_builder=null)
 		{
-			int n = db.Count;
+			var knrfp = new KnrFP ();
+			knrfp.Build (db, refs, K);
+			this.Build (db, knrfp, maxcand, seq_builder);
+		}
+
+		public void Build (MetricDB db, KnrFP knrfp, int maxcand=1024, SequenceBuilder seq_builder=null)
+		{
 			this.DB = db;
-			this.R = refs;
-			this.K = K;
+			this.R = knrfp.IdxRefs;
+			this.K = knrfp.K;
 			this.MAXCAND = maxcand;
-			int[] G = new int[n * this.K];
-			int I = 0;
-			Action<int> compute = delegate (int i) {
-				if (I % 1000 == 0) {
-					Console.WriteLine ("computing knr {0}/{1} (adv. {2:0.00}%, curr. time: {3})", I, n, I*100.0/n, DateTime.Now);
-				}
-				++I;
-				var u = this.DB[i];
-				var useq = this.GetKnr(u);
-				for (int j = 0; j < this.K; ++j) {
-					G[i*this.K+j] = useq[j];
-				}
-			};
-			Parallel.For(0, n, compute);
-			/*
-			for (int i = 0; i < n; ++i) {
-				if (i % 1000 == 0) {
-					Console.WriteLine ("computing knr {0}/{1} (adv. {2:0.00}%, curr. time: {3})", i, n, i*100.0/n, DateTime.Now);
-				}
-				var u = this.DB[i];
-				var useq = this.GetKnr(u);
-				for (int j = 0; j < this.K; ++j) {
-					G[i*this.K+j] = useq[j];
-				}
-			}*/
+			var M = knrfp.Fingerprints.seqs;
+//			var L = new int[this.K * this.DB.Count];
+//			int pos = 0;
+//			for (int objID = 0; objID< this.DB.Count; ++objID) {
+//				var u = M [objID];
+//				for (int i = 0; i < this.K; ++i, ++pos) {
+//					L [pos] = u [i];
+//				}
+//			}
+			var L = new ListGen<int> ((int i) => M [i / K] [i % K], this.DB.Count * this.K);
 			if (seq_builder == null) {
 				seq_builder = SequenceBuilders.GetSeqXLB_SArray64 (16);
 			}
-			this.SEQ = seq_builder(G, this.R.DB.Count);
+			Console.WriteLine ("xxxxx Build L: {0}, R: {1}, db-count: {2}, db: {3}, K: {4}", L.Count, this.R.DB.Count, db.Count, db, K);
+			this.SEQ = seq_builder (L, this.R.DB.Count);
 		}
 
 		public int[] GetKnr (object q)
 		{
             this.internal_numdists-=this.R.Cost.Internal;
-			var res = this.R.SearchKNN(q, this.K);
+			// Console.WriteLine ("=== GetKnr KnrSeqSearch DB: {0} DB.Count: {1}, R: {2}, SEQ length: {3}, K: {4}, q: {5}", this.DB, this.DB.Count, this.R.DB, this.SEQ.Count, this.K, q);
+			var qseq = KnrFP.GetFP (q, this.R, this.K);
             this.internal_numdists+=this.R.Cost.Internal;
-			var qseq = new  int[this.K];
-			int i = 0;
-			foreach (var s in res) {
-				qseq[i] = s.docid;
-				++i;
-			}
 			return qseq;
 		}
 
@@ -234,10 +222,12 @@ namespace natix.SimilaritySearch
 		public override IResult SearchKNN (object q, int knn, IResult res)
 		{
 			var qseq = this.GetKnr (q);
-			// this.GetCandidatesIntersection (qseq, out C_docs, out C_sim);
-			// this.GetCandidatesRelativeMatches (qseq, out C_docs, out C_sim);
-			var C = this.GetCandidates (qseq, Math.Abs(this.MAXCAND));
-			int maxcand = this.MAXCAND;
+			return this.SearchKNN(qseq, q, MAXCAND, res); 
+		}
+
+		public IResult SearchKNN (int[] qseq, object q, int maxcand, IResult res)
+		{
+			var C = this.GetCandidates (qseq, Math.Abs (maxcand));
 			if (maxcand < 0) {
 				return C;
 			} else {
@@ -257,8 +247,6 @@ namespace natix.SimilaritySearch
 		public override IResult SearchRange (object q, double radius)
 		{
 			var qseq = this.GetKnr (q);
-			// this.GetCandidatesIntersection (qseq, out C_docs, out C_sim);
-			// this.GetCandidatesRelativeMatches (qseq, out C_docs, out C_sim);
 			var C = this.GetCandidates (qseq, Math.Abs(this.MAXCAND));
 			return this.FilterRadiusByRealDistances(q, radius, C, Math.Abs(this.MAXCAND));
 		}

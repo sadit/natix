@@ -76,10 +76,10 @@ namespace natix.CompactDS
 			bw.Write ((int)this.N);
 			bw.Write ((short)this.B);
 			bw.Write ((int)this.Abs.Length);
-			PrimitiveIO<uint>.WriteVector (bw, this.Abs);
+			PrimitiveIO<uint>.SaveVector (bw, this.Abs);
 			if (save_bitmap) {
 				bw.Write ((int)this.BitBlocks.Length);
-				PrimitiveIO<uint>.WriteVector (bw, this.BitBlocks);
+				PrimitiveIO<uint>.SaveVector (bw, this.BitBlocks);
 			}
 		}
 		
@@ -95,11 +95,11 @@ namespace natix.CompactDS
 			int len = br.ReadInt32 ();
 			//Console.WriteLine ("xxxx Loading N: {0}, AbsBlockSize: {1}, len: {2}", this.N, this.AbsBlockSize, len);
 			this.Abs = new uint[len];
-			PrimitiveIO<uint>.ReadFromFile (br, len, this.Abs);
+			PrimitiveIO<uint>.LoadVector (br, len, this.Abs);
 			if (load_bitmap) {
 				len = br.ReadInt32 ();
 				this.BitBlocks = new uint[len];
-				PrimitiveIO<uint>.ReadFromFile (br, len, this.BitBlocks);
+				PrimitiveIO<uint>.LoadVector (br, len, this.BitBlocks);
 			}
 		}
 		

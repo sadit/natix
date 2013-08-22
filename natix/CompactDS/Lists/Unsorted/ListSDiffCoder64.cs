@@ -111,7 +111,7 @@ namespace natix.CompactDS
 			this.Stream.Load (Input);
 			int num_offsets = Input.ReadInt32();
 			this.Offsets = new long[num_offsets];
-			PrimitiveIO<long>.ReadFromFile(Input, num_offsets, this.Offsets);
+			PrimitiveIO<long>.LoadVector(Input, num_offsets, this.Offsets);
 		}
 		
 		public void Save (BinaryWriter Output)
@@ -121,7 +121,7 @@ namespace natix.CompactDS
 			Output.Write ((int)this.M);
 			this.Stream.Save(Output);
 			Output.Write(this.Offsets.Count);
-			PrimitiveIO<long>.WriteVector(Output, this.Offsets);
+			PrimitiveIO<long>.SaveVector(Output, this.Offsets);
 		}
 		
 		public override void SetItem (int index, int u)

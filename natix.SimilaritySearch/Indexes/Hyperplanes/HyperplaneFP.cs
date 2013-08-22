@@ -35,7 +35,6 @@ namespace natix.SimilaritySearch
 		{
 		}
 
-
 		public override void Load (BinaryReader Input)
 		{
 			base.Load (Input);
@@ -53,24 +52,12 @@ namespace natix.SimilaritySearch
 
 		public byte[] GetFP(object a){
 			int numsamplerefs = Sample.Count;
-//			int numpairs = numsamplerefs / 2;
-//			var row = new byte[(int)Math.Ceiling(numsamplerefs/16.0)];
-//			for(int i=0; i<numpairs; i++){
-//				var dist1 = this.DB.Dist(a,this.Sample[2*i]);
-//				var dist2 = this.DB.Dist(a,this.Sample[2*i+1]);
-//				if(dist1 <= dist2){
-//					BitAccess.SetBit(row,i);
-//				}
-//				else{
-//					BitAccess.ResetBit(row,i);
-//				}
-//			}
 			int numpairs = numsamplerefs >> 1;
 			var row = new byte[(int)Math.Ceiling(numsamplerefs/16.0)];
 			for(int i = 0; i < numpairs; ++i){
 				var c = i << 1;
-				var dist1 = this.DB.Dist(a,this.Sample[c]);
-				var dist2 = this.DB.Dist(a,this.Sample[c+1]);
+				var dist1 = this.DB.Dist(a, this.Sample[c]);
+				var dist2 = this.DB.Dist(a, this.Sample[c+1]);
 				if (dist1 <= dist2){
 					BitAccess.SetBit(row,i);
 				} else {
@@ -82,7 +69,7 @@ namespace natix.SimilaritySearch
 
 		public virtual void Build(MetricDB db, int num_pairs, int maxCandidates = -1){
 			this.DB = db;
-			this.Fingerprints = new BinQ8HammingSpace (1);
+			this.Fingerprints = new BinQ8HammingSpace (1); 
 			this.Sample = new SampleSpace("", this.DB, num_pairs * 2);
 			this.MaxCandidates = maxCandidates;
 			var n = this.DB.Count;

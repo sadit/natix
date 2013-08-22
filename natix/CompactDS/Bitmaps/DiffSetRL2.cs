@@ -88,8 +88,8 @@ namespace natix.CompactDS
 				sa.Build (this.Offsets);
 				sa.Save (W);
 			} else {*/
-			PrimitiveIO<int>.WriteVector (W, this.Samples);
-			PrimitiveIO<long>.WriteVector (W, this.Offsets);
+			PrimitiveIO<int>.SaveVector (W, this.Samples);
+			PrimitiveIO<long>.SaveVector (W, this.Offsets);
 			//}
 			IEncoder32GenericIO.Save (W, this.Coder);
 			this.Stream.Save (W);
@@ -112,8 +112,8 @@ namespace natix.CompactDS
 			} else {*/
 			this.Samples = new List<int>( num_samples );
 			this.Offsets = new List<long>( num_samples );
-			PrimitiveIO<int>.ReadFromFile (R, num_samples, this.Samples);
-			PrimitiveIO<long>.ReadFromFile (R, num_samples, this.Offsets);
+			PrimitiveIO<int>.LoadVector (R, num_samples, this.Samples);
+			PrimitiveIO<long>.LoadVector (R, num_samples, this.Offsets);
 			//}
 			// POS = R.BaseStream.Position - POS;
 			// Console.WriteLine("=======*******=======>> POS: {0}", POS);

@@ -36,7 +36,7 @@ namespace natix.SimilaritySearch
 			for (int i = 0, sigma = this.R.DB.Count; i < sigma; ++i) {
 				var list = this.INVINDEX[i];
 				Output.Write(list.Count);
-				PrimitiveIO<int>.WriteVector(Output, list);
+				PrimitiveIO<int>.SaveVector(Output, list);
 			}
 		}
 
@@ -50,7 +50,7 @@ namespace natix.SimilaritySearch
 			for (int i = 0; i < sigma; ++i) {
 				var len = Input.ReadInt32 ();
 				var list = new List<int> (len);
-				 PrimitiveIO<int>.ReadFromFile(Input, len, list);
+				 PrimitiveIO<int>.LoadVector(Input, len, list);
 				this.INVINDEX.Add(list);
 			}
 		}

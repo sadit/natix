@@ -19,7 +19,10 @@ using System.IO;
 using natix.CompactDS;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using natix.SortingSearching;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
@@ -34,7 +37,7 @@ namespace natix.SimilaritySearch
 		public List<Vertex> Vertices;
 		public short Arity;
 		public short RepeatSearch;
-		public Random rand = new Random ();
+		protected Random rand = new Random ();
 		
 		public override void Load (BinaryReader Input)
 		{
@@ -46,7 +49,7 @@ namespace natix.SimilaritySearch
 			for (int i = 0; i < count; ++i) {
 				var c = Input.ReadInt32 ();
 				var vertex = new Vertex (c);
-				PrimitiveIO<int>.ReadFromFile(Input, c, vertex);
+				PrimitiveIO<int>.LoadVector(Input, c, vertex);
 				this.Vertices.Add (vertex);
 			}
 		}
@@ -59,7 +62,7 @@ namespace natix.SimilaritySearch
 			Output.Write ((int) this.Vertices.Count);
 			foreach (var vertex in this.Vertices) {
 				Output.Write ((int) vertex.Count);
-				PrimitiveIO<int>.WriteVector (Output, vertex);
+				PrimitiveIO<int>.SaveVector (Output, vertex);
 			}
 		}
 		
@@ -97,8 +100,12 @@ namespace natix.SimilaritySearch
 				this.Vertices.Add (new Vertex ());
 			} else {
 				var res = new Result (this.Arity);
-				this.SearchKNN (this.DB [objID], this.Arity, res);
-				var v = new Vertex();
+//				if (this.RepeatSearch > 1 && this.Vertices.Count > 1000000) {
+//					this.ParallelSearchKNN (this.DB[objID], this.Arity, res);
+//				} else {
+					this.SearchKNN (this.DB[objID], this.Arity, res);
+//				}
+				var v = new Vertex(this.Arity*2);
 				this.Vertices.Add(v);
 				foreach (var p in res) {
 					v.Add( p.docid );
@@ -106,20 +113,39 @@ namespace natix.SimilaritySearch
 				}
 			}
 		}
-		
+
+		public IResult ParallelSearchKNN (object q, int K, IResult final_result)
+		{
+			var seeds = new List<int> (this.RepeatSearch);
+			for (int i = 0; i < this.RepeatSearch; ++i) {
+				seeds.Add (this.rand.Next (this.Vertices.Count));
+			}
+			var res_array = new Result[this.RepeatSearch];
+			var search = new Action<int> (delegate (int i) {
+				var res = new Result (K);
+				this.GreedySearch(q, res, seeds[i], null, null);
+				res_array[i] = res;
+			});
+			ParallelOptions ops = new ParallelOptions();
+			ops.MaxDegreeOfParallelism = -1;
+    	    Parallel.For(0, this.RepeatSearch, search);
+			var inserted = new HashSet<int> ();
+			foreach (var res in res_array) {
+				foreach (var p in res) {
+					if (inserted.Add(p.docid)) {
+						final_result.Push(p.docid, p.dist);
+					}
+				}
+			}
+			return final_result;
+		}
+
 		public override IResult SearchKNN (object q, int K, IResult final_result)
 		{
-			var res_array = new Result[ this.RepeatSearch ];
-			// seeds[i] = Randomly select a subset of size this.RepeatSearch in [0,n]
-//			var search = new Action<int> (delegate (int i) {
-//				var res = new Result (K);
-//				this.GreedySearch(q, res, seeds[i]);
-//				res_array [i] = res;
-//			});
-//			System.Threading.Tasks.Parallel.For (0, this.RepeatSearch, search);
+			var res_array = new Result[this.RepeatSearch];
 			for (int i = 0; i < res_array.Length; ++i) {
 				var res = new Result (K);
-				this.GreedySearch(q, res, this.rand.Next (this.Vertices.Count));
+				this.GreedySearch(q, res, this.rand.Next (this.Vertices.Count), null, null);
 				res_array [i] = res;
 			}
 			var inserted = new HashSet<int> ();
@@ -133,10 +159,11 @@ namespace natix.SimilaritySearch
 			return final_result;
 		}
 		
-		void GreedySearch(object q, IResult res, int startID)
+		protected void GreedySearch(object q, IResult res, int startID, HashSet<int> visited, HashSet<int> evaluated)
 		{
-			HashSet<int> visited = new HashSet<int> ();
-			HashSet<int> evaluated = new HashSet<int> ();
+			if (visited == null) visited = new HashSet<int> ();
+			if (evaluated == null) evaluated = new HashSet<int> ();
+			// initial code
 			{
 				visited.Add (startID);
 				evaluated.Add (startID);

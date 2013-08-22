@@ -33,13 +33,13 @@ namespace natix.CompactDS
 		public void Save (BinaryWriter Output)
 		{
 			Output.Write (this.Data.Count);
-			PrimitiveIO<byte>.WriteVector(Output, this.Data);
+			PrimitiveIO<byte>.SaveVector(Output, this.Data);
 		}
 		
 		public void Load (BinaryReader Input)
 		{
 			var len = Input.ReadInt32();
-			this.Data = PrimitiveIO<byte>.ReadFromFile(Input, len, null);
+			this.Data = PrimitiveIO<byte>.LoadVector(Input, len, null);
 		}
 
 		public ListIFS8 () : base()

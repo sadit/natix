@@ -122,7 +122,7 @@ namespace natix.SimilaritySearch
 		public object Parse (string s, bool isquery)
 		{
 			if (this.ParseIntegers) {
-				return PrimitiveIO<int>.ReadVectorFromString (s);
+				return PrimitiveIO<int>.LoadVector (s);
 			} else {
 				var u = new int[s.Length];
 				for (int i = 0; i < u.Length; ++i) {

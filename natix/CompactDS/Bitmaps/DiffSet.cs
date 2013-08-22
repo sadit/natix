@@ -60,8 +60,8 @@ namespace natix.CompactDS
 			W.Write (this.M);
 			W.Write (this.B);
 			// Console.WriteLine ("xxxxxx  save samples.count {0}. N: {1}, M: {2}, B: {3}", this.Samples.Count, this.N, this.M, this.B);
-			PrimitiveIO<int>.WriteVector (W, this.Samples);
-			PrimitiveIO<long>.WriteVector (W, this.Offsets);
+			PrimitiveIO<int>.SaveVector (W, this.Samples);
+			PrimitiveIO<long>.SaveVector (W, this.Offsets);
 			IEncoder32GenericIO.Save (W, this.Coder);
 			this.Stream.Save (W);
 		}
@@ -74,8 +74,8 @@ namespace natix.CompactDS
 			int num_samples = this.M / this.B;
 			this.Samples = new List<int>( num_samples );
 			this.Offsets = new List<long>( num_samples );
-			PrimitiveIO<int>.ReadFromFile (R, num_samples, this.Samples);
-			PrimitiveIO<long>.ReadFromFile (R, num_samples, this.Offsets);
+			PrimitiveIO<int>.LoadVector (R, num_samples, this.Samples);
+			PrimitiveIO<long>.LoadVector (R, num_samples, this.Offsets);
 			// Console.WriteLine ("xxxxxx  load samples.count {0}. N: {1}, M: {2}, B: {3}", this.Samples.Count, this.N, this.M, this.B);
 			this.Coder = IEncoder32GenericIO.Load (R);
 			this.Stream = new BitStream32 ();

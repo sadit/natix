@@ -71,7 +71,7 @@ namespace natix.CompactDS
 				int len = this.newF.Count1;
 				this.charT = new int[len];
 				// Console.WriteLine ("*****>> charT => {0} bytes", this.charT.Length * 4);
-				PrimitiveIO<int>.ReadFromFile (Input, len, this.charT);
+				PrimitiveIO<int>.LoadVector (Input, len, this.charT);
 			}
 			using (var Input = new BinaryReader (File.OpenRead (sa_name + ".psi"))) {
 				int seqlen = this.newF.Count;
@@ -87,7 +87,7 @@ namespace natix.CompactDS
 					}
 					int len = next - curr;
 					L.Clear();
-					PrimitiveIO<int>.ReadFromFile (Input, len, L);
+					PrimitiveIO<int>.LoadVector (Input, len, L);
 					for (int j = 0; j < len; ++j) {
 						var x = L[j];
 						try {
@@ -119,7 +119,7 @@ namespace natix.CompactDS
 		{
 			using (var Output = new BinaryWriter (File.Create (basename + ".idx"))) {
 				GenericIO<Bitmap>.Save (Output, this.newF);
-				PrimitiveIO<int>.WriteVector (Output, this.charT);
+				PrimitiveIO<int>.SaveVector (Output, this.charT);
 			}
 			using (var Output = new BinaryWriter (File.Create (basename + ".psi"))) {
 				GenericIO<Sequence>.Save(Output, this.SeqPsi);
@@ -137,7 +137,7 @@ namespace natix.CompactDS
 			using (var Input = new BinaryReader (File.OpenRead (basename + ".idx"))) {
 				this.newF = GenericIO<Bitmap>.Load (Input);
 				this.charT = new int[this.newF.Count1];
-				PrimitiveIO<int>.ReadFromFile (Input, this.charT.Length, this.charT);
+				PrimitiveIO<int>.LoadVector (Input, this.charT.Length, this.charT);
 			}
 			using (var Input = new BinaryReader (File.OpenRead (basename + ".psi"))) {
 				this.SeqPsi = GenericIO<Sequence>.Load (Input);

@@ -63,8 +63,8 @@ namespace natix.SimilaritySearch
 			this.MAX_SYMBOL = Input.ReadInt32 ();
 			this.alpha_stddev = Input.ReadSingle();
 			//PrimitiveIO<float>.ReadFromFile(Input, this.MEAN.Count, this.MEAN);
-			this.STDDEV = PrimitiveIO<float>.ReadFromFile(Input, this.PIVS.Count, null);
-			this.MEAN = PrimitiveIO<float>.ReadFromFile(Input, this.PIVS.Count, null);
+			this.STDDEV = PrimitiveIO<float>.LoadVector(Input, this.PIVS.Count, null);
+			this.MEAN = PrimitiveIO<float>.LoadVector(Input, this.PIVS.Count, null);
 		}
 		
 		public override void Save (BinaryWriter Output)
@@ -75,8 +75,8 @@ namespace natix.SimilaritySearch
 			// PrimitiveIO<float>.WriteVector(Output, this.MEAN);
 			Output.Write((int) this.MAX_SYMBOL);
 			Output.Write((float) this.alpha_stddev);
-			PrimitiveIO<float>.WriteVector(Output, this.STDDEV);
-			PrimitiveIO<float>.WriteVector(Output, this.MEAN);
+			PrimitiveIO<float>.SaveVector(Output, this.STDDEV);
+			PrimitiveIO<float>.SaveVector(Output, this.MEAN);
 		}
 
 		public virtual void Build (LAESA idx, int num_pivs, int num_rings, ListIBuilder list_builder = null)

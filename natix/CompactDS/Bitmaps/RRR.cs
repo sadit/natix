@@ -166,8 +166,8 @@ namespace natix.CompactDS
 			this.SaveClasses (Output);
 			this.Offsets.Save (Output);
 			Output.Write ((int)this.AbsOffset.Length);
-			PrimitiveIO<int>.WriteVector (Output, this.AbsRank);
-			PrimitiveIO<int>.WriteVector (Output, this.AbsOffset);
+			PrimitiveIO<int>.SaveVector (Output, this.AbsRank);
+			PrimitiveIO<int>.SaveVector (Output, this.AbsOffset);
 		}
 		
 		public override void Load (BinaryReader Input)
@@ -180,8 +180,8 @@ namespace natix.CompactDS
 			var len = Input.ReadInt32 ();
 			this.AbsRank = new int[len];
 			this.AbsOffset = new int[len];
-			PrimitiveIO<int>.ReadFromFile (Input, len, this.AbsRank);
-			PrimitiveIO<int>.ReadFromFile (Input, len, this.AbsOffset);
+			PrimitiveIO<int>.LoadVector (Input, len, this.AbsRank);
+			PrimitiveIO<int>.LoadVector (Input, len, this.AbsOffset);
 		}
 
 		public override void AssertEquality (Bitmap _other)

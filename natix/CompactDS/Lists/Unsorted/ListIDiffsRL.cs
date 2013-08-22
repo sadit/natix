@@ -113,7 +113,7 @@ namespace natix.CompactDS
 			this.BLOCKSIZE = Input.ReadInt16();
 			this.MARKS = GenericIO<Bitmap>.Load (Input);
 			this.ABSPOS = ListIGenericIO.Load(Input);
-			this.OFFSETS = PrimitiveIO<long>.ReadFromFile(Input, this.ABSPOS.Count, null);
+			this.OFFSETS = PrimitiveIO<long>.LoadVector(Input, this.ABSPOS.Count, null);
 			this.DIFFS = new BitStream32();
 			this.DIFFS.Load(Input);
 		}
@@ -124,7 +124,7 @@ namespace natix.CompactDS
 			Output.Write((Int16) this.BLOCKSIZE);
 			GenericIO<Bitmap>.Save(Output, this.MARKS);
 			ListIGenericIO.Save(Output, this.ABSPOS);
-			PrimitiveIO<long>.WriteVector(Output, this.OFFSETS);
+			PrimitiveIO<long>.SaveVector(Output, this.OFFSETS);
 			this.DIFFS.Save(Output);
 		}
 

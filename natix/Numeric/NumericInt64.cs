@@ -71,7 +71,7 @@ namespace natix
 	/// Write a numeric object to a binary stream
 	/// </summary>
 
-	public void WriteBinary (BinaryWriter bw, Int64 d)
+	public void Save (BinaryWriter bw, Int64 d)
 	{
 	    bw.Write (d);
 	}
@@ -79,11 +79,25 @@ namespace natix
 	/// Reads a numeric object from a binary stream
 	/// </summary>
 		
-	public Int64 ReadBinary (BinaryReader br)
+	public Int64 Load (BinaryReader br)
 	{
 	    return br.ReadInt64 ();
 	}
  
+ 	public void LoadVector(BinaryReader input, Int64[] vec, int startIndex, int count)
+ 	{
+ 		for (int i = 0; i < count; ++i) {
+ 			vec[startIndex + i ] = input.ReadInt64 ();
+ 		}
+ 	}
+
+	public void SaveVector(BinaryWriter output, Int64[] vec, int startIndex, int count)
+ 	{
+ 		for (int i = 0; i < count; ++i) {
+ 			output.Write(vec[startIndex+i]);
+ 		}
+ 	}
+ 	
 	/// <summary>
 	/// Substraction
 	/// </summary>

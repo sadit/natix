@@ -41,7 +41,7 @@ namespace natix.CompactDS
 		{
 			bw.Write ((int)this.N);
 			bw.Write ((int)this.sortedList.Count);
-			PrimitiveIO<int>.WriteVector (bw, this.sortedList);
+			PrimitiveIO<int>.SaveVector (bw, this.sortedList);
 		}
 		
 		public override void Load (BinaryReader br)
@@ -49,7 +49,7 @@ namespace natix.CompactDS
 			this.N = br.ReadInt32 ();
 			int len = br.ReadInt32 ();
 			this.sortedList = new List<int>(len);
-			PrimitiveIO<int>.ReadFromFile (br, len, this.sortedList);
+			PrimitiveIO<int>.LoadVector (br, len, this.sortedList);
 		}
 		
 		public SortedList () : base()

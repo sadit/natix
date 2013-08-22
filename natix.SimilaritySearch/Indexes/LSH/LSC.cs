@@ -53,7 +53,7 @@ namespace natix.SimilaritySearch
 			base.Load(Input);
 			var c = Input.ReadInt32 ();
 			this.H = new ushort[c];
-			PrimitiveIO<ushort>.ReadFromFile(Input, c, this.H);
+			PrimitiveIO<ushort>.LoadVector(Input, c, this.H);
 			this.Seq = GenericIO<Sequence>.Load(Input);
 		}
 
@@ -61,7 +61,7 @@ namespace natix.SimilaritySearch
 		{
 			base.Save(Output);
 			Output.Write((int) this.H.Length);
-			PrimitiveIO<ushort>.WriteVector(Output, this.H);
+			PrimitiveIO<ushort>.SaveVector(Output, this.H);
 			GenericIO<Sequence>.Save(Output, this.Seq);
 		}
 

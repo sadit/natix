@@ -50,7 +50,7 @@ namespace natix.SimilaritySearch
 				Output.Write (this.refID);
 				Output.Write (this.ext_radius);
 				Output.Write (this.bucket.Count);
-				PrimitiveIO<int>.WriteVector (Output, this.bucket);
+				PrimitiveIO<int>.SaveVector (Output, this.bucket);
 			}
 
 			public void Load(BinaryReader Input)
@@ -59,7 +59,7 @@ namespace natix.SimilaritySearch
 				this.ext_radius = Input.ReadDouble ();
 				var len = Input.ReadInt32 ();
 				this.bucket = new List<int> (len);
-				PrimitiveIO<int>.ReadFromFile (Input, len, this.bucket);
+				PrimitiveIO<int>.LoadVector (Input, len, this.bucket);
 			}
 
 		}

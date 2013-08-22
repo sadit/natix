@@ -46,11 +46,13 @@ namespace natix
 		/// <summary>
 		/// Write as binary
 		/// </summary>
-		void WriteBinary (BinaryWriter w, T d);
+		void Save (BinaryWriter w, T d);
 		/// <summary>
 		/// Read from binary stream
 		/// </summary>
-		T ReadBinary (BinaryReader r);
+		T Load (BinaryReader r);
+		void LoadVector (BinaryReader input, T[] V, int startIndex, int count);
+		void SaveVector (BinaryWriter output, T[] V, int startIndex, int count);
 		/// <summary>
 		/// Substraction of a - b
 		/// </summary>

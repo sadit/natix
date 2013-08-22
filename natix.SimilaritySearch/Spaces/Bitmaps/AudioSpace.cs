@@ -41,7 +41,7 @@ namespace  natix.SimilaritySearch
 			Output.Write ((int) this.SymbolSize);
 			Output.Write ((int) this.Q);
 			Output.Write ((int) this.Data.Length);
-			PrimitiveIO<byte>.WriteVector(Output, this.Data);
+			PrimitiveIO<byte>.SaveVector(Output, this.Data);
 			Output.Write (this.Name);
 		}
 
@@ -52,7 +52,7 @@ namespace  natix.SimilaritySearch
 			this.Q = Input.ReadInt32();
 			var len = Input.ReadInt32 ();
 			this.Data = new byte[len];
-			PrimitiveIO<byte>.ReadFromFile(Input, len, this.Data);
+			PrimitiveIO<byte>.LoadVector(Input, len, this.Data);
 			this.Name = Input.ReadString();
 		}
 				

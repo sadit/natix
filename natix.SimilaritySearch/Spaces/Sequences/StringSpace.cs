@@ -28,21 +28,27 @@ namespace natix.SimilaritySearch
 	public class StringSpace<T> : MetricDB where T : struct,IComparable
 	{
 		// static INumeric<T> Num = (INumeric<T>)(natix.Numeric.Get (typeof(T)));
-		public IList< T[] > seqs;
+		public List< T[] > seqs = new List<T[]> ();
 		//public IListContainer<T> seqs;
 		protected int numdist;
 		public Func<string,IList<T>> StringParser = null;
+
+		public void Add(T[] u)
+		{
+			this.seqs.Add (u);
+		}
 
 		public virtual void Load (BinaryReader Input)
 		{
 			this.Name = Input.ReadString();
 			var len = Input.ReadInt32 ();
-			this.seqs = new T[len][];
-			for (int i = 0; i < this.seqs.Count; ++i) {
-				len = Input.ReadInt32 ();
-				var v = new T[len];
-				PrimitiveIO<T>.ReadFromFile(Input, len, v);
-				this.seqs[i] = v;
+			this.seqs.Clear ();
+			this.seqs.Capacity = len;
+			for (int i = 0; i < len; ++i) {
+				var size = Input.ReadInt32 ();
+				var v = new T[size];
+				PrimitiveIO<T>.LoadVector(Input, size, v);
+				this.seqs.Add (v);
 			}
 		}
 
@@ -52,7 +58,7 @@ namespace natix.SimilaritySearch
 			Output.Write ((int)this.seqs.Count);
 			for (int i = 0; i < this.seqs.Count; ++i) {
 				Output.Write((int)this.seqs[i].Length);
-				PrimitiveIO<T>.WriteVector(Output, this.seqs[i]);
+				PrimitiveIO<T>.SaveVector(Output, this.seqs[i]);
 			}
 		}
 
@@ -134,7 +140,7 @@ namespace natix.SimilaritySearch
 				return this.seqs [int.Parse (s.Split (' ') [1])];
 			}
 			if (this.StringParser == null) { 
-				return PrimitiveIO<T>.ReadVectorFromString (s);
+				return PrimitiveIO<T>.LoadVector (s);
 			}
 			return this.StringParser(s);
 		}
@@ -150,7 +156,7 @@ namespace natix.SimilaritySearch
 		/// The length of the space
 		/// </summary>
 		public int Count {
-			get { return (this.seqs == null) ? 0 : this.seqs.Count; }
+			get { return this.seqs.Count; }
 		}
 		
 		/// <summary>

@@ -27,38 +27,22 @@ using natix.SimilaritySearch;
 namespace natix.SimilaritySearch
 {
 	/// <summary>
-	/// Helping class to load and create indexes from xml saved files
+	/// Generic I/O output for managing Index objects
 	/// </summary>
-	/// <remarks>
-	/// The xml files contains all the necessary information to 
-	/// recover and load the index. Loading issues are delegated to 
-	/// index implementations.
-	/// 
-	/// We can create indexes specifing an indexclass and spaceclass. The spaceclass
-	/// can be one of the defined in SpaceCache.cs
-	/// 
-	/// Indexclass should be one of the specified here
-	/// 
-	///</remarks>
 	public class IndexGenericIO
 	{
+
+		public static Func< string, string > NormalizePath = (string path) => path;
+
 		/// <summary>
 		/// Returns the object Type of the index, this should be done before the generic creation.
 		/// </summary>
-		/// <remarks>
-		/// Returns the object Type of the index, this should be done before the generic creation.
-		/// The type will be signed using the space type.
-		/// </remarks>
-		/// <example>
-		/// // Example of a delegate:
-		/// () =&gt; typeof(Bkt&lt;&gt;)
-		/// </example>
 
 		public static Index Load (string path, string indexclass = null, Action<Index> after_load_action = null)
 		{
 			Index I;
             // Console.WriteLine ("=== loading index, path: {0}", path);
-			using (var Input = new BinaryReader(File.OpenRead(path))) {
+			using (var Input = new BinaryReader(File.OpenRead(NormalizePath(path)))) {
 				I = Load (Input, indexclass, after_load_action);
 			}
 			return I;
@@ -84,7 +68,7 @@ namespace natix.SimilaritySearch
 
 		public static void Save (string path, Index I)
 		{
-			using (var Output = new BinaryWriter(File.Create(path))) {
+			using (var Output = new BinaryWriter(File.Create(NormalizePath(path)))) {
 				Save (Output, I);
 			}
 		}

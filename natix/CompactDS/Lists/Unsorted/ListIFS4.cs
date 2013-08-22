@@ -35,14 +35,14 @@ namespace natix.CompactDS
 		{
 			Output.Write (this.n);
 			Output.Write (this.Data.Count);
-			PrimitiveIO<byte>.WriteVector(Output, this.Data);
+			PrimitiveIO<byte>.SaveVector(Output, this.Data);
 		}
 		
 		public void Load (BinaryReader Input)
 		{
 			this.n = Input.ReadInt32 ();
 			var len = Input.ReadInt32();
-			this.Data = PrimitiveIO<byte>.ReadFromFile(Input, len, null);
+			this.Data = PrimitiveIO<byte>.LoadVector(Input, len, null);
 		}
 
 		public ListIFS4 () : base()

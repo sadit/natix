@@ -59,10 +59,14 @@ namespace natix.SimilaritySearch
 			this.symlen = Input.ReadInt32 ();
 			int Len = Input.ReadInt32 ();
 			this.pool.Capacity = Len;
+			int pc = Len / 100 + 1;
 			for (int i = 0; i < Len; ++i) {
+				if (i % pc == 0) {
+					Console.WriteLine ("Loading {0} advance {1}/{2}", this, i, Len	);
+				}
 				var len = Input.ReadInt32 ();
 				var list = new byte[len];
-				PrimitiveIO<byte>.ReadFromFile(Input, len, list);
+				PrimitiveIO<byte>.LoadVector(Input, len, list);
 				this.pool.Add (list);
 			}
 		}
@@ -73,8 +77,10 @@ namespace natix.SimilaritySearch
 			Output.Write ((int)this.symlen);
 			Output.Write ((int)this.pool.Count);
 			for (int i = 0; i < this.pool.Count; ++i) {
-				Output.Write ((int)this.pool [i].Length);
-				PrimitiveIO<byte>.WriteVector (Output, this.pool [i]);
+				var u = this.pool [i];
+				// Console.WriteLine ("*** i: {0}, n: {1}, u: {2}", i, this.pool.Count, u);
+				Output.Write ((int)u.Length);
+				PrimitiveIO<byte>.SaveVector (Output, u);
 			}
 		}
 
@@ -255,7 +261,7 @@ namespace natix.SimilaritySearch
 			if (save_binary_cache) {
 				// Console.WriteLine ("Writing binary version {0}.bin of {1} bytes", name, res.Count);
 				using (var binfile = new BinaryWriter(File.Create(bin))) {
-					PrimitiveIO<byte>.WriteVector (binfile, res);
+					PrimitiveIO<byte>.SaveVector (binfile, res);
 				}
 			}
 			return res;

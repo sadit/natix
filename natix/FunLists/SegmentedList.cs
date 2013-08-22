@@ -37,7 +37,7 @@ namespace natix
             int len = Input.ReadInt32 ();
             this.blocks = new List<T[]>(len);
             for (int i = 0; i < len; ++i) {
-                this.blocks[i] = (T[])PrimitiveIO<T>.ReadFromFile(Input, this.block_size, null);
+                this.blocks[i] = (T[])PrimitiveIO<T>.LoadVector(Input, this.block_size, null);
             }
         }
 
@@ -48,7 +48,7 @@ namespace natix
             Output.Write (this.block_size);
             Output.Write (this.blocks.Count);
             for (int i = 0; i < this.blocks.Count; ++i) {
-                PrimitiveIO<T>.WriteVector(Output, this.blocks[i]);
+                PrimitiveIO<T>.SaveVector(Output, this.blocks[i]);
             }
         }
 

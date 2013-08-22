@@ -27,24 +27,42 @@ namespace natix.SimilaritySearch
 	public class SpaceGenericIO
 	{
 		public static Dictionary< string, MetricDB > CACHE = new Dictionary< string, MetricDB >();
+		public static Func< string, string >  NormalizePath = (string path) => Path.GetFullPath(path);
+		public static Func< string, MetricDB > CacheHandler = (string path) => {
+			if (CACHE.ContainsKey(path)) {
+				return CACHE[path];
+			}
+			return null;
+		};
 
-		public static MetricDB Load (string path, bool save_into_cache = true)
+		public static void SetCacheHandler(Func<string, MetricDB> cacheHandler)
+		{
+			CacheHandler = cacheHandler;
+		}
+
+		public static MetricDB Load (string path, bool remember_in_cache = true, bool try_load_from_cache = true)
 		{
 			if (path == "") {
 				return new NullSpace();
 			}
-			MetricDB sp;
-			var full_path = Path.GetFullPath (path);
-			Console.Write("XXX Loading MetricDB: '{0}', save_into_cache: {1}", full_path, save_into_cache);
-			if (CACHE.TryGetValue (full_path, out sp)) {
-				Console.WriteLine (", using CACHE");
+			path = NormalizePath (path);
+			MetricDB sp = null;
+			if (try_load_from_cache) {
+				sp = CacheHandler (path);
+			}
+			Console.WriteLine("XXX Loading MetricDB: '{0}', save_into_cache: {1}", path, remember_in_cache);
+			if (sp != null) {
+				Console.WriteLine ("XXX Using the cached value");
 				return sp;
 			}
-			Console.WriteLine (", loading path");
-			using (var Input = new BinaryReader(File.OpenRead(full_path))) {
-				sp = Load (Input, save_into_cache);
+			using (var Input = new BinaryReader(File.OpenRead(path))) {
+				sp = Load (Input, false);
 			}
-			Console.WriteLine ("XXX Loaded '{0}'", full_path);
+			sp.Name = path;
+			if (remember_in_cache) {
+				CACHE[sp.Name] = sp;
+			}
+			Console.WriteLine ("XXX Loaded '{0}', type: {1}", path, sp);
 			return sp;
 		}
 
@@ -63,7 +81,7 @@ namespace natix.SimilaritySearch
 
 		public static void Save (string path, MetricDB sp, bool save_into_cache = true)
 		{
-			// var prevname = sp.Name;
+			path = NormalizePath (path);
 			sp.Name = path;
 			using (var Output = new BinaryWriter(File.Create(path))) {
 				Save (Output, sp, save_into_cache);
@@ -73,11 +91,12 @@ namespace natix.SimilaritySearch
 
 		public static void Save (BinaryWriter Output, MetricDB sp, bool save_into_cache)
 		{
-			Output.Write(sp.GetType ().ToString());
-			sp.Save(Output);
-			if (save_into_cache) {
-				CACHE[Path.GetFullPath(sp.Name)] = sp;
-			}
+		    if (sp.Name != "") sp.Name = NormalizePath (sp.Name);
+		    Output.Write(sp.GetType ().ToString());
+		    sp.Save(Output);
+		    if (save_into_cache) {
+			CACHE[sp.Name] = sp;
+		    }
 		}
 
 		public static void SmartSave (BinaryWriter Output, MetricDB db)
@@ -85,6 +104,7 @@ namespace natix.SimilaritySearch
 			if (db.Name == null) {
 				db.Name = "";
 			}
+			if (db.Name != "") db.Name = NormalizePath (db.Name);
 			Output.Write (db.Name);
 			if (db.Name == "") {
 				SpaceGenericIO.Save(Output, db, false);

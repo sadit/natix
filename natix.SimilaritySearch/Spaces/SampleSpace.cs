@@ -39,7 +39,7 @@ namespace natix.SimilaritySearch
 		{
 			Output.Write(this.Name);
 			Output.Write((int)this.SAMPLE.Count);
-			PrimitiveIO<int>.WriteVector(Output, this.SAMPLE);
+			PrimitiveIO<int>.SaveVector(Output, this.SAMPLE);
 			SpaceGenericIO.SmartSave(Output, this.DB);
 		}
 
@@ -48,7 +48,7 @@ namespace natix.SimilaritySearch
 			this.Name = Input.ReadString ();
 			var count = Input.ReadInt32 ();
 			this.SAMPLE = new int[count];
-			PrimitiveIO<int>.ReadFromFile(Input, count, this.SAMPLE);
+			PrimitiveIO<int>.LoadVector(Input, count, this.SAMPLE);
 			this.DB = SpaceGenericIO.SmartLoad(Input, true);
 		}
 
@@ -80,10 +80,10 @@ namespace natix.SimilaritySearch
 			}
 		}
 		
-		public IResult CreateResult (int K, bool ceiling)
-		{
-			return this.DB.CreateResult (K, ceiling);
-		}
+//		public IResult CreateResult (int K, bool ceiling)
+//		{
+//			return this.DB.CreateResult (K, ceiling);
+//		}
 
 		public object Parse (string s, bool isquery)
 		{

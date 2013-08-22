@@ -237,7 +237,7 @@ namespace natix.CompactDS
 			Console.WriteLine ("***=== Sketch size: {0} MB", size / (1 << 20));
 			Output.Write ((int)vocsize);
 			size = Output.BaseStream.Length;
-			PrimitiveIO<int>.WriteVector (Output, this.FreqPerm);
+			PrimitiveIO<int>.SaveVector (Output, this.FreqPerm);
 			size = Output.BaseStream.Length - size;
 			Console.WriteLine ("***=== FreqPerm size: {0} MB", size / (1 << 20));
 			Console.WriteLine ("*** Saving {0} inverted lists", vocsize);
@@ -263,7 +263,7 @@ namespace natix.CompactDS
 			int vocabulary_size;
 			vocabulary_size = Input.ReadInt32 ();
 			this.FreqPerm = new int[vocabulary_size];
-			PrimitiveIO<int>.ReadFromFile (Input, vocabulary_size, this.FreqPerm);
+			PrimitiveIO<int>.LoadVector (Input, vocabulary_size, this.FreqPerm);
 			Console.WriteLine ("*** perms-size-bytes:", Input.BaseStream.Position - start_size);
 			start_size = Input.BaseStream.Position;
 			this.InvIndex = new Bitmap[vocabulary_size];

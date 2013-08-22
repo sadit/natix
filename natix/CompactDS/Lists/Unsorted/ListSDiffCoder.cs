@@ -121,7 +121,7 @@ namespace natix.CompactDS
 			} else {
 				int num_offsets = Input.ReadInt32();
 				this.Offsets = new int[num_offsets];
-				PrimitiveIO<int>.ReadFromFile(Input, num_offsets, this.Offsets);
+				PrimitiveIO<int>.LoadVector(Input, num_offsets, this.Offsets);
 			}
 		}
 		
@@ -137,7 +137,7 @@ namespace natix.CompactDS
 				sa.Save(Output);
 			} else {
 				Output.Write((int) this.Offsets.Count);
-				PrimitiveIO<int>.WriteVector(Output, this.Offsets);
+				PrimitiveIO<int>.SaveVector(Output, this.Offsets);
 			}
 		}
 		

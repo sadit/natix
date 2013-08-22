@@ -182,6 +182,10 @@
     <Compile Include="Indexes\Hashing\NappHash.cs" />
     <Compile Include="Indexes\Hashing\MetricShellHash.cs" />
     <Compile Include="Indexes\ApproxRandom\RandomizedSearch.cs" />
+    <Compile Include="Indexes\ApproxGraph\ApproxGraphKNR.cs" />
+    <Compile Include="Spaces\Others\CoPhIR.cs" />
+    <Compile Include="Spaces\Transformations\HFP.cs" />
+    <Compile Include="Spaces\Transformations\KnrFP.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -198,6 +202,8 @@
     <Folder Include="Indexes\ApproxGraph\" />
     <Folder Include="Indexes\ApproxRandom\" />
     <Folder Include="Indexes\LC\" />
+    <Folder Include="Spaces\Others\" />
+    <Folder Include="Spaces\Transformations\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\natix\natix.csproj">

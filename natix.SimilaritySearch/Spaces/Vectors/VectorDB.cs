@@ -191,7 +191,7 @@ namespace natix.SimilaritySearch
 			if (s.StartsWith ("obj")) {
 				return this[int.Parse (s.Split (' ')[1])];
 			}
-			return PrimitiveIO<T>.ReadVectorFromString (s, this.Dimension);
+			return PrimitiveIO<T>.LoadVector (s);
 		}
 
 		/// <summary>

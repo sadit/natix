@@ -245,6 +245,8 @@
     <Compile Include="CompactDS\Permutations\CyclicPermsListFS_MRRR.cs" />
     <Compile Include="CompactDS\Bitmaps\SortedList.cs" />
     <Compile Include="Util\GenericIO.cs" />
+    <Compile Include="Util\NatixTaskScheduler.cs" />
+    <Compile Include="SortingSearching\GenericSearch\SearchListIFS.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

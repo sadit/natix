@@ -198,7 +198,7 @@ namespace natix.SimilaritySearch
 			if (this.MAXCAND < 0) {
 				return cand;
 			}
-			var res = this.DB.CreateResult(k, true);
+			var res = new Result(k, true);
 			foreach (ResultPair p in cand) {
 				res.Push(p.docid, this.DB.Dist(q, this.DB[p.docid]));
 			}

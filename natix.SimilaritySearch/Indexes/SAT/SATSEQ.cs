@@ -102,7 +102,7 @@ namespace natix.SimilaritySearch
 			this.SEQ = GenericIO<Sequence>.Load (Input);
 			var len = Input.ReadInt32 ();
 			this.COV = new List<double> (len);
-			PrimitiveIO<double>.ReadFromFile (Input, len, this.COV);
+			PrimitiveIO<double>.LoadVector (Input, len, this.COV);
 			this.COV_ZERO = new GGMN ();
 			this.COV_ZERO.Load (Input);
         }
@@ -113,7 +113,7 @@ namespace natix.SimilaritySearch
 			Output.Write (this.root);
 			GenericIO<Sequence>.Save (Output, this.SEQ);
 			Output.Write (this.COV.Count);
-			PrimitiveIO<double>.WriteVector (Output, this.COV);
+			PrimitiveIO<double>.SaveVector (Output, this.COV);
 			this.COV_ZERO.Save (Output);
         }
 

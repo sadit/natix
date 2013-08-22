@@ -55,7 +55,7 @@ namespace natix.CompactDS
 		public void Save (BinaryWriter Output)
 		{
 			Output.Write ((int)this.A.Length);
-			PrimitiveIO<int>.WriteVector (Output, this.A);
+			PrimitiveIO<int>.SaveVector (Output, this.A);
 		}
 
 		public void Save_CSA_BWT (string sa_name, int sample_step)
@@ -64,7 +64,7 @@ namespace natix.CompactDS
 			Console.WriteLine ("first save it and reload it after the call");
 			using (var Output = new BinaryWriter (File.Create (sa_name + ".structs"))) {
 				GenericIO<Bitmap>.Save (Output, this.newF);
-				PrimitiveIO<int>.WriteVector (Output, this.charT);
+				PrimitiveIO<int>.SaveVector (Output, this.charT);
 			}
 			using (var Output = new BinaryWriter (File.Create (sa_name + ".samples"))) {
 				Output.Write ((short)sample_step);
@@ -144,7 +144,7 @@ namespace natix.CompactDS
 					var p = (PSI[i] + 1) % PSI.Length;
 					PSI[i] = INV[p];
 				}
-				PrimitiveIO<int>.WriteVector (Output, PSI);
+				PrimitiveIO<int>.SaveVector (Output, PSI);
 				/*Console.Write ("charT => ");
 				for (int i = 0; i < this.charT.Count; i++) {
 					Console.Write ("[{0}] ", (char)this.charT[i]);
@@ -173,7 +173,7 @@ namespace natix.CompactDS
 		{
 			int len = Input.ReadInt32 ();
 			this.A = new int[len];
-			PrimitiveIO<int>.ReadFromFile (Input, len, this.A);
+			PrimitiveIO<int>.LoadVector (Input, len, this.A);
 		}
 		
 		/// <summary>

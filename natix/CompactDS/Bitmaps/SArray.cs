@@ -181,7 +181,7 @@ namespace natix.CompactDS
 			uint pos_masked = (uint)(this.get_mask () & pos);
 			// Console.WriteLine ("xxxxx {0}", nextcount - prevcount);
 			int count = rank1_next - rank1_prev;
-			if (count < 128) {
+			if (count < 16) {
 				// if (true) {
 				// sequential search
 				int rank = rank1_prev;
@@ -198,7 +198,8 @@ namespace natix.CompactDS
 				return rank;
 			} else {
 				// binary search
-				return 1 + GenericSearch.FindLast<int> ((int)pos_masked, this.L, rank1_prev, rank1_next);
+				//return 1 + GenericSearch.FindLast<int> ((int)pos_masked, this.L, rank1_prev, rank1_next);
+				return 1 + Search.FindLast ((int)pos_masked, this.L, rank1_prev, rank1_next);
 			}
 		}
 		

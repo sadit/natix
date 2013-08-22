@@ -45,7 +45,7 @@ namespace natix.SimilaritySearch
             foreach (var p in this.TABLE) {
                 Output.Write (p.Key);
 				Output.Write (p.Value.Count);
-				PrimitiveIO<int>.WriteVector(Output, p.Value);
+				PrimitiveIO<int>.SaveVector(Output, p.Value);
             }
 		}
 
@@ -60,7 +60,7 @@ namespace natix.SimilaritySearch
                 var key = Input.ReadInt32();
 				var len = Input.ReadInt32 ();
 				var value = new List<int>(len);
-				PrimitiveIO<int>.ReadFromFile(Input, len, value);
+				PrimitiveIO<int>.LoadVector(Input, len, value);
                 this.TABLE.Add (key, value);
             }
 		}

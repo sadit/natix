@@ -93,8 +93,8 @@ namespace natix.CompactDS
 					sa.Save (Output);
 				}
 			} else {*/
-				PrimitiveIO<long>.WriteVector (Output, this.Samples);
-				PrimitiveIO<long>.WriteVector (Output, this.Offsets);
+				PrimitiveIO<long>.SaveVector (Output, this.Samples);
+				PrimitiveIO<long>.SaveVector (Output, this.Offsets);
 //			}
 			this.Stream.Save (Output);
 		}
@@ -120,8 +120,8 @@ namespace natix.CompactDS
 			} else {*/
 				this.Samples = new List<long>( num_samples );
 				this.Offsets = new List<long>( num_samples );
-				PrimitiveIO<long>.ReadFromFile (Input, num_samples, this.Samples);
-				PrimitiveIO<long>.ReadFromFile (Input, num_samples, this.Offsets);
+				PrimitiveIO<long>.LoadVector (Input, num_samples, this.Samples);
+				PrimitiveIO<long>.LoadVector (Input, num_samples, this.Offsets);
 //			}
 			this.Stream = new BitStream32 ();
 			this.Stream.Load (Input);
@@ -300,7 +300,7 @@ namespace natix.CompactDS
 			this.ResetReader (ctx);
 			int start_index = -1;
 			if (this.Samples.Count > 0) {
-				start_index = GenericSearch.FindFirst<long> (pos, this.Samples);
+				start_index = Search.FindFirst<long> (pos, this.Samples);
 			}
 			int count;
 			if (start_index < 0) {

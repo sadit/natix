@@ -19,6 +19,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace natix
 {
@@ -26,97 +27,119 @@ namespace natix
 	/// Simple I/O output for arrays of items of native types
 	/// </summary>
 	public class PrimitiveIO<T>  where T: struct
-	{	
-		static INumeric<T> Num = (INumeric<T>)Numeric.Get (typeof(T));
+	{
+		public static INumeric<T> NUMERIC = (INumeric<T>)Numeric.Get (typeof(T));
 		
 		/// <summary>
 		/// Reads "numitems" vectors from rfile, store items in "output" (array or list)
 		/// </summary>
-		public static IList<T> ReadFromFile (BinaryReader rfile, int numitems, IList<T> output = null)
+		public static IList<T> LoadVector (BinaryReader Input, int numitems, IList<T> output = null)
 		{
+			T[] vec_output;
 			if (output == null) {
-				output = new T[numitems];
+				vec_output = new T[numitems];
+				NUMERIC.LoadVector (Input, vec_output, 0, numitems);
+				return vec_output;
+			}
+			vec_output = output as T[];
+			if (vec_output != null) {
+				NUMERIC.LoadVector (Input, vec_output, 0, numitems);
+				return vec_output;
 			}
 			if (output.Count > 0) {
 				for (int i = 0; i < output.Count; i++) {
-					output [i] = Num.ReadBinary (rfile);
+					output [i] = NUMERIC.Load (Input);
 				}
 				numitems -= output.Count;
 			}
 			for (int i = 0; i < numitems; i++) {
-				output.Add (Num.ReadBinary (rfile));
+				output.Add (NUMERIC.Load (Input));
 			}
 			return output;
 		}
 
 		/// <summary>
-		/// Read a large list of items from filename
+		/// Reads "numitems" vectors from rfile. Appends items to "output"
 		/// </summary>
-		public static IList<T> ReadAllFromFile (string filename)
+		public static void LoadVector (BinaryReader Input, T[] output, int sp, int count)
 		{
-			var infile = new BinaryReader (File.OpenRead (filename));
-			int size = (int)infile.BaseStream.Length / Num.SizeOf ();
-			var list = new List<T> (size);
-			int pc = size / 100 + 1;
-			int ic = 0;
-			Console.WriteLine("===> Reading vectors from {0}", filename);
-			for (int i = 0; i < size; i++) {
-				if ((i % pc) == 0) {
-					// Console.WriteLine("== Advance : {0:0.0}%, i: {1}", i * 1.0 / size * 100, i);
-					Console.Write ("{0:0.0}%, i: {1}, ", i * 1.0 / size * 100, i);
-					ic++;
-					if (ic % 5 == 0) {
-						Console.WriteLine();
-					} 
-				}
-				list.Add (Num.ReadBinary (infile));
-			}
-			Console.WriteLine("===> Done");
-			infile.Close ();
-			return list;
+			NUMERIC.LoadVector (Input, output, sp, count);
 		}
 
-		static char[] Sep = new char[2] { ' ', ',' };
-		/// <summary>
-		/// Load a single vector from a string, saving in a given vector. Each vector is a list of numbers separated by space or comma.
-		/// </summary>
-		public static IList<T> ReadVectorFromString (string line, int dim, IList<T> v = null)
+		static string[] split_vector(string line)
 		{
-			if (v == null) {
-				v = new T[dim];
+			// return line.Split (CharSeparators);
+			var matches = Regex.Matches (line, @"\S+");
+			//Console.WriteLine ("XXXXXXX>" + line);
+			var s = new string[matches.Count];
+			for (int i = 0; i < s.Length; ++i) {
+				s[i] = matches[i].Value;
+				// Console.WriteLine ("YY:" + s[i]);
 			}
-			line = line.Trim ();
-			string[] vecs = line.Split (Sep);
-			for (int j = 0; j < dim; j++) {
-				v [j] = Num.FromDouble (Double.Parse (vecs [j]));
-			}
-			return v;
+			return s;
 		}
-		
+
 		/// <summary>
-		/// Reads a vector from a string
+		/// Reads "numitems" vectors from String. Appends items to "output"
 		/// </summary>
-		public static IList<T> ReadVectorFromString (string line)
+		public static void LoadVector (string line, T[] output, int sp, int count)
+		{
+			line = line.Trim ();
+			string[] vecs = split_vector (line);
+			for (int i = 0; i < vecs.Length; i++) {
+				output[sp + i] = NUMERIC.FromDouble (Double.Parse (vecs [i]));
+			}
+		}
+
+		/// <summary>
+		/// Reads a vector from a string. The vector is stored (appended) to "output". It returns the number of 
+		/// loaded scalars
+		/// </summary>
+		public static int LoadVector (string line, List<T> output)
+		{
+			line = line.Trim ();
+			if (line.Length == 0) {
+				return 0;
+			}
+			string[] vecs = split_vector (line);
+			for (int i = 0; i < vecs.Length; i++) {
+				var d = NUMERIC.FromDouble (Double.Parse (vecs[i]));
+				output.Add( d );
+			}
+			return vecs.Length;
+		}
+
+		/// <summary>
+		/// Reads a vector from a string.
+		/// </summary>
+		public static T[] LoadVector (string line)
 		{
 			line = line.Trim ();
 			if (line.Length == 0) {
 				return new T[0];
 			}
-			string[] vecs = line.Split (Sep);
-			var v = new T[vecs.Length];
-			for (int j = 0; j < vecs.Length; j++) {
-				v[j] = Num.FromDouble (Double.Parse (vecs[j]));
+			string[] vecs = split_vector (line);
+			var output = new T[vecs.Length];
+			for (int i = 0; i < vecs.Length; i++) {
+				var d = NUMERIC.FromDouble (Double.Parse (vecs[i]));
+				output[i] = d;
 			}
-			return v;
+			return output;
 		}
+
 
 		/// <summary>
 		/// Write a single vector
 		/// </summary>
-		public static void WriteVector (BinaryWriter w, IEnumerable<T> V)
+		public static void SaveVector (BinaryWriter w, IEnumerable<T> V)
 		{
-			foreach (T u in V) {
-				Num.WriteBinary (w, u);
+			var vec = V as T[];
+			if (vec == null) {
+				foreach (T u in V) {
+					NUMERIC.Save (w, u);
+				}
+			} else {
+				NUMERIC.SaveVector (w, vec, 0, vec.Length);
 			}
 		}
 	}

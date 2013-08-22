@@ -3,6 +3,7 @@
 *.mdb
 *.pidb
 */bin/*
+*/obj/*
 *~
 *.userprefs
 *.DS_Store

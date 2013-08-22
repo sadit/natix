@@ -38,7 +38,7 @@ namespace natix.SimilaritySearch
 			this.DIST = new List<double>[this.PIVS.Count];
 			for (int i = 0; i < this.PIVS.Count; ++i) {
 				this.DIST[i] = new List<double>(this.DB.Count);
-				PrimitiveIO<double>.ReadFromFile(Input, this.DB.Count, this.DIST[i]);
+				PrimitiveIO<double>.LoadVector(Input, this.DB.Count, this.DIST[i]);
 			}
 		}
 
@@ -47,7 +47,7 @@ namespace natix.SimilaritySearch
 			base.Save (Output);
 			SpaceGenericIO.SmartSave (Output, this.PIVS);
 			for (int i = 0; i < this.PIVS.Count; ++i) {
-				PrimitiveIO<double>.WriteVector(Output, this.DIST[i]);
+				PrimitiveIO<double>.SaveVector(Output, this.DIST[i]);
 			}
 		}
 

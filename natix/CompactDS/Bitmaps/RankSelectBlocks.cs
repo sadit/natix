@@ -92,11 +92,11 @@ namespace natix.CompactDS
 			bw.Write (this.SuperBlockSize);
 			bw.Write (this.BlockSize);
 			bw.Write (this.SuperBlocks.Length);
-			PrimitiveIO<int>.WriteVector (bw, this.SuperBlocks);
+			PrimitiveIO<int>.SaveVector (bw, this.SuperBlocks);
 			bw.Write (this.Blocks.Length);
-			PrimitiveIO<short>.WriteVector (bw, this.Blocks);
+			PrimitiveIO<short>.SaveVector (bw, this.Blocks);
 			bw.Write(this.BitBlocks.Length);
-			PrimitiveIO<uint>.WriteVector (bw, this.BitBlocks);
+			PrimitiveIO<uint>.SaveVector (bw, this.BitBlocks);
 			bw.Write (this.N);
 		}
 
@@ -106,13 +106,13 @@ namespace natix.CompactDS
 			short bsize = reader.ReadInt16 ();
 			int numsuperblocks = reader.ReadInt32 ();
 			var sblocks = new int[numsuperblocks];
-			PrimitiveIO<int>.ReadFromFile (reader, numsuperblocks, sblocks);
+			PrimitiveIO<int>.LoadVector (reader, numsuperblocks, sblocks);
 			int numblocks = reader.ReadInt32 ();
 			var blocks = new short[numblocks];
-			PrimitiveIO<short>.ReadFromFile (reader, numblocks, blocks);
+			PrimitiveIO<short>.LoadVector (reader, numblocks, blocks);
 			var numbitblocks = reader.ReadInt32 ();
 			var bitblocks = new uint[numbitblocks];
-			PrimitiveIO<uint>.ReadFromFile (reader, numbitblocks, bitblocks);
+			PrimitiveIO<uint>.LoadVector (reader, numbitblocks, bitblocks);
 			var numbits = reader.ReadInt32 ();
 			this.SetState (bitblocks, numbits, sbsize, bsize, sblocks, blocks);
 		}		

@@ -38,18 +38,23 @@ namespace natix.SimilaritySearch
 		/// </summary>
 		public double  QArg;
 		/// <summary>
-		/// Query object in string representation
+		/// Query object in string representation. Used only if QObj is null
 		/// </summary>
         public string QRaw;
+		/// <summary>
+		/// The query object. If it is null then QRaw will be parsed.
+		/// </summary>
+		public object QObj;
 		/// <summary>
 		/// Constructor
 		/// </summary>
 
-		public CommandQuery (string qraw, double qarg, bool qtypeisrange)
+		public CommandQuery (string qraw, double qarg, bool qtypeisrange, object qobj = null)
 		{
 			this.QRaw = qraw;
 			this.QArg = qarg;
 			this.QTypeIsRange = qtypeisrange;
+			this.QObj = qobj;
 		}	
 		
 		public double EncodeQTypeQArgInSign ()

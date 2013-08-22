@@ -55,7 +55,7 @@ namespace natix.SimilaritySearch
 			for (int objID = 0; objID < len; ++objID) {
 				var size = Input.ReadInt16 ();
 				var seq = new int[size];
-				PrimitiveIO<int>.ReadFromFile (Input, size, seq);
+				PrimitiveIO<int>.LoadVector (Input, size, seq);
 				this.S.Add (seq);
 			}
 			this.CreateInvIndex ();
@@ -68,7 +68,7 @@ namespace natix.SimilaritySearch
 			Output.Write ((int) this.S.Count);
 			foreach (var seq in this.S) {
 				Output.Write ((short) seq.Length);
-				PrimitiveIO<int>.WriteVector (Output, seq);
+				PrimitiveIO<int>.SaveVector (Output, seq);
 			}
 		}
 		public void Build (MetricDB db, int num_refs, Random rand)

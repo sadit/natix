@@ -54,7 +54,7 @@ namespace natix.CompactDS
                 this.newF = GenericIO<Bitmap>.Load (Input);
                 int len = (int)this.newF.Count1;
                 this.charT = new int[len];
-                PrimitiveIO<int>.ReadFromFile (Input, len, this.charT);
+                PrimitiveIO<int>.LoadVector (Input, len, this.charT);
             }
             if (seq_builder == null) {
                 // seq_builder = SequenceBuilders.GetWT_BinaryCoding(BitmapBuilders.GetRRR_wt(16));
@@ -92,7 +92,7 @@ namespace natix.CompactDS
 		{
 			using (var Output = new BinaryWriter (File.Create (basename + ".structs"))) {
 				GenericIO<Bitmap>.Save (Output, this.newF);
-				PrimitiveIO<int>.WriteVector (Output, this.charT);
+				PrimitiveIO<int>.SaveVector (Output, this.charT);
 			}
 			using (var Output = new BinaryWriter (File.Create (basename + ".bwt-index"))) {
 				Console.WriteLine ("Saving bwt-index {0}", this.seqIndex);
@@ -113,7 +113,7 @@ namespace natix.CompactDS
 			using (var Input = new BinaryReader (File.OpenRead (basename + ".structs"))) {
 				this.newF = GenericIO<Bitmap>.Load (Input);
 				this.charT = new int[this.newF.Count1];
-				PrimitiveIO<int>.ReadFromFile (Input, this.charT.Length, this.charT);
+				PrimitiveIO<int>.LoadVector (Input, this.charT.Length, this.charT);
 			}
 			// this.seqIndex = new WaveletTree ();
 			// this.seqIndex.Load (Input);

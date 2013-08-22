@@ -143,8 +143,8 @@ namespace natix.CompactDS
 			bw.Write ((int)this.B);
 			bw.Write ((int)this.PosAbs.Length);
 			bw.Write ((int)this.SavedPos.Length);
-			PrimitiveIO<int>.WriteVector (bw, this.PosAbs);
-			PrimitiveIO<int>.WriteVector (bw, this.SavedPos);
+			PrimitiveIO<int>.SaveVector (bw, this.PosAbs);
+			PrimitiveIO<int>.SaveVector (bw, this.SavedPos);
 			this.IsLargeBlock.Save (bw);
 			this.BaseIndex.Save (bw, save_bitmap);
 		}
@@ -161,8 +161,8 @@ namespace natix.CompactDS
 			int expposlen = br.ReadInt32 ();
 			this.PosAbs = new int[posabslen];
 			this.SavedPos = new int[expposlen];
-			PrimitiveIO<int>.ReadFromFile (br, posabslen, this.PosAbs);
-			PrimitiveIO<int>.ReadFromFile (br, expposlen, this.SavedPos);
+			PrimitiveIO<int>.LoadVector (br, posabslen, this.PosAbs);
+			PrimitiveIO<int>.LoadVector (br, expposlen, this.SavedPos);
 			this.IsLargeBlock = new GGMN ();
 			this.IsLargeBlock.Load (br);
 			this.BaseIndex = new GGMN ();
