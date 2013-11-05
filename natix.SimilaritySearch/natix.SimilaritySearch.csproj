@@ -186,6 +186,15 @@
     <Compile Include="Spaces\Others\CoPhIR.cs" />
     <Compile Include="Spaces\Transformations\HFP.cs" />
     <Compile Include="Spaces\Transformations\KnrFP.cs" />
+    <Compile Include="Indexes\ApproxGraph\ApproxGraphCK.cs" />
+    <Compile Include="Indexes\ApproxGraph\ApproxGraphNearExpand.cs" />
+    <Compile Include="Indexes\ApproxGraph\ApproxGraphEffectiveNear.cs" />
+    <Compile Include="Indexes\ApproxGraph\ApproxGraphHSP.cs" />
+    <Compile Include="Indexes\ApproxGraph\HSP_app.cs" />
+    <Compile Include="Indexes\ApproxGraph\ApproxGraphAdaptive.cs" />
+    <Compile Include="Indexes\ApproxGraph\ApproxGraphLocalBeam.cs" />
+    <Compile Include="Indexes\ApproxGraph\ApproxGraphLocalBeamKNR.cs" />
+    <Compile Include="Indexes\ApproxGraph\ApproxGraphLocalBeamOrig.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

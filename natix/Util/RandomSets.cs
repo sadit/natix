@@ -168,13 +168,9 @@ namespace natix
             }
 		}
 
-		public static int GetRandomInt()
+		public static int GetRandomInt(int maxValue = int.MaxValue)
 		{
-			int seed;
-			//lock (_SeedMonitor) {
-            seed = _random.Next();
-			// }
-			return seed;
+			return _random.Next (maxValue);
 		}
 	}
 }

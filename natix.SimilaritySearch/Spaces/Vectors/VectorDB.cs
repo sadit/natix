@@ -86,6 +86,9 @@ namespace natix.SimilaritySearch
 		public virtual void Save(BinaryWriter Output)
 		{
 			Output.Write(this.Name);
+			if (this.VectorFilename == null || this.VectorFilename.Length == 0) {
+				throw new ArgumentNullException ("** VectorFilename should be set before saving this database **");
+			}
 			Output.Write (this.VectorFilename);
 			Output.Write((int) this.Dimension);
 			Output.Write ((float) this.P);

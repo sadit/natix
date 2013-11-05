@@ -57,34 +57,38 @@ namespace natix.SimilaritySearch
 			this.Build (db, arity, repeat_search);
 		}
 
-		public override IResult SearchKNN (object q, int K, IResult final_result)
+		public virtual Result GetStartingPoints (object q, int num_starting_points)
 		{
 			var knr = Math.Min (this.RepeatSearch, this.Vertices.Count);
 			var knrseq = new Result (knr);
-			var n = this.Vertices.Count;
 			int ss = Math.Min (this.SampleSize, this.Vertices.Count);
-
+			var n = this.Vertices.Count;
 			for (int i = 0; i < ss; ++i) {
 				var objID = this.rand.Next (0, n);
 				var d = this.DB.Dist (q, this.DB [objID]);
 				knrseq.Push (objID, d);
 			}
-			var res_array = new Result[knr];
+			return knrseq;
+		}
+
+		public override IResult SearchKNN (object q, int K, IResult final_result)
+		{
+			//Console.WriteLine ("******* STARTING SEARCH repeat={0} *******", this.GreedySearch);
+			var knrseq = this.GetStartingPoints(q, this.RepeatSearch);
+			var res_array = new Result[knrseq.Count];
 			int I = 0;
-			// on parallel implementation these two hashsets must be set to null
-			var visited = new HashSet<int> ();
-			var evaluated = new HashSet<int> ();
+			// on a parallel implementation these two hashsets must be set to null
+			var state = new SearchState ();
 			// visited = evaluated = null;
 			foreach (var p in knrseq) {
 				var res = new Result (K);
-				this.GreedySearch(q, res, p.docid, visited, evaluated);
+				//Console.WriteLine ("** starting GreedySearch");
+				this.GreedySearch(q, res, p.docid, state);
 				res_array [I] = res;
 				++I;
 			}
 			var inserted = new HashSet<int> ();
-			//Console.WriteLine ("==== res_array {0}, I: {1}, knr: {2}", res_array, I, knr);
 			foreach (var res in res_array) {
-				//Console.WriteLine ("==== res {0}", res);
 				if (res == null) {
 					break;
 				}

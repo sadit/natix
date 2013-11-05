@@ -256,7 +256,6 @@
   <ItemGroup>
     <Folder Include="Util\" />
     <Folder Include="SortingSearching\" />
-    <Folder Include="bin\" />
     <Folder Include="CompactDS\" />
     <Folder Include="CompactDS\BitStreams\" />
     <Folder Include="CompactDS\Lists\" />
