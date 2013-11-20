@@ -1,5 +1,5 @@
 // 
-//  Copyright 2012  sadit
+//  Copyright 2012  Eric Sadit Tellez Avila 
 // 
 //    Licensed under the Apache License, Version 2.0 (the "License");
 //    you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ namespace natix.SimilaritySearch
 		public KnrSeqSearchFootrule (KnrSeqSearch knr) : base(knr)
 		{
 		}
+
 		protected override IResult GetCandidates (int[] qseq, int maxcand)
 		{
 			var len_qseq = qseq.Length;

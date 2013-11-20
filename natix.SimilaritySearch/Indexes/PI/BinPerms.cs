@@ -19,8 +19,8 @@ using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-using NDesk.Options;
 using natix.SimilaritySearch;
+using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
@@ -33,7 +33,6 @@ namespace natix.SimilaritySearch
 		/// The name of the hamming index (external index)
 		/// </summary>
 		public Index IndexHamming;
-
 		/// <summary>
 		/// Indicates if the index will permute the center
 		/// </summary>
@@ -48,17 +47,17 @@ namespace natix.SimilaritySearch
 			Output.Write(this.DB.Name);
 			Output.Write(this.permcenter);
 			Output.Write(this.MOD);
-			SpaceGenericIO.Save(Output, this.REFS, false);
+			SpaceGenericIO.SmartSave(Output, this.REFS);
 			IndexGenericIO.Save(Output, this.IndexHamming);
 		}
 
 		public override void Load (BinaryReader Input)	
 		{
 			var dbname = Input.ReadString();
-			this.DB = SpaceGenericIO.Load(dbname, true);
+			this.DB = SpaceGenericIO.Load(dbname, true, true);
 			this.permcenter = Input.ReadBoolean();
 			this.MOD = Input.ReadInt32 ();
-			this.REFS = SpaceGenericIO.Load(Input, false);
+			this.REFS = SpaceGenericIO.SmartLoad(Input, false);
 			this.IndexHamming = IndexGenericIO.Load(Input);
 		}
 		/// <summary>
@@ -76,6 +75,12 @@ namespace natix.SimilaritySearch
 			return invlen >> 3;
 		}
 
+		public void Build(MetricDB db, int num_refs, int maxcand=1024, double mod=0.5, bool permcenter=true)
+		{
+			var ss = new SampleSpace ("", db, num_refs);
+			this.Build (db, ss, maxcand, mod, permcenter);
+		}
+
 		/// <summary>
 		/// The API Build method for BinPerms 
 		/// </summary>
@@ -90,25 +95,33 @@ namespace natix.SimilaritySearch
 				this.MOD = (int)mod;
 			}
 			this.permcenter = permcenter;
-			var DATA = new List<IList<byte>>();
+			var DATA = new List<byte[]>();
 			if (idxperms == null) {
 				// base.Build (name, spaceClass, spaceName, spacePerms, maxcand);
 				int onepercent = 1 + (this.DB.Count / 100);
-				for (int i = 0, sL = this.DB.Count; i < sL; i++) {
-					if ((i % onepercent) == 0) {
-						Console.WriteLine ("Generating brief permutations for {0}, advance {1:0.00}%", i, i * 100.0 / sL);
+				for (int docID = 0; docID < this.DB.Count; ++docID) DATA.Add (null);
+				int I = 0;
+
+				var build_one = new Action<int> ((int docID) => {
+					if ((I % onepercent) == 0) {
+						Console.WriteLine ("Generating {0}, db: {1}, num_refs: {2}, docID: {3}, advance {4:0.00}%, timestamp: {5}",
+							this, db.Name, refs.Count, I, I * 100.0 / DATA.Count, DateTime.Now);
 					}
-					IList<Int16> inv = this.GetInverseBuild (i);
-					DATA.Add (this.Encode(inv));
-				}
+					var inv = this.ComputeInverse (docID);
+					DATA[docID] = this.Encode(inv);
+					++I;
+				});
+				var ops = new ParallelOptions ();
+				ops.MaxDegreeOfParallelism = -1;
+				Parallel.For (0, this.DB.Count, ops, build_one);
 			} else {
 				for (int docid = 0; docid < this.DB.Count; docid++) {
-					IList<Int16> inv = idxperms.GetComputedInverse (docid);
+					var inv = idxperms.GetComputedInverse (docid);
 					DATA.Add(this.Encode(inv));
 				}
 			}
-			var binperms = new BinH8Space();
-			binperms.Build ("", DATA);
+			var binperms = new MemMinkowskiVectorDB<byte> ();
+			binperms.Build ("", DATA, 1);
 			var seq = new Sequential ();
 			seq.Build(binperms);
 			this.IndexHamming = seq;
@@ -117,7 +130,7 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Performs encoding of an object
 		/// </summary>
-		public IList<byte> Encode (object u)
+		public byte[] Encode (object u)
 		{
 			return this.Encode (this.GetInverse (u));
 		}
@@ -132,12 +145,12 @@ namespace natix.SimilaritySearch
 		/// Bit-string/Brief permutation
 		/// A <see cref="System.Byte[]"/>
 		/// </returns>
-		public virtual IList<byte> Encode (IList<Int16> inv)
+		public virtual byte[] Encode (Int16[] inv)
 		{
-			int len = this.GetDimLengthInBytes(inv.Count);
+			int len = this.GetDimLengthInBytes(inv.Length);
 			byte[] res = new byte[len];
 			if (this.permcenter) {
-				int M = inv.Count / 4; // same
+				int M = inv.Length / 4; // same
 				for (int i = 0, c = 0; i < len; i++) {
 					int b = 0;
 					for (int bit = 0; bit < 8; bit++,c++) {
@@ -162,7 +175,6 @@ namespace natix.SimilaritySearch
 					}
 					res[i] = (byte)b;
 				}
-
 			}
 			return res;
 		}
@@ -184,17 +196,10 @@ namespace natix.SimilaritySearch
 		/// </returns>
 		public override IResult SearchKNN (object q, int k)
 		{
-			IList<byte> enc = this.Encode (q);
-            ++this.internal_numdists;
+			var enc = this.Encode (q);
+			this.internal_numdists += this.REFS.Count;
 			//Console.WriteLine ("EncQuery: {0}", BinaryHammingSpace.ToAsciiString (enc));
 			var cand = this.IndexHamming.SearchKNN (enc, Math.Abs (this.MAXCAND));
-			//Result candseq = this.indexHammingSeq.KNNSearch (enc, 10);
-			//Math.Abs (this.Maxcand));
-			//Result cand = this.indexHamming.Search (enc, 60);
-			/*Result cand = new Result (Math.Abs (this.Maxcand));
-			for (int docid = 0, bL = this.binperms.Length; docid < bL; docid++) {
-				cand.Push (docid, this.binperms.Dist(this.binperms[docid], enc));
-			}*/
 			if (this.MAXCAND < 0) {
 				return cand;
 			}

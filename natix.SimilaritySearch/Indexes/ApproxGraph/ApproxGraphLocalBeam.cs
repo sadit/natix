@@ -57,10 +57,10 @@ namespace natix.SimilaritySearch
 			this.Build (db, arity, generations);
 		}
 
-		protected virtual IResult FirstBeam (object q, IResult final_result, SearchState state)
+		protected virtual Result FirstBeam (object q, IResult final_result, SearchState state)
 		{
 			int beamsize = Math.Min (this.BeamSize, this.Vertices.Count);
-			IResult beam = new Result (beamsize);
+			var beam = new Result (beamsize);
 			// initializing the first beam
 			for (int i = 0; i < beamsize; ++i) {
 				var docID = this.rand.Next(this.Vertices.Count);
@@ -82,7 +82,7 @@ namespace natix.SimilaritySearch
 			//Console.WriteLine ("**** count: {0}, vertices-count: {1}", this.DB.Count, this.Vertices.Count);
 			// expand successors and select the best BeamSize ones among them
 			for (int i = 0; i < this.RepeatSearch; ++i) {
-				IResult _beam = new Result (beamsize);
+				var _beam = new Result (beamsize);
 				if (this.Vertices.Count == this.DB.Count)
 					Console.WriteLine ("=== Iteration {0}/{1}, res-count: {2}, res-cov: {3}", i, this.RepeatSearch, final_result.Count, final_result.CoveringRadius);
 				foreach (var pair in beam) {

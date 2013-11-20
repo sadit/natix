@@ -26,24 +26,19 @@ using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
-	public class ApproxGraphLocalBeamKNR: ApproxGraphLocalBeam
+	public class ApproxGraphLocalBeamKNRExpandNear: ApproxGraphLocalBeamKNR
 	{
-		protected override Result FirstBeam (object q, IResult final_result, SearchState state)
+		protected void ExpandNeighborhood(object q, int startID, List<int> neighborhood, SearchState state, int level)
 		{
-			int samplesize = Math.Min (1024, this.Vertices.Count);
-			//WARNING fixing the parameter beamsize for construction step for testing purposes
-			int beamsize = Math.Min (this.BeamSize, this.Vertices.Count);
-			var beam = new Result (beamsize);
-			// initializing the first beam
-			for (int i = 0; i < samplesize; ++i) {
-				var docID = this.rand.Next(this.Vertices.Count);
-				if (state.evaluated.Add (docID)) {
-					var d = this.DB.Dist (q, this.DB [docID]);
-					beam.Push (docID, d);
-					final_result.Push(docID, d);
+			var nodelist = this.Vertices [startID];
+			foreach (var nodeID in nodelist) {
+				if (state.evaluated.Add(nodeID)) {
+					neighborhood.Add (nodeID);
+					if (level > 0) {
+						this.ExpandNeighborhood (q, nodeID, neighborhood, state, level - 1);
+					}
 				}
-			}
-			return beam;
+			} 
 		}
 
 		public override IResult SearchKNN (object q, int K, IResult final_result)
@@ -52,20 +47,21 @@ namespace natix.SimilaritySearch
 			var beam = this.FirstBeam (q, final_result, state);
 			var beamsize = beam.Count;
 			double prevcov = 0;
-			int count_ties = 0; 
+			int count_ties = 0;
+			var neighborhood = new List<int> (32);
 			for (int i = 0; i < this.RepeatSearch; ++i) {
 				prevcov = final_result.CoveringRadius;
 				var _beam = new Result (beamsize);
-				//if (this.Vertices.Count == this.DB.Count)
-				//	Console.WriteLine ("=== Iteration {0}/{1}, res-count: {2}, res-cov: {3}", i, this.RepeatSearch, final_result.Count, final_result.CoveringRadius);
 				foreach (var pair in beam) {
-					foreach(var neighbor_docID in this.Vertices [pair.docid]) {
-						// Console.WriteLine ("=== B i: {0}, docID: {1}, parent: {2}, beamsize: {3}", i, neighbor_docID, pair, beam.Count);
-						if (state.evaluated.Add(neighbor_docID)) {
-							var d = this.DB.Dist (q, this.DB [neighbor_docID]);
-							final_result.Push (neighbor_docID, d);
-							_beam.Push (neighbor_docID, d);
-						}
+					neighborhood.Clear ();
+					// neighborhood.Add (pair.docid);
+					foreach (var neighbor_docID in this.Vertices [pair.docid]) {
+						this.ExpandNeighborhood (q, neighbor_docID, neighborhood, state, 8);
+					}
+					foreach (var neighbor_docID in neighborhood) {
+						var d = this.DB.Dist (q, this.DB [neighbor_docID]);
+						final_result.Push (neighbor_docID, d);
+						_beam.Push (neighbor_docID, d);
 					}
 				}
 				if (final_result.CoveringRadius == prevcov) {

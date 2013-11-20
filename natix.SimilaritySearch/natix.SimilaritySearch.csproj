@@ -14,7 +14,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>False</Optimize>
+    <Optimize>true</Optimize>
     <OutputPath>bin\Debug</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -195,6 +195,12 @@
     <Compile Include="Indexes\ApproxGraph\ApproxGraphLocalBeam.cs" />
     <Compile Include="Indexes\ApproxGraph\ApproxGraphLocalBeamKNR.cs" />
     <Compile Include="Indexes\ApproxGraph\ApproxGraphLocalBeamOrig.cs" />
+    <Compile Include="Spaces\Vectors\MemVectorDB.cs" />
+    <Compile Include="Spaces\Vectors\MemMinkowskiVectorDB.cs" />
+    <Compile Include="Spaces\Vectors\MemCosineVectorDB.cs" />
+    <Compile Include="Indexes\KNR\ManyKnr.cs" />
+    <Compile Include="Indexes\KNR\KnrSeqSearchLCS.cs" />
+    <Compile Include="Indexes\ApproxGraph\ApproxGraphLocalBeamKNRExpandNear.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

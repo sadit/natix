@@ -46,12 +46,12 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		///  Encode the inverse permutation into a bit-string / brief permutation
 		/// </summary>
-		public override IList<byte> Encode (IList<Int16> inv)
+		public override byte[] Encode (Int16[] inv)
 		{
-			int len = this.GetDimLengthInBytes (inv.Count);
+			int len = this.GetDimLengthInBytes (inv.Length);
 			//Console.WriteLine ("InvLen: {0}, LenBin: {1}, Mod: {2}", inv.Length, len, this.Mod);
 			byte[] res = new byte[len];
-			int M = inv.Count / 4;
+			int M = inv.Length / 4;
 			this.permcenter = true;
 			for (int i = 0, c = 0; i < len; i++) {
 				int b = 0;

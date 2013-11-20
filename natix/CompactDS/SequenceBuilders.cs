@@ -57,31 +57,32 @@ namespace natix.CompactDS
 			};
 		}
 
-		public static SequenceBuilder GetGolynski (PermutationBuilder perm_builder = null,
-		                                           BitmapFromBitStream bitmap_builder = null)
+		//		public static SequenceBuilder GetGolynski (PermutationBuilder perm_builder = null,
+		public static SequenceBuilder GetGolynski (int cyclic_perm_t, BitmapFromBitStream bitmap_builder = null)
 		{
-			if (perm_builder == null) {
-				perm_builder = PermutationBuilders.GetCyclicPermsListIFS(16);
-			}
+//			if (perm_builder == null) {
+//				perm_builder = PermutationBuilders.GetCyclicPermsListIFS(16);
+//			}
 			if (bitmap_builder == null) {
 				bitmap_builder = BitmapBuilders.GetGGMN_wt(16);
 			}
 			return delegate (IList<int> seq, int sigma) {
 				var S = new GolynskiMunroRaoSeq ();
-				S.Build (seq, sigma, perm_builder, bitmap_builder);
+				//S.Build (seq, sigma, perm_builder, bitmap_builder);
+				S.Build (seq, sigma, bitmap_builder, cyclic_perm_t);
 				return S;
 			};
 		}
 		
-		public static SequenceBuilder GetGolynskiRL (short t = 16)
-		{
-			return GetGolynski(PermutationBuilders.GetCyclicPermsListRL(t));
-		}
-
-		public static SequenceBuilder GetGolynskiSucc (short t = 16, BitmapFromBitStream bitmap_builder = null)
-		{
-			return GetGolynski(PermutationBuilders.GetCyclicPermsListIFS(t), bitmap_builder);
-		}
+//		public static SequenceBuilder GetGolynskiRL (short t = 16)
+//		{
+//			return GetGolynski(PermutationBuilders.GetCyclicPermsListRL(t));
+//		}
+//
+//		public static SequenceBuilder GetGolynskiSucc (short t = 16, BitmapFromBitStream bitmap_builder = null)
+//		{
+//			return GetGolynski(PermutationBuilders.GetCyclicPermsListIFS(t), bitmap_builder);
+//		}
 
 		public static SequenceBuilder GetWT_GGMN_BinaryCoding (short b)
 		{

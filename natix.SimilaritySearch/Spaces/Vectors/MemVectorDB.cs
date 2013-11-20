@@ -26,9 +26,8 @@ namespace natix.SimilaritySearch
 	/// <summary>
 	/// Vector space
 	/// </summary>
-	public class VectorDB<T> : MetricDB where T: struct
+	public class MemVectorDB<T> : MetricDB where T: struct
 	{
-		public static bool LOAD_IN_MEMORY = true;
 		public static INumeric<T> Num = (INumeric<T>)(natix.Numeric.Get (typeof(T)));
 		public static void SetNumeric(object num)
 		{
@@ -37,7 +36,7 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// The underlying storage for vectors 
 		/// </summary>
-		public IList< T[] > VECTORS;
+		public List<T[]> VECTORS;
 		/// <summary>
 		/// Dimension of the space
 		/// </summary>
@@ -50,60 +49,44 @@ namespace natix.SimilaritySearch
 		/// Number of distances
 		/// </summary>
 		protected int numdist;
-		/// <summary>
-		/// The file containing binary vectors
-		/// </summary>
-		public string VectorFilename;
 
 		public virtual void Load (BinaryReader Input)
 		{
 			this.Name = Input.ReadString ();
-			this.VectorFilename = Input.ReadString ();
 			this.Dimension = Input.ReadInt32 ();
 			this.P = Input.ReadSingle();
-			this.VECTORS = new DiskVectorList<T> (this.VectorFilename, this.Dimension);
-			if (LOAD_IN_MEMORY) {
-				Console.WriteLine ("XXX DEBUG Loading vectors in memory {0}", this.VectorFilename);
-				this.LoadInMemory ();
-			} else {
-				Console.WriteLine ("XXX DEBUG Using memory mapped file {0}", this.VectorFilename);
-			}
+			int n = Input.ReadInt32 ();
+			this.LoadVectors (Input, n);
 		}
 
-		public void LoadInMemory()
+		public void LoadVectors(BinaryReader Input, int n)
 		{
-			var vecs = new List<T[]> ();
-			var len = this.VECTORS.Count;
-			for (int docID = 0; docID < len; ++docID) {
+			this.VECTORS = new List<T[]> (n);
+			for (int docID = 0; docID < n; ++docID) {
 				if (docID % 10000 == 0) {
-					Console.WriteLine("== loading vectors: {0}/{1}, {2:0.00}%", docID, len, docID * 100.0 / len);
+					Console.WriteLine("== loading vectors: {0}/{1}, {2:0.00}%", docID, n, docID * 100.0 / n);
 				}
-				vecs.Add(this.VECTORS[docID]);
+				var vec = new T[this.Dimension];
+				PrimitiveIO<T>.LoadVector (Input, vec.Length, vec);
+				this.VECTORS.Add (vec);
 			}
-			this.VECTORS = vecs;
 		}
 
 		public virtual void Save(BinaryWriter Output)
 		{
 			Output.Write(this.Name);
-			if (this.VectorFilename == null || this.VectorFilename.Length == 0) {
-				throw new ArgumentNullException ("** VectorFilename should be set before saving this database **");
-			}
-			Output.Write (this.VectorFilename);
 			Output.Write((int) this.Dimension);
 			Output.Write ((float) this.P);
-			using (var vecs = new DiskVectorList<T> (this.VectorFilename, this.Dimension)) {
-				var len = this.VECTORS.Count;
-				for (int docID = 0; docID < len; ++docID) {
-					vecs.Add (this.VECTORS [docID]);
-				}
+			Output.Write (this.VECTORS.Count);
+			foreach (var vec in this.VECTORS) {
+				PrimitiveIO<T>.SaveVector (Output, vec);
 			}
 		}
 
 		/// <summary>
 		/// Constructor
 		/// </summary>
-		public VectorDB () : base()
+		public MemVectorDB () : base()
 		{
 		}
 
@@ -146,6 +129,14 @@ namespace natix.SimilaritySearch
 			get { return this.VECTORS[docid]; }
 		}
 
+		public void Build (string name, IList<T[]> _VECTORS, float _P = -1)
+		{
+			this.Name = name;
+			this.P = _P;
+			this.VECTORS = new List<T[]> (_VECTORS);
+			this.Dimension = _VECTORS [0].Length;
+		}
+			
 		public void Build (string name, IList<IList<T>> _VECTORS, float _P = -1)
 		{
 			this.Name = name;
@@ -159,10 +150,9 @@ namespace natix.SimilaritySearch
 			this.Dimension = _VECTORS [0].Count;
 		}
 
-		public void Build (string inputname, string vecsname)
+		public void Build (string inputname)
 		{
 			this.Name = inputname;
-			this.VectorFilename = vecsname;
 			// dim size pnorm dbvectors / Example: 112 112682 2 colors.ascii
 			string desc = File.ReadAllLines(inputname)[0];
 			string[] m = desc.Split (' ');

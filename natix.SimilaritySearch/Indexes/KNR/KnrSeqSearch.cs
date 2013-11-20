@@ -94,17 +94,17 @@ namespace natix.SimilaritySearch
 			this.SEQ = other.SEQ;
 		}
 
-		public void BuildApprox (MetricDB db, int num_refs, int K=7, int maxcand=1024, SequenceBuilder seq_builder = null)
+		public void BuildApprox (MetricDB db, Random rand, int num_refs, int K=7, int maxcand=1024, SequenceBuilder seq_builder = null)
 		{
 			var sample = new SampleSpace ("", db, num_refs);
 			var inner = new KnrSeqSearch ();
-			inner.Build (sample, 1024, K, int.MaxValue);
+			inner.Build (sample, rand, 1024, K, int.MaxValue);
 			this.Build (db, new KnrSeqSearchFootrule(inner), K, maxcand, seq_builder);
 		}
 
-		public void Build (MetricDB db, int num_refs, int K=7, int maxcand=1024, SequenceBuilder seq_builder=null)
+		public void Build (MetricDB db, Random rand, int num_refs, int K=7, int maxcand=1024, SequenceBuilder seq_builder=null)
 		{
-			var sample = new SampleSpace ("", db, num_refs);
+			var sample = new SampleSpace ("", db, num_refs, rand);
 			var sat = new SAT_Distal ();
 			sat.Build (sample, RandomSets.GetRandom());
 			this.Build (db, sat, K, maxcand, seq_builder);
@@ -222,10 +222,10 @@ namespace natix.SimilaritySearch
 		public override IResult SearchKNN (object q, int knn, IResult res)
 		{
 			var qseq = this.GetKnr (q);
-			return this.SearchKNN(qseq, q, MAXCAND, res); 
+			return this.SearchKNN(qseq, q, res, MAXCAND); 
 		}
 
-		public IResult SearchKNN (int[] qseq, object q, int maxcand, IResult res)
+		public IResult SearchKNN (int[] qseq, object q, IResult res, int maxcand)
 		{
 			var C = this.GetCandidates (qseq, Math.Abs (maxcand));
 			if (maxcand < 0) {

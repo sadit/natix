@@ -48,7 +48,6 @@ namespace natix.SimilaritySearch
 			return near;
 		}
 
-
 		protected void ExpandNode(object q, IResult res, int startID, SearchState state, int level)
 		{
 			var nodeS = this.Vertices [startID];

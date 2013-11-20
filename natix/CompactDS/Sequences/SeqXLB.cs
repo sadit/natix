@@ -31,8 +31,8 @@ namespace natix.CompactDS
 	{
 		Bitmap64 xl_bitmap;
 		int sigma;
-		IPermutation perm;
-			
+		ListGen_MRRR perm;
+
 		public SeqXLB ()
 		{
 		}

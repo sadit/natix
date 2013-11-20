@@ -25,7 +25,8 @@ namespace natix.CompactDS
 {
 	public class GolynskiMunroRaoSeq : Sequence
 	{
-		IPermutation[] perms;
+		CyclicPermsListIFS_MRRR[] perms;
+		//IPermutation[] perms;
 		Bitmap B; // counter in blocks
 		Bitmap X; // counter per symbol
 		// IList<int> Xacc; // accumulated rank for each row in X
@@ -87,7 +88,7 @@ namespace natix.CompactDS
 			}
 		}
 
-		public void Build (IList<int> seq, int sigma, PermutationBuilder perm_builder, BitmapFromBitStream bitmap_builder)
+		public void Build (IList<int> seq, int sigma, BitmapFromBitStream bitmap_builder, int cyclic_perm_t)
 		{
 			// NOTE: Please check sigma <=> BlockSize in this method
 			this.sigma = sigma;
@@ -102,7 +103,8 @@ namespace natix.CompactDS
 				lists [i] = new List<int> ();
 			}
 			int num_blocks = (int)Math.Ceiling (this.n * 1.0 / this.sigma);
-			this.perms = new IPermutation[num_blocks];
+			//this.perms = new IPermutation[num_blocks];
+			this.perms = new CyclicPermsListIFS_MRRR[num_blocks];
 			for (int i = 0, I = 0; i < this.n; i+= this.sigma, ++I) {
 				// writing block separators
 				foreach (var b in X_stream) {
@@ -124,8 +126,9 @@ namespace natix.CompactDS
 						}
 					}
 				}
-				var _perm = perm_builder(P);
-				this.perms[I] = _perm;
+				//var _perm = perm_builder(P);
+				//this.perms[I] = _perm;
+				this.perms [I] = (CyclicPermsListIFS_MRRR)PermutationBuilders.GetCyclicPermsListIFS(cyclic_perm_t).Invoke (P);
 			}
 			var _X_stream = X_stream [0];
 			
@@ -222,9 +225,9 @@ namespace natix.CompactDS
 			this.n = Input.ReadInt32 ();
 			this.sigma = Input.ReadInt32 ();
 			var c = Input.ReadInt32 ();
-			this.perms = new IPermutation[c];
+			this.perms = new CyclicPermsListIFS_MRRR[c];
 			for (int i = 0; i < c; i++) {
-				this.perms [i] = GenericIO<IPermutation>.Load (Input);
+				this.perms [i] = GenericIO<CyclicPermsListIFS_MRRR>.Load (Input);
 			}
 			this.B = GenericIO<Bitmap>.Load (Input);
 			this.X = GenericIO<Bitmap>.Load (Input);
@@ -240,7 +243,7 @@ namespace natix.CompactDS
 			Output.Write ((int)this.sigma);
 			Output.Write ((int)this.perms.Length);
 			foreach (var p in this.perms) {
-				GenericIO<IPermutation>.Save (Output, p);
+				GenericIO<CyclicPermsListIFS_MRRR>.Save (Output, p);
 			}
 			GenericIO<Bitmap>.Save (Output, this.B);
 			GenericIO<Bitmap>.Save (Output, this.X);
