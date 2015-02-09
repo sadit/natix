@@ -1,0 +1,45 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExactIndexes", "ExactIndexes\ExactIndexes.csproj", "{C38F32F4-B1A3-411C-B364-A6EB1A7E50B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "natix", "natix\natix.csproj", "{53075BDC-9E14-4DE2-A1E0-90E713317ED1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "natix.SimilaritySearch", "natix.SimilaritySearch\natix.SimilaritySearch.csproj", "{AD5B0C40-3664-4FEE-8AB2-D51F0EE6EDDB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApproxIndexes", "ApproxIndexes\ApproxIndexes.csproj", "{8B7192AF-4297-41F2-AAA7-37B80B1D457D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{53075BDC-9E14-4DE2-A1E0-90E713317ED1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{53075BDC-9E14-4DE2-A1E0-90E713317ED1}.Debug|x86.Build.0 = Debug|Any CPU
+		{53075BDC-9E14-4DE2-A1E0-90E713317ED1}.Release|x86.ActiveCfg = Release|Any CPU
+		{53075BDC-9E14-4DE2-A1E0-90E713317ED1}.Release|x86.Build.0 = Release|Any CPU
+		{8B7192AF-4297-41F2-AAA7-37B80B1D457D}.Debug|x86.ActiveCfg = Debug|x86
+		{8B7192AF-4297-41F2-AAA7-37B80B1D457D}.Debug|x86.Build.0 = Debug|x86
+		{8B7192AF-4297-41F2-AAA7-37B80B1D457D}.Release|x86.ActiveCfg = Release|x86
+		{8B7192AF-4297-41F2-AAA7-37B80B1D457D}.Release|x86.Build.0 = Release|x86
+		{AD5B0C40-3664-4FEE-8AB2-D51F0EE6EDDB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AD5B0C40-3664-4FEE-8AB2-D51F0EE6EDDB}.Debug|x86.Build.0 = Debug|Any CPU
+		{AD5B0C40-3664-4FEE-8AB2-D51F0EE6EDDB}.Release|x86.ActiveCfg = Release|Any CPU
+		{AD5B0C40-3664-4FEE-8AB2-D51F0EE6EDDB}.Release|x86.Build.0 = Release|Any CPU
+		{C38F32F4-B1A3-411C-B364-A6EB1A7E50B5}.Debug|x86.ActiveCfg = Debug|x86
+		{C38F32F4-B1A3-411C-B364-A6EB1A7E50B5}.Debug|x86.Build.0 = Debug|x86
+		{C38F32F4-B1A3-411C-B364-A6EB1A7E50B5}.Release|x86.ActiveCfg = Release|x86
+		{C38F32F4-B1A3-411C-B364-A6EB1A7E50B5}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = ExactIndexes\ExactIndexes.csproj
+		Policies = $0
+		$0.DotNetNamingPolicy = $1
+		$1.DirectoryNamespaceAssociation = None
+		$1.ResourceNamePolicy = FileFormatDefault
+		$0.StandardHeader = $2
+		$2.Text = @//\n//   Copyright 2014 Eric S. Tellez <eric.tellez@infotec.com.mx>\n//\n//   Licensed under the Apache License, Version 2.0 (the "License");\n//   you may not use this file except in compliance with the License.\n//   You may obtain a copy of the License at\n//\n//       http://www.apache.org/licenses/LICENSE-2.0\n//\n//   Unless required by applicable law or agreed to in writing, software\n//   distributed under the License is distributed on an "AS IS" BASIS,\n//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n//   See the License for the specific language governing permissions and\n//   limitations under the License.
+		$2.IncludeInNewFiles = True
+	EndGlobalSection
+EndGlobal

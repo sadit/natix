@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{AD5B0C40-3664-4FEE-8AB2-D51F0EE6EDDB}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>natix.SimilaritySearch</RootNamespace>
+    <AssemblyName>natix.SimilaritySearch</AssemblyName>
+    <ProductVersion>12.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>False</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>True</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>False</ConsolePause>
+    <DebugSymbols>True</DebugSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\libs\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Commands.cs" />
+    <Compile Include="QueryStream.cs" />
+    <Compile Include="Spaces\Bitmaps\BinH8Space.cs" />
+    <Compile Include="Spaces\Bitmaps\BinQ8HammingSpace.cs" />
+    <Compile Include="Spaces\Bitmaps\AudioSpace.cs" />
+    <Compile Include="Spaces\Bitmaps\AudioTimeDomainSpace.cs" />
+    <Compile Include="Spaces\Bitmaps\BinQ8ORSpace.cs" />
+    <Compile Include="Spaces\SampleSpace.cs" />
+    <Compile Include="Spaces\SpaceGenericIO.cs" />
+    <Compile Include="Result\IResult.cs" />
+    <Compile Include="Result\Result.cs" />
+    <Compile Include="Result\ResultTies.cs" />
+    <Compile Include="Indexes\Index.cs" />
+    <Compile Include="Indexes\Sequential.cs" />
+    <Compile Include="Indexes\KNR\KnrSeqSearch.cs" />
+    <Compile Include="Indexes\KNR\KnrSeqSearchFootrule.cs" />
+    <Compile Include="Indexes\KNR\KnrSeqSearchJaccard.cs" />
+    <Compile Include="Indexes\KNR\KnrSeqSearchRelMatches.cs" />
+    <Compile Include="Indexes\KNR\KnrSeqSearchSpearmanRho.cs" />
+    <Compile Include="Indexes\IndexGenericIO.cs" />
+    <Compile Include="Spaces\NullSpace.cs" />
+    <Compile Include="Indexes\PI\BinPerms.cs" />
+    <Compile Include="Indexes\PI\BinPermsTwoBit.cs" />
+    <Compile Include="Indexes\PI\Perms.cs" />
+    <Compile Include="Indexes\BasicIndex.cs" />
+    <Compile Include="Indexes\KNR\CNAPP.cs" />
+    <Compile Include="Spaces\MetricDB.cs" />
+    <Compile Include="Indexes\PermutedIndex.cs" />
+    <Compile Include="Indexes\Pivots\CompactPivotsLRANS.cs" />
+    <Compile Include="Indexes\Pivots\CompactPivotsSEQRANS.cs" />
+    <Compile Include="Indexes\DynamicSequential.cs" />
+    <Compile Include="Indexes\Pivots\CompactPivotsSEQINTSvS.cs" />
+    <Compile Include="Spaces\QString\QStringSpace.cs" />
+    <Compile Include="Spaces\QString\QStringLevenshteinSpace.cs" />
+    <Compile Include="Spaces\QString\QStringHammingSpace.cs" />
+    <Compile Include="Spaces\QString\QStringLCSSpace.cs" />
+    <Compile Include="Spaces\QString\QStringPrefixLengthSpace.cs" />
+    <Compile Include="Result\ResultPushStats.cs" />
+    <Compile Include="Indexes\IndexSingle.cs" />
+    <Compile Include="Result\ResultRange.cs" />
+    <Compile Include="Spaces\Bitmaps\BinQGramLarger.cs" />
+    <Compile Include="DistanceHistogram.cs" />
+    <Compile Include="Spaces\Bitmaps\QGramH1.cs" />
+    <Compile Include="Indexes\DynamicSequentialRandom.cs" />
+    <Compile Include="Indexes\SAT\SAT.cs" />
+    <Compile Include="Indexes\DynamicSequentialOrdered.cs" />
+    <Compile Include="Indexes\SAT\SAT_Distal.cs" />
+    <Compile Include="Indexes\SAT\SAT_Randomized.cs" />
+    <Compile Include="Indexes\SAT\SAT_Random.cs" />
+    <Compile Include="Indexes\SAT\SAT_ApproxSearch.cs" />
+    <Compile Include="Indexes\SAT\SAT_Forest.cs" />
+    <Compile Include="ItemPair.cs" />
+    <Compile Include="Indexes\SAT\SATSEQ.cs" />
+    <Compile Include="Indexes\SAT\SATSEQ_ApproxSearch.cs" />
+    <Compile Include="Indexes\SAT\SATSEQ_Forest.cs" />
+    <Compile Include="Spaces\Vectors\DocumentDB.cs" />
+    <Compile Include="Spaces\Vectors\DiskVectorList.cs" />
+    <Compile Include="Indexes\KNR\NAPP.cs" />
+    <Compile Include="NTTArray8A.cs" />
+    <Compile Include="Indexes\Pivots\LAESA_InternalPivots.cs" />
+    <Compile Include="Indexes\Pivots\LAESA.cs" />
+    <Compile Include="Indexes\Hyperplanes\DualVor.cs" />
+    <Compile Include="Indexes\Hyperplanes\Vor.cs" />
+    <Compile Include="Indexes\Hyperplanes\VorFar.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroupAcceptExtremesQuantile.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroupAcceptExtremesFixedBucket.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroupAcceptExtremesSigmaRadius.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroupDiscardMeanNNRadius.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroupDiscardMeanSigmaRadius.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroupApprox.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroup.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroupIndexApprox.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\DiskPivotGroup.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\DiskPivotGroupIndex.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPTable.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPListRandomPivots.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\EPivot.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPList.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\Tree\EPTree.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\Tree\EPForest.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPListMeanPivots.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\OLD\PivotGroupIndex.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPListRandomPivotsPriorized.cs" />
+    <Compile Include="Indexes\Pivots\PivotSelector.cs" />
+    <Compile Include="Indexes\Hashing\ShortPerms.cs" />
+    <Compile Include="Spaces\Bitmaps\BinQGramList.cs" />
+    <Compile Include="Spaces\Bitmaps\BinQGramArray.cs" />
+    <Compile Include="Spaces\Bitmaps\BinQ8MinHammingSpace.cs" />
+    <Compile Include="Spaces\Bitmaps\BinQ8MinJaccardSpace.cs" />
+    <Compile Include="Indexes\Hyperplanes\HyperplaneFP.cs" />
+    <Compile Include="Indexes\LCseq\LC_IRNN.cs" />
+    <Compile Include="Indexes\LCseq\LC_ParallelSearch.cs" />
+    <Compile Include="Indexes\LCseq\LC_PRNN.cs" />
+    <Compile Include="Indexes\LCseq\LC_RNN.cs" />
+    <Compile Include="Indexes\LCseq\LC.cs" />
+    <Compile Include="Indexes\LCseq\LC_ParallelBuild.cs" />
+    <Compile Include="Indexes\LCseq\PolyIndexLC_Adaptive.cs" />
+    <Compile Include="Indexes\LCseq\PolyIndexLC_Partial.cs" />
+    <Compile Include="Indexes\LCseq\PolyIndexLC_Composite.cs" />
+    <Compile Include="Indexes\LCseq\PolyIndexLC.cs" />
+    <Compile Include="Indexes\LCseq\PolyIndexLC_Adaptive2.cs" />
+    <Compile Include="Indexes\LCseq\PolyIndexLC_AdaptiveProb.cs" />
+    <Compile Include="Indexes\LCseq\PolyIndexLC_ApproxGraph.cs" />
+    <Compile Include="Indexes\LCseq\PolyIndexLC_ApproxGraphEager.cs" />
+    <Compile Include="Indexes\LCseq\PolyIndexLC_ApproxGraphRevLC.cs" />
+    <Compile Include="Indexes\LCseq\LC_VorRNN.cs" />
+    <Compile Include="Indexes\LCseq\LC_KVorRNN.cs" />
+    <Compile Include="Indexes\LC\LC.cs" />
+    <Compile Include="Indexes\LC\PMI_Partial.cs" />
+    <Compile Include="Indexes\LC\PMI.cs" />
+    <Compile Include="Indexes\Hashing\MetricShellHash.cs" />
+    <Compile Include="Indexes\ApproxRandom\RandomizedSearch.cs" />
+    <Compile Include="Spaces\Transformations\HFP.cs" />
+    <Compile Include="Spaces\Transformations\KnrFP.cs" />
+    <Compile Include="Spaces\Vectors\MemVectorDB.cs" />
+    <Compile Include="Spaces\Vectors\MemMinkowskiVectorDB.cs" />
+    <Compile Include="Spaces\Vectors\MemCosineVectorDB.cs" />
+    <Compile Include="Indexes\KNR\ManyKnr.cs" />
+    <Compile Include="Indexes\KNR\KnrSeqSearchLCS.cs" />
+    <Compile Include="Indexes\KNR\BitParallelKnr8LLCS.cs" />
+    <Compile Include="Indexes\KNR\KnrSeqSearchLCSv2.cs" />
+    <Compile Include="Indexes\KNR\KnrSeqSearchLCSv3.cs" />
+    <Compile Include="Indexes\KNR\KnrSeqSearchJaccLCS.cs" />
+    <Compile Include="Indexes\KNR\KnrSeqSearchCosine.cs" />
+    <Compile Include="Indexes\PI\PermTree.cs" />
+    <Compile Include="Indexes\Pivots\SSS.cs" />
+    <Compile Include="Indexes\Pivots\BNCInc.cs" />
+    <Compile Include="CommandQuery.cs" />
+    <Compile Include="QueryStreamSISAP.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPListOptimizedA.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPListOptimized.cs" />
+    <Compile Include="Indexes\ILC\NILC.cs" />
+    <Compile Include="Indexes\ILC\PNILC.cs" />
+    <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPListOptimizedB.cs" />
+    <Compile Include="Indexes\ILC\MILC.cs" />
+    <Compile Include="Indexes\ILC\MILCv2.cs" />
+    <Compile Include="Indexes\ILC\ILC.cs" />
+    <Compile Include="Indexes\ILC\MILCv3.cs" />
+    <Compile Include="Indexes\ILC\MILCAbstract.cs" />
+    <Compile Include="Spaces\AcousticID\AcousticID.cs" />
+    <Compile Include="Indexes\Pivots\PivotsAbstract.cs" />
+    <Compile Include="Indexes\LSC\LSC.cs" />
+    <Compile Include="Indexes\LSC\MCCLSC.cs" />
+    <Compile Include="Indexes\LSC\MLSC.cs" />
+    <Compile Include="Indexes\LSC\LSC_H1.cs" />
+    <Compile Include="Indexes\LSC\LSC_H8.cs" />
+    <Compile Include="Indexes\LSC\MLSC_H1.cs" />
+    <Compile Include="Indexes\LSC\MLSC_H8.cs" />
+    <Compile Include="Indexes\LSC\LSC_CyclicH8.cs" />
+    <Compile Include="Indexes\LSC\MLSC_CyclicH8.cs" />
+    <Compile Include="Indexes\LSC\LSC_AcousticID.cs" />
+    <Compile Include="Indexes\LSC\MLSC_AcousticID.cs" />
+    <Compile Include="Indexes\LSH\LSH.cs" />
+    <Compile Include="Indexes\LSH\LSH_AcousticID.cs" />
+    <Compile Include="Indexes\LSH\MLSH_AcousticID.cs" />
+    <Compile Include="Indexes\LSH\MLSH.cs" />
+    <Compile Include="Indexes\Pivots\KVP.cs" />
+    <Compile Include="Indexes\Pivots\Spaghetti.cs" />
+    <Compile Include="Indexes\Pivots\PivotSelectorRandom.cs" />
+    <Compile Include="Indexes\Pivots\PivotSelectorSSS.cs" />
+    <Compile Include="IQueryStream.cs" />
+    <Compile Include="Indexes\LSH\LSH_FloatVectorCosine.cs" />
+    <Compile Include="Indexes\LSH\LSH_FloatVectorL2.cs" />
+    <Compile Include="Indexes\LSH\MLSH_FloatVectorL2.cs" />
+    <Compile Include="Indexes\OPT\ApproxGraph.cs" />
+    <Compile Include="Indexes\OPT\ApproxGraphSeq.cs" />
+    <Compile Include="Indexes\OPT\ApproxGraphKNR.cs" />
+    <Compile Include="Indexes\OPT\ApproxGraphNearExpand.cs" />
+    <Compile Include="Indexes\OPT\ApproxGraphHSP.cs" />
+    <Compile Include="Indexes\OPT\HSP_app.cs" />
+    <Compile Include="Indexes\OPT\LocalSearchBeam.cs" />
+    <Compile Include="Indexes\OPT\LocalSearchRestarts.cs" />
+    <Compile Include="Indexes\OPT\LocalSearchMontecarloBeam.cs" />
+    <Compile Include="Indexes\OPT\LocalSearch.cs" />
+    <Compile Include="Indexes\OPT\LocalSearchBestFirst.cs" />
+    <Compile Include="Indexes\OPT\APG_OPT.cs" />
+    <Compile Include="Indexes\OPT\APG_IS.cs" />
+    <Compile Include="Indexes\KNR\KnrEstimateParameters.cs" />
+    <Compile Include="Indexes\OPT\HSP.cs" />
+    <Compile Include="Indexes\Hashing\NeighborhoodHash.cs" />
+    <Compile Include="Indexes\Hashing\AdaptiveNeighborhoodHash.cs" />
+    <Compile Include="Indexes\Hashing\MultiNeighborhoodHash.cs" />
+    <Compile Include="Result\ResultSummary.cs" />
+    <Compile Include="Result\Query.cs" />
+    <Compile Include="Result\ResultCheckDuplicates.cs" />
+    <Compile Include="Indexes\ILC\TNILC.cs" />
+    <Compile Include="Indexes\ILC\TMILC.cs" />
+    <Compile Include="Indexes\ILC\TILC.cs" />
+    <Compile Include="Indexes\ILC\TMILCAbstract.cs" />
+    <Compile Include="Indexes\ILC\DMILC.cs" />
+    <Compile Include="Spaces\Datasets\CoPhIR.cs" />
+    <Compile Include="Spaces\Datasets\Wiktionary.cs" />
+    <Compile Include="Spaces\String\StringSpace.cs" />
+    <Compile Include="Spaces\Sequences\SeqLevenshteinSpace.cs" />
+    <Compile Include="Spaces\Sequences\SeqSpace.cs" />
+    <Compile Include="Spaces\Sequences\SeqHammingSpace.cs" />
+    <Compile Include="Spaces\Sequences\SeqJaccardSpace.cs" />
+    <Compile Include="Spaces\Sequences\SeqDiceSpace.cs" />
+    <Compile Include="Spaces\Sequences\SeqIntersectionSpace.cs" />
+    <Compile Include="Spaces\Sequences\SeqPrefixLengthSpace.cs" />
+    <Compile Include="Spaces\Sequences\SeqLCSSpace.cs" />
+    <Compile Include="Spaces\String\StringLevenshteinSpace.cs" />
+    <Compile Include="Spaces\String\StringHammingSpace.cs" />
+    <Compile Include="Spaces\String\StringLCSSpace.cs" />
+    <Compile Include="Spaces\String\StringPrefixLengthSpace.cs" />
+    <Compile Include="Spaces\String\StringJaccardSpace.cs" />
+    <Compile Include="Spaces\String\StringDiceSpace.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="Indexes\PI\" />
+    <Folder Include="Indexes\Pivots\" />
+    <Folder Include="Spaces\QString\" />
+    <Folder Include="Indexes\SAT\" />
+    <Folder Include="Indexes\Hyperplanes\" />
+    <Folder Include="Indexes\Pivots\ExtremePivotForest\" />
+    <Folder Include="Indexes\Pivots\ExtremePivotForest\Tree\" />
+    <Folder Include="Indexes\Pivots\ExtremePivotForest\Table\" />
+    <Folder Include="Indexes\Pivots\ExtremePivotForest\OLD\" />
+    <Folder Include="Indexes\Hashing\" />
+    <Folder Include="Indexes\ApproxRandom\" />
+    <Folder Include="Indexes\LC\" />
+    <Folder Include="Spaces\Transformations\" />
+    <Folder Include="Indexes\ILC\" />
+    <Folder Include="Spaces\AcousticID\" />
+    <Folder Include="Indexes\LSH\" />
+    <Folder Include="Indexes\OPT\" />
+    <Folder Include="Spaces\Datasets\" />
+    <Folder Include="Spaces\String\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\natix\natix.csproj">
+      <Project>{53075BDC-9E14-4DE2-A1E0-90E713317ED1}</Project>
+      <Name>natix</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties>
+        <Policies>
+          <StandardHeader Text="&#xA; Copyright ${Year}  Eric S. Tellez &lt;eric.tellez@infotec.com.mx&gt;&#xA;&#xA;   Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);&#xA;   you may not use this file except in compliance with the License.&#xA;   You may obtain a copy of the License at&#xA;&#xA;       http://www.apache.org/licenses/LICENSE-2.0&#xA;&#xA;   Unless required by applicable law or agreed to in writing, software&#xA;   distributed under the License is distributed on an &quot;AS IS&quot; BASIS,&#xA;   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.&#xA;   See the License for the specific language governing permissions and&#xA;   limitations under the License." IncludeInNewFiles="True" />
+        </Policies>
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
+</Project>
