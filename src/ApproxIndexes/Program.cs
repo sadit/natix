@@ -25,20 +25,12 @@ namespace ApproxIndexes
 {
 	class MainClass
 	{
-		public static void ExecuteMain(string nick, IndexArgumentSetup setup, Action prepare_db = null)
+		public static void ExecuteMain(string nick, IndexArgumentSetup setup, Action prepare_db)
 		{
 			var dbname = String.Format ("DB.{0}", Path.GetFileName(setup.DATABASE));
 			setup.BINARY_DATABASE = dbname;
 
-			if (prepare_db == null) {
-				if (!File.Exists (dbname)) {
-					MemMinkowskiVectorDB<float> _db = new MemMinkowskiVectorDB<float> ();
-					_db.Build (setup.DATABASE);
-					SpaceGenericIO.Save (dbname, _db);
-				}
-			} else {
-				prepare_db ();
-			}
+			prepare_db ();
 
 			var arglist = new List<string> () {
 				"--save",
@@ -160,9 +152,8 @@ namespace ApproxIndexes
 			});
 		}
 
-		public static void MainVEC (IndexArgumentSetup setup)
+		public static void MainVEC (IndexArgumentSetup setup, string stype)
 		{
-			//var queries_hard = "/home/sadit/experiments/queries/colors-hard.queries";
 			var basename = Path.GetFileName (setup.DATABASE);
 			var nick = String.Format("{0}{1}", setup.PREFIX, basename);
 
@@ -170,8 +161,58 @@ namespace ApproxIndexes
 				Directory.CreateDirectory (nick);
 			}
 
-			ExecuteMain (nick, setup);
-			// ExecuteMain (nick, srcname, queries_hard);
+			switch (stype) {
+			case "VEC":
+				ExecuteMain (nick, setup, () => {
+					if (!File.Exists (setup.BINARY_DATABASE)) {
+						MemMinkowskiVectorDB<float> db = new MemMinkowskiVectorDB<float> ();
+						db.Build (setup.DATABASE);
+						SpaceGenericIO.Save (setup.BINARY_DATABASE, db);
+					}
+				});
+				break;
+			case "VEC_UInt8":
+				ExecuteMain (nick, setup, () => {
+					if (!File.Exists (setup.BINARY_DATABASE)) {
+						MemMinkowskiVectorDB<byte> db = new MemMinkowskiVectorDB<byte> ();
+						db.Build (setup.DATABASE);
+						SpaceGenericIO.Save (setup.BINARY_DATABASE, db);
+					}
+				});
+				break;
+
+			case "VEC_Int8":
+				ExecuteMain (nick, setup, () => {
+					if (!File.Exists (setup.BINARY_DATABASE)) {
+						MemMinkowskiVectorDB<sbyte> db = new MemMinkowskiVectorDB<sbyte> ();
+						db.Build (setup.DATABASE);
+						SpaceGenericIO.Save (setup.BINARY_DATABASE, db);
+					}
+				});
+				break;
+
+			case "VEC_Int16":
+				ExecuteMain (nick, setup, () => {
+					if (!File.Exists (setup.BINARY_DATABASE)) {
+						MemMinkowskiVectorDB<short> db = new MemMinkowskiVectorDB<short> ();
+						db.Build (setup.DATABASE);
+						SpaceGenericIO.Save (setup.BINARY_DATABASE, db);
+					}
+				});
+				break;
+
+			case "VEC_UInt16":
+				ExecuteMain (nick, setup, () => {
+					if (!File.Exists (setup.BINARY_DATABASE)) {
+						MemMinkowskiVectorDB<ushort> db = new MemMinkowskiVectorDB<ushort> ();
+						db.Build (setup.DATABASE);
+						SpaceGenericIO.Save (setup.BINARY_DATABASE, db);
+					}
+				});
+				break;
+			default:
+				throw new ArgumentException ("Error unknown vector subtype " + stype);
+			}
 		}
 
 		public static void Main (string[] args)
@@ -183,7 +224,7 @@ namespace ApproxIndexes
 			ops = new OptionSet() {
 				{"database=", "Database in its ascii format. It will create a file DB.dbname in the current directory", v => setup.DATABASE = v },
 				{"queries=", "Queries in its ascii format", v => setup.QUERIES = v },
-				{"stype=", "The type of the metric space. Valid names VEC, DOC, SEQ-ED, STR-ED, WIKTIONARY", v => stype = v},
+				{"stype=", "The type of the metric space. Valid names VEC, VEC_Int16, VEC_UInt16, VEC_Int8, VEC_UInt8, DOC, SEQ-ED, STR-ED, WIKTIONARY, COPHIR282", v => stype = v},
 				{"qtype=", "Type of query, negative values should be integers and means for near neighbor search, positive values means for range search. Defaults to -30 (30NN)", v => setup.QARG = Double.Parse(v)},
 				{"prefix=", "Experiment's prefix", v => setup.PREFIX = v},
 				{"neighborhoodhash-instances=", "Run NeighborhoodHash with the given maximum number of hashes", v => LoadList(v, setup.NeighborhoodHash_MaxInstances)},
@@ -212,8 +253,8 @@ namespace ApproxIndexes
 			if (stype == null) {
 				throw new ArgumentNullException ("The stype argument is mandatory");
 			}
-			if (stype == "VEC") {
-				MainVEC (setup);
+			if (stype.StartsWith("VEC")) {
+				MainVEC (setup, stype);
 			} else if (stype == "DOC") {
 				MainDOC (setup);
 			} else if (stype == "SEQ-ED") {

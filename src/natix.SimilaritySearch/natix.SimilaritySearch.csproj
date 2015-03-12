@@ -7,8 +7,6 @@
     <OutputType>Library</OutputType>
     <RootNamespace>natix.SimilaritySearch</RootNamespace>
     <AssemblyName>natix.SimilaritySearch</AssemblyName>
-    <ProductVersion>12.0.0</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>

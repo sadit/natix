@@ -31,14 +31,16 @@ namespace natix.SimilaritySearch
 	{
 		string[] commands;
 		double queryArg = -1;
+		int maxQueries;
 
 		/// <summary>
 		/// Constructor from file (use "-" to read from standard input)
 		/// </summary>
-		public QueryStream (string qname, double queryArg)
+		public QueryStream (string qname, double queryArg, int maxQueries=int.MaxValue)
 		{
 			this.commands = File.ReadAllLines (qname);
 			this.queryArg = queryArg;
+			this.maxQueries = maxQueries;
 		}
 
 		public IEnumerable<CommandQuery> Iterate ()
@@ -54,6 +56,11 @@ namespace natix.SimilaritySearch
 				CommandQuery cmd;
 				cmd = new CommandQuery (line, Math.Abs (this.queryArg), this.queryArg >= 0);
 				yield return cmd;
+			    --this.maxQueries;
+			    if (this.maxQueries == 0) {
+				break;
+			    }
+
 			}
 		}
 	}

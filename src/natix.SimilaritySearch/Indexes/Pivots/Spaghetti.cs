@@ -53,6 +53,7 @@ namespace natix.SimilaritySearch
 				this.objID = Input.ReadInt32 ();
 				var n = Input.ReadInt32 ();
 				this.distances = new double[n];
+				this.perm = new int[n];
 				PrimitiveIO<double>.LoadVector (Input, n, this.distances);
 				PrimitiveIO<int>.LoadVector (Input, n, this.perm);
 			}
@@ -152,7 +153,7 @@ namespace natix.SimilaritySearch
 
 		public override IResult SearchKNN (object q, int K, IResult res)
 		{
-			int m = this.nodes.Length;
+		    int m = this.nodes.Length; // ~10% of the pivots will be seen
 			var distances = new double[m];
 			var sortedNodes = new Node[m];
 			for (int i = 0; i < m; ++i) {

@@ -16,13 +16,7 @@
 
 using System;
 using System.IO;
-using natix.CompactDS;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
-using natix.SortingSearching;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {

@@ -88,7 +88,7 @@ namespace ApproxIndexes
 		public static void ExecuteKNRSEQ(IndexArgumentSetup setup, string nick, int numrefs, int k, double maxcand_ratio, List<string> resnamelist)
 		{
 			var idxname = String.Format ("{0}/Index.knrseq-{1}-{2}", nick, numrefs, k);
-			MetricDB db = SpaceGenericIO.Load (setup.DATABASE);
+			MetricDB db = SpaceGenericIO.Load (setup.BINARY_DATABASE);
 			Index idx;
 			var queries = setup.QUERIES;
 			var suffix = "";

@@ -93,7 +93,7 @@ namespace natix.SimilaritySearch
 			if (numrefs > 200) {
 				var seq = new NILC ();
 				var ilc = new ILC ();
-				ilc.Build (refs);
+				ilc.Build (refs, this.SymbolsPerHash, 1);
 				seq.Build (ilc);
 				this.R = seq;
 			} else {
