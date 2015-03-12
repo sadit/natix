@@ -47,11 +47,10 @@ namespace natix.SimilaritySearch
 			});
 		}
 
-		public void Build (MetricDB db, int num_indexes)
+		public void Build (MetricDB db, int k, int num_indexes)
 		{
 			this.DB = db;
-			int k = 1;
-
+			++k; // since we use items from the database as training queries
 			PivotSelectorRandom pivsel = new PivotSelectorRandom (db.Count, RandomSets.GetRandom ());
 		
 			// select the queries to test the construction
@@ -69,7 +68,8 @@ namespace natix.SimilaritySearch
 				this.rows [i].PartialBuild (db, pivsel);
 			}
 
-			const int step_width = 128;
+			//int step_width = (int)Math.Ceiling(64.0 / num_indexes) + 8;
+			int step_width = 128;
 			long curr = long.MaxValue;
 			long prev = 0L;
 			int iter = 0;

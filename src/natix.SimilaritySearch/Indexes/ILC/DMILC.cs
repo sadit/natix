@@ -15,11 +15,7 @@
 
 using System;
 using System.IO;
-using System.Collections;
 using System.Collections.Generic;
-using natix.CompactDS;
-using natix.SortingSearching;
-using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
@@ -46,10 +42,10 @@ namespace natix.SimilaritySearch
 			});
 		}
 
-		public void Build (MetricDB db, int num_indexes)
+		public void Build (MetricDB db, int k, int num_indexes)
 		{
 			this.DB = db;
-			int k = 1;
+			++k; // since we use items from the database as training queries
 
 			PivotSelectorRandom pivsel = new PivotSelectorRandom (db.Count, RandomSets.GetRandom ());
 		
@@ -68,6 +64,7 @@ namespace natix.SimilaritySearch
 				this.rows [i].PartialBuild (db, pivsel);
 			}
 
+			//int step_width = (int)Math.Ceiling(64.0 / num_indexes) + 8;
 			int step_width = 128;
 			long curr = long.MaxValue;
 			long prev = 0L;

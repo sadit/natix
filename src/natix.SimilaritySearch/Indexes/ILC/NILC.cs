@@ -119,6 +119,7 @@ namespace natix.SimilaritySearch
 				}
 			}
 			this.internal_numdists += m;
+
 			// range queries can be empty at this point
 			// var min_dist = res.First.Dist;
 

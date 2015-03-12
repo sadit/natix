@@ -32,15 +32,16 @@ namespace natix.SimilaritySearch
 		{
 		}
 
-		public override SearchCost Cost {
-			get {
-				var internalCost = this.leader.Cost.Internal;
-				foreach (var ilc in this.rows) {
-					internalCost += ilc.Cost.Internal;
-				}
-				return new SearchCost (this.DB.NumberDistances, internalCost);
-			}
-		}
+//		public override SearchCost Cost {
+//			get {
+//				var internalCost = this.leader.Cost.Internal;
+//				Console.WriteLine ("@@@ xxxinternalCost: {0}", internalCost);
+//				foreach (var ilc in this.rows) {
+//					internalCost += ilc.Cost.Internal;
+//				}
+//				return new SearchCost (this.DB.NumberDistances, internalCost);
+//			}
+//		}
 
 		public override void Load (BinaryReader Input)
 		{
@@ -82,6 +83,7 @@ namespace natix.SimilaritySearch
 					min_dist = dcq;
 				}
 			}
+
 			this.internal_numdists += m;
 			//var min_dist = res.First.Dist;
 

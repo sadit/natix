@@ -51,12 +51,12 @@ namespace natix.SimilaritySearch
 			PrimitiveIO<double>.SaveVector(Output, this.DT);
 		}
 
-		public void Build (MetricDB db, int num_indexes = 1, PivotSelector pivsel = null)
+		public void Build (MetricDB db, int k, int num_indexes, PivotSelector pivsel = null)
 		{
 			if (pivsel == null) {
 				pivsel = new PivotSelectorRandom (db.Count, RandomSets.GetRandom ());
 			}
-			this.InternalBuild(0, 1, db, num_indexes, pivsel);
+			this.InternalBuild(k, 0, 1, db, num_indexes, pivsel);
 		}
 
 		public struct BuildSearchCost {
@@ -64,11 +64,11 @@ namespace natix.SimilaritySearch
 			public double SingleCost;
 		}
 
-		public BuildSearchCost InternalBuild(int leader_num_centers, double leader_review_prob, MetricDB db, int num_indexes, PivotSelector pivsel)
+		public BuildSearchCost InternalBuild(int k, int leader_num_centers, double leader_review_prob, MetricDB db, int num_indexes, PivotSelector pivsel)
 		{
 			this.DB = db;
 			int n = this.DB.Count;
-			int k = 1;
+			++k; // since we use items from the database as training queries
 			this.ACT = new List<int>(256); // just a starting size
 			this.CT = new int[n];
 			this.DT = new double[n];

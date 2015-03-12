@@ -32,15 +32,15 @@ namespace natix.SimilaritySearch
 		{
 		}
 
-		public override SearchCost Cost {
-			get {
-				var internalCost = this.leader.Cost.Internal;
-				foreach (var ilc in this.rows) {
-					internalCost += ilc.Cost.Internal;
-				}
-				return new SearchCost (this.DB.NumberDistances, internalCost);
-			}
-		}
+//		public override SearchCost Cost {
+//			get {
+//				var internalCost = this.leader.Cost.Internal;
+//				foreach (var ilc in this.rows) {
+//					internalCost += ilc.Cost.Internal;
+//				}
+//				return new SearchCost (this.DB.NumberDistances, internalCost);
+//			}
+//		}
 
 		public override void Load (BinaryReader Input)
 		{
@@ -55,6 +55,7 @@ namespace natix.SimilaritySearch
 				this.rows[i] = new TILC();
 				this.rows[i].Load (Input);
 			}
+
 		}
 
 		public override void Save (BinaryWriter Output)
@@ -124,6 +125,7 @@ namespace natix.SimilaritySearch
 
 		void VerifyInRows(int objID, object q, IResult res, double rad, double[][] cache)
 		{
+
 			for (int rowID = 0; rowID < this.rows.Length; ++rowID) {
 				var row = this.rows [rowID];
 				var c = row.CT [objID];
@@ -132,7 +134,7 @@ namespace natix.SimilaritySearch
 				}
 				double dcq = cache [rowID] [c];
 
-				if (Math.Abs (dcq - row.DT[objID]) > rad) {
+				if (Math.Abs (dcq - row.DT [objID]) > rad) {
 					return;
 				}
 			}

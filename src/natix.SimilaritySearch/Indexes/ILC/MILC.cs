@@ -29,7 +29,7 @@ namespace natix.SimilaritySearch
 		{
 		}
 
-		public void Build (MetricDB db, int num_indexes, int num_tasks = -1)
+		public void Build (MetricDB db, int expected_k, int num_indexes, int num_tasks = -1)
 		{
 			// num_build_processors = 1;
 			this.DB = db;
@@ -38,7 +38,7 @@ namespace natix.SimilaritySearch
 
 			LongParallel.For (0, num_indexes, (int i) => {
 				_rows [i] = new ILC ();
-				_rows [i].Build (db, num_indexes, pivsel);
+				_rows [i].Build (db, expected_k, num_indexes, pivsel);
 			}, num_tasks);
 //			ParallelOptions ops = new ParallelOptions ();
 //			ops.MaxDegreeOfParallelism = num_processors;

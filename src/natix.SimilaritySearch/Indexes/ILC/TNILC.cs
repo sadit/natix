@@ -170,10 +170,10 @@ namespace natix.SimilaritySearch
 			}
 		}
 
-		public void Build (MetricDB db, PivotSelector pivsel)
+		public void Build (MetricDB db, int k, PivotSelector pivsel)
 		{
 			this.PartialBuild (db, pivsel);
-			int k = 1;
+			++k; // since we use items from the database as training queries
 
 			// select the queries to test the construction
 			var qlist = new List<int>();
