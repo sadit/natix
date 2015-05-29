@@ -16,28 +16,13 @@
 
 using System;
 using System.IO;
-using natix.CompactDS;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 using natix;
-using natix.SortingSearching;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
 	public abstract class LocalSearch : BasicIndex
 	{
-//		protected class SearchState
-//		{
-//			public HashSet<int> evaluated = new HashSet<int> ();
-//			public IResult res;
-//			public SearchState(IResult res) {
-//				this.res = res;
-//			}
-//		}
-
 		public class Vertex : List<int>
 		{
 			public Vertex(Vertex v) : base(v) {
