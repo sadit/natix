@@ -25,7 +25,7 @@ namespace ApproxIndexes
 {
 	class Indexes
 	{
-		public static string GetResultName(string nick, string idxname, string queries, double qarg, string suffix)
+		public static string GetResultName(string nick, string idxname, IndexArgumentSetup setup, string suffix)
 		{
 			if (suffix.Length > 0) {
 				suffix = "." + suffix;
@@ -34,18 +34,20 @@ namespace ApproxIndexes
 				"{0}/Res.{1}.{2}.qarg={3}{4}.json",
 				nick,
 				Path.GetFileName(idxname),
-				Path.GetFileName(queries),
-				qarg,
+				Path.GetFileName(setup.QUERIES),
+				setup.QARG,
 				suffix
 			);
 		}
 
-		public static void PerformSearch(string resname, Index idx, string nick, string idxname, string queries, double qarg)
+		public static void PerformSearch(string resname, Index idx, string idxname, IndexArgumentSetup setup)
 		{
-			var ops = new ShellSearchOptions(queries, idxname, resname);
-			var qstream = new QueryStream (queries, qarg);
-			Commands.Search (idx, qstream.Iterate(), ops);
-			GC.Collect ();
+			if (setup.ExecuteSearch) {
+				var ops = new ShellSearchOptions (setup.QUERIES, idxname, resname);
+				var qstream = new QueryStream (setup.QUERIES, setup.QARG);
+				Commands.Search (idx, qstream.Iterate (), ops);
+				GC.Collect ();
+			}
 		}
 
 		public static void SaveConstructionTime(string idxname, long elapsed_ticks, long numdistances)
@@ -61,7 +63,7 @@ namespace ApproxIndexes
 
 		public static string Execute(IndexArgumentSetup setup, string nick, string idxname, Func<MetricDB, Index> create)
 		{
-			var resname = GetResultName (nick, idxname, setup.QUERIES,  setup.QARG, "");
+			var resname = GetResultName (nick, idxname, setup, "");
 			if (File.Exists (resname)) {
 				return resname;
 			}
@@ -80,19 +82,20 @@ namespace ApproxIndexes
 			}
 
 			if (!File.Exists (resname)) {
-				PerformSearch (resname, idx, nick, idxname, setup.QUERIES, setup.QARG);
+				PerformSearch (resname, idx, idxname, setup);
 			}
+
 			return resname;
 		}
 
-		public static void ExecuteKNRSEQ(IndexArgumentSetup setup, string nick, int numrefs, int k, double maxcand_ratio, List<string> resnamelist)
+		public static List<string> ExecuteKNRSEQ(IndexArgumentSetup setup, string nick, int numrefs, int k, double maxcand_ratio)
 		{
 			var idxname = String.Format ("{0}/Index.knrseq-{1}-{2}", nick, numrefs, k);
 			MetricDB db = SpaceGenericIO.Load (setup.BINARY_DATABASE);
 			Index idx;
-			var queries = setup.QUERIES;
 			var suffix = "";
 
+			var resnamelist = new List<string> ();
 			if (!File.Exists (idxname)) {
 				Console.WriteLine ("*** creating index {0}", idxname);
 				var s = DateTime.Now.Ticks;
@@ -110,6 +113,7 @@ namespace ApproxIndexes
 				IndexGenericIO.Save (idxname, IDX);
 				idx = IDX;
 			} else {
+				Console.WriteLine ("*** loading index {0}", idxname);
 				idx = IndexGenericIO.Load (idxname);
 				if (k == 0) {
 					var _idx = idx as KnrSeqSearch;
@@ -118,61 +122,62 @@ namespace ApproxIndexes
 			}
 			string resname;
 			// PPIndex
-			resname = GetResultName (nick, idxname, queries, setup.QARG, String.Format(suffix + "maxcand={0}.PPI", maxcand_ratio));
+			resname = GetResultName (nick, idxname, setup, String.Format(suffix + "maxcand={0}.PPI", maxcand_ratio));
 			resnamelist.Add(resname);
 			if (!File.Exists (resname)) {
 				var knr = idx as KnrSeqSearch;
 				knr.MAXCAND = (int)(idx.DB.Count * maxcand_ratio);
-				PerformSearch (resname, knr, nick, idxname, queries, setup.QARG);
+				PerformSearch (resname, knr, idxname, setup);
 			}
 			// KnrSeqSearchCosine
-			resname = GetResultName (nick, idxname, queries, setup.QARG, String.Format(suffix + "maxcand={0}.COS", maxcand_ratio));
+			resname = GetResultName (nick, idxname, setup, String.Format(suffix + "maxcand={0}.COS", maxcand_ratio));
 			resnamelist.Add(resname);
 			if (!File.Exists (resname)) {
 				var knr = new KnrSeqSearchCosine(idx as KnrSeqSearch);
 				knr.MAXCAND = (int)(idx.DB.Count * maxcand_ratio);
-				PerformSearch (resname, knr, nick, idxname, queries, setup.QARG);
+				PerformSearch (resname, knr, idxname, setup);
 			}
 			// KnrSeqSearchFootrule
-			resname = GetResultName (nick, idxname, queries, setup.QARG, String.Format(suffix + "maxcand={0}.FOOTRULE", maxcand_ratio));
+			resname = GetResultName (nick, idxname, setup, String.Format(suffix + "maxcand={0}.FOOTRULE", maxcand_ratio));
 			resnamelist.Add(resname);
 			if (!File.Exists (resname)) {
 				var knr = new KnrSeqSearchFootrule(idx as KnrSeqSearch);
 				knr.MAXCAND = (int)(idx.DB.Count * maxcand_ratio);
-				PerformSearch (resname, knr, nick, idxname, queries, setup.QARG);
+				PerformSearch (resname, knr, idxname, setup);
 			}
 			// KnrSeqSearchJaccLCS
-			resname = GetResultName (nick, idxname, queries, setup.QARG, String.Format(suffix + "maxcand={0}.JACCLCS", maxcand_ratio));
+			resname = GetResultName (nick, idxname, setup, String.Format(suffix + "maxcand={0}.JACCLCS", maxcand_ratio));
 			resnamelist.Add(resname);
 			if (!File.Exists (resname)) {
 				var knr = new KnrSeqSearchJaccLCS(idx as KnrSeqSearch);
 				knr.MAXCAND = (int)(idx.DB.Count * maxcand_ratio);
-				PerformSearch (resname, knr, nick, idxname, queries, setup.QARG);
+				PerformSearch (resname, knr, idxname, setup);
 			}
 			// KnrSeqSearchLCSv3
-			resname = GetResultName (nick, idxname, queries, setup.QARG, String.Format(suffix + "maxcand={0}.LCSv3", maxcand_ratio));
+			resname = GetResultName (nick, idxname, setup, String.Format(suffix + "maxcand={0}.LCSv3", maxcand_ratio));
 			resnamelist.Add(resname);
 			if (!File.Exists (resname)) {
 				var knr = new KnrSeqSearchLCSv3(idx as KnrSeqSearch);
 				knr.MAXCAND = (int)(idx.DB.Count * maxcand_ratio);
-				PerformSearch (resname, knr, nick, idxname, queries, setup.QARG);
+				PerformSearch (resname, knr, idxname, setup);
 			}
 			// NAPP
 			foreach (var ksearch in setup.KNR_KSEARCH) {
 				var knr = new NAPP(idx as KnrSeqSearch);
 				knr.MAXCAND = (int)(idx.DB.Count * maxcand_ratio);
-				resname = GetResultName (nick, idxname, queries, setup.QARG, String.Format(suffix + "maxcand={0}.NAPP.ksearch={1}", maxcand_ratio, ksearch));
+				resname = GetResultName (nick, idxname, setup, String.Format(suffix + "maxcand={0}.NAPP.ksearch={1}", maxcand_ratio, ksearch));
 				resnamelist.Add(resname);
 				if (!File.Exists (resname)) {
-					PerformSearch (resname, knr, nick, idxname, queries, setup.QARG);
+					PerformSearch (resname, knr, idxname, setup);
 				}
 			}
+			return resnamelist;
 		}
 
 		// sisap 2012 version
-		public static string ExecuteAPG_Greedy(IndexArgumentSetup setup, string nick, int neighbors, int restarts)
+		public static string ExecuteApproxGraph(IndexArgumentSetup setup, string nick, int neighbors, int restarts)
 		{
-			var idxname = String.Format ("{0}/Index.APG-Greedy.neighbors={1}-restarts={2}", nick, neighbors, restarts);
+			var idxname = String.Format ("{0}/Index.ApproxGraph.neighbors={1}-restarts={2}", nick, neighbors, restarts);
 			return Execute (setup, nick, idxname, (db) => {
 				var IDX = new ApproxGraph ();
 				IDX.Build (db, (short)neighbors, (short)restarts);
@@ -190,27 +195,67 @@ namespace ApproxIndexes
 			});
 		}
 
-		public static string ExecuteAPG_IS(IndexArgumentSetup setup, string nick, int neighbors, int restarts)
+		public static string ExecuteApproxGraphIS(IndexArgumentSetup setup, string nick, int neighbors, int restarts)
 		{
-			var idxname = String.Format ("{0}/Index.APG-IS.neighbors={1}-restarts={2}", nick, neighbors, restarts);
+			var idxname = String.Format ("{0}/Index.ApproxGraphIS.neighbors={1}-restarts={2}", nick, neighbors, restarts);
 			return Execute (setup, nick, idxname, (db) => {
-				var IDX = new APG_IS ();
+				var IDX = new ApproxGraphIS ();
 				IDX.Build (db, neighbors, restarts);
 				return IDX;
 			});
 		}
 
-		public static string ExecuteAPG_OPT(IndexArgumentSetup setup, string nick, string queries, int neighbors)
+		public static string ExecuteApproxGraphOptRestartsIS(IndexArgumentSetup setup, string nick, int neighbors)
 		{
-			var idxname = String.Format ("{0}/Index.APG-Tabu.neighbors={1}", nick, neighbors);
+			var idxname = String.Format ("{0}/Index.ApproxGraphOptRestartsIS.neighbors={1}", nick, neighbors);
 			return Execute (setup, nick, idxname, (db) => {
-				var IDX = new APG_OPT ();
+				var IDX = new ApproxGraphOptRestartsIS ();
 				IDX.Build (db, neighbors);
 				return IDX;
 			});
 		}
 
-		public static string ExecuteLocalSearchRestarts(IndexArgumentSetup setup, string nick, string dbname, string queries, int neighbors)
+		public static string ExecuteApproxGraphOptRandomRestarts(IndexArgumentSetup setup, string nick, int neighbors)
+		{
+			var idxname = String.Format ("{0}/Index.ApproxGraphOptRandomRestarts.neighbors={1}", nick, neighbors);
+			return Execute (setup, nick, idxname, (db) => {
+				var IDX = new ApproxGraphOptRandomRestarts ();
+				IDX.Build (db, neighbors);
+				return IDX;
+			});
+		}
+
+		public static string ExecuteApproxGraphOptSimplerOptRandomRestarts(IndexArgumentSetup setup, string nick, int neighbors)
+		{
+			var idxname = String.Format ("{0}/Index.ApproxGraphOptSimplerRandomRestarts.neighbors={1}", nick, neighbors);
+			return Execute (setup, nick, idxname, (db) => {
+				var IDX = new ApproxGraphOptRandomRestartsS ();
+				IDX.Build (db, neighbors);
+				return IDX;
+			});
+		}
+
+		public static string ExecuteAPG_OptTabuSatNeighborhood(IndexArgumentSetup setup, string nick)
+		{
+			var idxname = String.Format ("{0}/Index.APG-OptTabuSatNeighborhood", nick);
+			return Execute (setup, nick, idxname, (db) => {
+				var IDX = new APG_OptTabuSatNeighborhood ();
+				IDX.Build (db);
+				return IDX;
+			});
+		}
+
+		public static string ExecuteAPG_OptTabuSatNeighborhoodMontecarloStart(IndexArgumentSetup setup, string nick)
+		{
+			var idxname = String.Format ("{0}/Index.APG-OptTabuSatNeighborhoodMontecarloStart", nick);
+			return Execute (setup, nick, idxname, (db) => {
+				var IDX = new APG_OptTabuSatNeighborhoodMontecarloStart ();
+				IDX.Build (db);
+				return IDX;
+			});
+		}
+
+		public static string ExecuteLocalSearchRestarts(IndexArgumentSetup setup, string nick, int neighbors)
 		{
 			var idxname = String.Format ("{0}/Index.LocalSearchRestarts.neighbors={1}", nick, neighbors);
 			return Execute (setup, nick, idxname, (db) => {
@@ -230,6 +275,26 @@ namespace ApproxIndexes
 			});
 		}
 
+		public static string ExecuteLocalSearchGallopingBeam(IndexArgumentSetup setup, string nick, int neighbors)
+		{
+			var idxname = String.Format ("{0}/Index.LocalSearchGallopingBeam.neighbors={1}", nick, neighbors);
+			return Execute (setup, nick, idxname, (db) => {
+				var IDX = new LocalSearchGallopingBeam ();
+				IDX.Build (db, neighbors);
+				return IDX;
+			});
+		}
+
+		public static string ExecuteMetricGraphGreedy(IndexArgumentSetup setup, string nick, int neighbors)
+		{
+			var idxname = String.Format ("{0}/Index.MetricGraphGreedy.neighbors={1}", nick, neighbors);
+			return Execute (setup, nick, idxname, (db) => {
+				var IDX = new MetricGraphGreedy ();
+				IDX.Build (db, neighbors);
+				return IDX;
+			});
+		}
+
 		public static string ExecuteLocalSearchMontecarloBeam(IndexArgumentSetup setup, string nick, int beamsize, int neighbors)
 		{
 			var idxname = String.Format ("{0}/Index.LocalSearchMontecarloBeam.beamsize={1}-neighbors={2}", nick, beamsize, neighbors);
@@ -240,7 +305,7 @@ namespace ApproxIndexes
 			});
 		}
 
-		public static void ExecuteMultiNeighborhoodHash(IndexArgumentSetup setup, string nick, double expected_recall, int max_instances, List<string> resnameList)
+		public static List<string> ExecuteMultiNeighborhoodHash(IndexArgumentSetup setup, string nick, double expected_recall, int max_instances)
 		{
 			var idxname = String.Format ("{0}/Index.MultiNeighborhoodHash.max_instances={1}-qarg={2}-expected-recall={3}", nick, max_instances, setup.QARG, expected_recall);
 			var resname = Execute (setup, nick, idxname, (db) => {
@@ -252,16 +317,18 @@ namespace ApproxIndexes
 				IDX.Build (db, parameters);
 				return IDX;
 			});
+			var resnameList = new List<string> ();
 			resnameList.Add (resname);
 
-			resname = GetResultName (nick, idxname, setup.QUERIES, setup.QARG, "Adaptive");
+			resname = GetResultName (nick, idxname, setup, "Adaptive");
 			resnameList.Add (resname);
 	
 			if (!File.Exists (resname)) {
 				var idx = IndexGenericIO.Load (idxname);
 				idx = new AdaptiveNeighborhoodHash(idx as MultiNeighborhoodHash);
-				PerformSearch (resname, idx, nick, idxname, setup.QUERIES, setup.QARG);
+				PerformSearch (resname, idx, idxname, setup);
 			}
+			return resnameList;
 		}
 
 		public static string ExecuteLSHFloatVector(IndexArgumentSetup setup, string nick, int num_indexes, int width)
@@ -274,7 +341,32 @@ namespace ApproxIndexes
 			});
 		}
 
-		public static string ExecuteSeq(IndexArgumentSetup setup, string nick, string dbname, string queries)
+		public static string ExecuteSATApprox(IndexArgumentSetup setup, string nick)
+		{
+			var idxname = String.Format ("{0}/Index.SATApprox", nick);
+			return Execute (setup, nick, idxname, (db) => {
+				var sat = new SAT();
+				sat.Build(db, new Random());
+				var satapprox = new SAT_ApproxSearch();
+				satapprox.Build(sat);
+				return satapprox;
+			});
+		}
+
+		public static string ExecuteSATForest(IndexArgumentSetup setup, string nick)
+		{
+			var idxname = String.Format ("{0}/Index.SATForest", nick);
+			return Execute (setup, nick, idxname, (db) => {
+				var expected_prob = 0.9;
+				var prob = 0.17;
+				var satapprox = new  SAT_Forest();
+				int numindexes = (int)Math.Ceiling(Math.Log(1.0 - expected_prob) / Math.Log(1 - prob));
+				satapprox.Build(db, numindexes, new Random());
+				return satapprox;
+			});
+		}
+
+		public static string ExecuteSeq(IndexArgumentSetup setup, string nick)
 		{
 			var idxname = String.Format ("{0}/Index.Seq", nick);
 			return Execute (setup, nick, idxname, (db) => {

@@ -16,6 +16,8 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Collections;
+using System.Collections.Concurrent;
 using NDesk.Options;
 
 using natix;
@@ -32,48 +34,140 @@ namespace ApproxIndexes
 
 			prepare_db ();
 
-			var arglist = new List<string> () {
+			// It is required to be already on memory at this point. The reason is to avoid the loading of several instances
+			// of the same database
+			SpaceGenericIO.Load (setup.BINARY_DATABASE); 
+
+			var arglist = new System.Collections.Concurrent.ConcurrentQueue<String> ();
+			arglist.Enqueue ("--save");
+			arglist.Enqueue (String.Format ("Tab.{0}.{1}.qarg={2}.json", nick, Path.GetFileName (setup.QUERIES), setup.QARG));
+				/*var arglist = new List<string> () {
 				"--save",
 				String.Format("Tab.{0}.{1}.qarg={2}.json", nick, Path.GetFileName(setup.QUERIES), setup.QARG)
-			};
-			arglist.Add (Indexes.ExecuteSeq (setup, nick, dbname, setup.QUERIES));
+				*/
+
+			arglist.Enqueue (Indexes.ExecuteSeq (setup, nick));
+			var actionlist = new List<Action> ();
+			// arglist.Add (Indexes.ExecuteSATApprox (setup, nick));
+			// arglist.Add (Indexes.ExecuteSATForest (setup, nick));
+
 			foreach (var max_instances in setup.NeighborhoodHash_MaxInstances) {
 				foreach (var expected_recall in setup.NeighborhoodHash_ExpectedRecall) {
-					Indexes.ExecuteMultiNeighborhoodHash (setup, nick, expected_recall, max_instances, arglist);
+					var _max_instances = max_instances;
+					var _expected_recall = expected_recall;
+					actionlist.Add (() => {
+						var reslist = Indexes.ExecuteMultiNeighborhoodHash (setup, nick, _expected_recall, _max_instances);
+						foreach (var res in reslist) {
+							arglist.Enqueue(res);
+						}
+					});
 				}
 			}
 
 			foreach (var numrefs in setup.KNR_NUMREFS) {
 				foreach (var k in setup.KNR_KBUILD) {
 					foreach (var maxcand_ratio in setup.KNR_MAXCANDRATIO) {
-						Indexes.ExecuteKNRSEQ (setup, nick, numrefs, k, maxcand_ratio, arglist);
+						var _numrefs = numrefs;
+						var _k = k;
+						var _maxcand_ratio = maxcand_ratio;
+						actionlist.Add (() => {
+							var reslist = Indexes.ExecuteKNRSEQ (setup, nick, _numrefs, _k, _maxcand_ratio);
+							foreach (var res in reslist) {
+								arglist.Enqueue(res);
+							}
+						});
 					}
 				}
 			}
 
+//			actionlist.Add (() => {
+//				var resname = Indexes.ExecuteAPG_OptTabuSatNeighborhood (setup, nick);
+//				arglist.Enqueue(resname);
+//			});
+//
+//			actionlist.Add (() => {
+//				var resname = Indexes.ExecuteAPG_OptTabuSatNeighborhoodMontecarloStart(setup, nick);
+//				arglist.Enqueue(resname);
+//			});
+
+
 			foreach (var neighbors in setup.OPTSEARCH_NEIGHBORS) {
 				// arglist.Add (Indexes.ExecuteLocalSearchRestarts (setup, nick, dbname, setup.QUERIES, neighbors));
 				// arglist.Add (Indexes.ExecuteLocalSearchBestFirst (setup, nick, dbname, setup.QUERIES, neighbors));
-				arglist.Add (Indexes.ExecuteAPG_OPT(setup, nick, setup.QUERIES, neighbors));
+				var _neighbors = neighbors;
+			
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteApproxGraphOptRestartsIS(setup, nick, _neighbors);
+					arglist.Enqueue(resname);
+				});
+
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteApproxGraphOptRandomRestarts(setup, nick, _neighbors);
+					arglist.Enqueue(resname);
+				});
+
+//				actionlist.Add (() => {
+//					var resname = Indexes.ExecuteApproxGraphOptSimplerOptRandomRestarts(setup, nick, _neighbors);
+//					arglist.Enqueue(resname);
+//				});
+
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteMetricGraphGreedy(setup, nick, _neighbors);
+					arglist.Enqueue(resname);
+				});
 
 				foreach (var restarts in setup.OPTSEARCH_RESTARTS) {
-					arglist.Add (Indexes.ExecuteAPG_IS (setup, nick, neighbors, restarts));
-					arglist.Add (Indexes.ExecuteAPG_Greedy (setup, nick, neighbors, restarts));
+					var _restarts = restarts;
+					actionlist.Add (() => {
+						var resname = Indexes.ExecuteApproxGraphIS(setup, nick, _neighbors, _restarts);
+						arglist.Enqueue(resname);
+					});
+//					actionlist.Add (() => {
+//						var resname = Indexes.ExecuteApproxGraph(setup, nick, _neighbors, _restarts);
+//						arglist.Enqueue(resname);
+//					});
 				}
 
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteLocalSearchGallopingBeam(setup, nick, _neighbors);
+					arglist.Enqueue(resname);
+				});
+
 				foreach (var beamsize in setup.OPTSEARCH_BEAMSIZE) {
-					arglist.Add (Indexes.ExecuteLocalSearchBeam (setup, nick, beamsize, neighbors));
-					arglist.Add (Indexes.ExecuteLocalSearchMontecarloBeam (setup, nick, beamsize, neighbors));
+					var _beamsize = beamsize;
+					actionlist.Add (() => {
+						var resname = Indexes.ExecuteLocalSearchBeam(setup, nick, _beamsize, _neighbors);
+						arglist.Enqueue(resname);
+					});
+
+//					actionlist.Add (() => {
+//						var resname = Indexes.ExecuteLocalSearchMontecarloBeam(setup, nick, _beamsize, _neighbors);
+//						arglist.Enqueue(resname);
+//					});
 				}
 			}
 
 			foreach (var numInstances in setup.LSHFloatVector_INDEXES) {
 				foreach (var numSamples in setup.LSHFloatVector_SAMPLES) {
-					arglist.Add (Indexes.ExecuteLSHFloatVector (setup, nick, numInstances, numSamples));
+					var _numInstances = numInstances;
+					var _numSamples = numSamples;
+					actionlist.Add (() => {
+						var resname = Indexes.ExecuteLSHFloatVector (setup, nick, _numInstances, _numSamples);
+						arglist.Enqueue(resname);
+					});
 				}
 			}
 
-			Commands.Check (arglist);
+			if (setup.CORES == 1) {
+				foreach (var action in actionlist) {
+					action.Invoke ();
+				}
+			} else {
+				LongParallel.ForEach (actionlist, (a) => a.Invoke (), setup.CORES);
+			}
+			if (setup.ExecuteSearch) {
+				Commands.Check (arglist);
+			}
 		}
 
 		
@@ -241,7 +335,13 @@ namespace ApproxIndexes
 				{"lsh-instances=", "A list of instances to for LSH_FloatVectors (comma sep.)", v=> LoadList(v, setup.LSHFloatVector_INDEXES)},
 				{"lsh-width=", "A list of widths for LSH_FloatVectors (comma sep.)", v=> LoadList(v, setup.LSHFloatVector_SAMPLES)},
 				//{"parameterless", "Enable parameterless indexes", v => setup.ExecuteParameterless = true},
-				{"help|h", "Shows this help message", v => ops.WriteOptionDescriptions(Console.Out)}
+				{"skip-search", v => setup.ExecuteSearch = false},
+				{"cores=", v => setup.CORES = int.Parse(v)},
+				{"help|h", "Shows this help message", v => {
+						ops.WriteOptionDescriptions(Console.Out);
+						System.Environment.Exit(0);
+					}
+				}
 			};
 			ops.Parse(args);
 			if (setup.DATABASE == null) {

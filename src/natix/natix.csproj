@@ -11,8 +11,6 @@
     <RootNamespace>natix</RootNamespace>
     <ReleaseVersion>1.0</ReleaseVersion>
     <SynchReleaseVersion>False</SynchReleaseVersion>
-    <ProductVersion>10.0.0</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>

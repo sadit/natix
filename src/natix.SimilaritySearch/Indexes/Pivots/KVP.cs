@@ -70,6 +70,21 @@ namespace natix.SimilaritySearch
 			var n = this.DB.Count;
 			this.K = k;
 			this.pivs.AddRange (RandomSets.GetRandomSubSet (m, n));
+
+			this.ispivot.Capacity = this.assocpivots.Capacity = n;
+			this.ispivot.Clear ();
+			this.assocpivots.Clear ();
+
+			for (int objID = 0; objID < n; ++objID) {
+				this.assocpivots.Add (new ItemPair[k + k]);
+				this.ispivot.Add (0);
+			}
+
+			for (int pivID = 0; pivID < m; ++pivID) {
+				var objID = this.pivs [pivID];
+				this.ispivot [objID] = 1;
+			}
+
 			for (int objID = 0; objID < n; ++objID) {
 				var near = new Result (k);
 				var far = new Result (k);
@@ -80,8 +95,8 @@ namespace natix.SimilaritySearch
 					near.Push (pivID, d); // this can be buggy when k * 2 < n or dist() is too flat
 					far.Push (pivID, -d);
 				}
-				var _assoc = new ItemPair[k + k];
-				this.assocpivots.Add(_assoc);
+				var _assoc = this.assocpivots [objID];
+
 				{
 					int i = 0;
 					foreach (var p in near) {
@@ -93,16 +108,12 @@ namespace natix.SimilaritySearch
 						++i;
 					}
 				}
-				this.ispivot.Add (0);
 				if (objID % 5000 == 0) {
 					Console.WriteLine ("=== db: {0}, k: {1}, available: {2}, advance: {3}/{4}, timestamp: {5}",
 					                   Path.GetFileName(db.Name), k, m, objID+1, n, DateTime.Now);
 				}
 			}
-			for (int pivID = 0; pivID < m; ++pivID) {
-				var objID = this.pivs [pivID];
-				this.ispivot [objID] = 1;
-			}
+
 		}
 
 		public override IResult SearchKNN (object q, int K, IResult res)

@@ -21,9 +21,13 @@ namespace natix.SimilaritySearch
 {
 	public class AcousticID : MetricDB
 	{
-		List<string> AudioID;
-		List<int> AudioLEN;
-		List<int[]> AudioFP;
+		public struct AcousticItem {
+			public string id;
+			public int len;
+			public int[] fp;
+		}
+
+		List<AcousticItem> Items;
 		int Dim;
 
 		public AcousticID () : base()
@@ -40,7 +44,7 @@ namespace natix.SimilaritySearch
 
 		public object this [int index] {
 			get {
-				return this.AudioFP [index];
+				return this.Items [index];
 			}
 		}
 
@@ -54,7 +58,7 @@ namespace natix.SimilaritySearch
 	
 		public int Count {
 			get {
-				return this.AudioFP.Count;
+				return this.Items.Count;
 			}
 		}
 
@@ -65,30 +69,33 @@ namespace natix.SimilaritySearch
 			this.Dim = Input.ReadInt32 ();
 			int n = Input.ReadInt32 ();
 
-			this.AudioID = new List<string> ();
-			this.AudioLEN = new List<int> ();
-			this.AudioFP = new List<int[]> ();
+			this.Items = new List<AcousticItem> ();
 
 			for (int i = 0; i < n; ++i) {
-				this.AudioID.Add (Input.ReadString ());
-				this.AudioLEN.Add (Input.ReadInt32());
-				var u = new int[this.Dim];
-				PrimitiveIO<int>.LoadVector (Input, this.Dim, u);
-				this.AudioFP.Add (u);
+				var id = Input.ReadString ();
+				var len = Input.ReadInt32 ();
+				var fp = new int[this.Dim];
+				PrimitiveIO<int>.LoadVector (Input, this.Dim, fp);
+				var item = new AcousticItem () {
+					id = id,
+					len = len,
+					fp = fp
+				};
+				this.Items.Add (item);
 			}
 		}
 
-		
 		public virtual void Save(BinaryWriter Output)
 		{
 			Output.Write(this.Name);
 			Output.Write(this.Dim);
-			Output.Write (this.AudioFP.Count);
+			Output.Write (this.Items.Count);
 
-			for (int i = 0; i < this.AudioFP.Count; ++i) {
-				Output.Write (this.AudioID [i]);
-				Output.Write (this.AudioLEN [i]);
-				PrimitiveIO<int>.SaveVector (Output, this.AudioFP [i]);
+			for (int i = 0; i < this.Items.Count; ++i) {
+				var item = this.Items [i];
+				Output.Write (item.id);
+				Output.Write (item.len);
+				PrimitiveIO<int>.SaveVector (Output, item.fp);
 			}
 		}
 
@@ -96,13 +103,12 @@ namespace natix.SimilaritySearch
 		static int k1 = "DURATION=".Length;
 		static int k2 = "FINGERPRINT=".Length;
 
+
 		public void Build(string filename, int dim)
 		{
 			this.Name = filename;
 			this.Dim = dim;
-			this.AudioID = new List<string> ();
-			this.AudioLEN = new List<int> ();
-			this.AudioFP = new List<int[]> ();
+			this.Items = new List<AcousticItem> ();
 
 			using (var input = File.OpenText(filename)) {
 				int recID = 0;
@@ -110,15 +116,33 @@ namespace natix.SimilaritySearch
 					var audioID = input.ReadLine ().Substring (k0);
 					var duration = int.Parse (input.ReadLine ().Substring (k1));
 					var fp = this.ParseVector (input.ReadLine ().Substring (k2));
-					this.AudioFP.Add (fp);
-					this.AudioLEN.Add (duration);
-					this.AudioID.Add (audioID);
+					this.Items.Add (new AcousticItem () {
+						id = audioID,
+						len = duration,
+						fp = fp
+					});
 					++recID;
 					if (recID % 1000 == 0) {
 						Console.WriteLine ("== object {0}, now: {1}", recID, DateTime.Now);
 					}
 				}
 			}
+		}
+
+		public int Add(object a)
+		{
+			var s = a as string;
+			var arr = s.Split ('\n');
+
+			var audioID = arr[0].Substring (k0);
+			var duration = int.Parse (arr[1].Substring (k1));
+			var fp = this.ParseVector (arr[2].Substring (k2));
+			this.Items.Add (new AcousticItem () {
+				id = audioID,
+				len = duration,
+				fp = fp
+			});
+			return this.Items.Count - 1;
 		}
 
 		public int[] ParseVector(string vstring)

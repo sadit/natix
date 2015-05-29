@@ -11,7 +11,7 @@ def load_records(digname):
         s = json.loads(f.read())
         for m in s:
             for k, v in m["Parametrized"].items():
-                m["@%s" % k] = v
+                m["_%s" % k] = v
             del m["Parametrized"]
             del m["QueryList"]
         return s
@@ -43,7 +43,7 @@ def postprocessing(records, tabname):
     assert seq is not None, "ERROR Sequential search was not detected in %s" % tabname
 
     for rec in records:
-        rec['@SpeedupSquare'] = square_speedup(rec, seq)
+        rec['_SpeedupSquare'] = square_speedup(rec, seq)
 
     return records
 
@@ -104,6 +104,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     for input in args.input_list:
+        print "### filename", input
         records = postprocessing(load_records(input), input)
         if args.filter:
             def _filter(rec):

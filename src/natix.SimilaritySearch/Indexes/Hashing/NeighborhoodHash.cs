@@ -89,18 +89,10 @@ namespace natix.SimilaritySearch
 			this.CountSymbolBits = countBits(numrefs);
 
             var refs = new SampleSpace("", db, numrefs, rand);
-			//var seq = new MILCv3 ();
-			if (numrefs > 200) {
-				var seq = new NILC ();
-				var ilc = new ILC ();
-				ilc.Build (refs, this.SymbolsPerHash, 1);
-				seq.Build (ilc);
-				this.R = seq;
-			} else {
-				var seq = new Sequential();
-				seq.Build (refs);
-				this.R = seq;
-			}
+			var sat = new SAT_Distal ();
+			sat.Build (refs, new Random ());
+			this.R = sat;
+
 			var G = new KnrFP ();
 			G.Build (db, this.R, this.SymbolsPerHash);
 			var knrcopy = new int[this.SymbolsPerHash];

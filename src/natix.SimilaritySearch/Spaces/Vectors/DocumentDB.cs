@@ -45,15 +45,7 @@ namespace natix.SimilaritySearch
 			/// Weight for this key
 			/// </summary>
 			public float weight;
-			/// <summary>
-			///  Constructor
-			/// </summary>
-			/// <param name="k">
-			/// A <see cref="UInt32"/>
-			/// </param>
-			/// <param name="w">
-			/// A <see cref="System.Single"/>
-			/// </param>
+
 			public Tvoc (Int32 k, float w)
 			{
 				this.keyid = k;
@@ -232,6 +224,17 @@ namespace natix.SimilaritySearch
 			return this.ParseFromString (File.ReadAllText (name));
 		}
 
+		public int Add(object a)
+		{
+			var doc = a as Tdoc;
+			if (doc == null) {
+				throw new ArgumentException ("the given object is not a Tdoc instance");
+			}
+			var objID = this.DOCS.Count;
+			this.DOCS.Add (doc);
+			return objID;
+		}
+
 		/// <summary>
 		/// The distance function (angle between vectors)
 		/// </summary>
@@ -264,9 +267,6 @@ namespace natix.SimilaritySearch
 					j++;
 				}
 			}
-			// free(w1); free(w2);
-			// printf ("internal product: %f\n",sum/(sqrt(norm1)*sqrt(norm2)));
-			// printf ("distance: %f\n",acos(sum/(sqrt(norm1)*sqrt(norm2))));
 			double M = sum/(Math.Sqrt(norm1)*Math.Sqrt(norm2));
 			//M=max(-1.0,min(1.0,M));
 			M=Math.Min(1.0, M);

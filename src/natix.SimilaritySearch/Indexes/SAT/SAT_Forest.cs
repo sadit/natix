@@ -55,13 +55,11 @@ namespace natix.SimilaritySearch
             }
         }
 
-        public virtual Action ClosureBuildOne (int i, Random rand)
+		public virtual Action ClosureBuildOne (int i, int seed)
         {
             return delegate() {
-                //var sat = new SAT_Random();
-                //sat.Build (this.DB, rand);
-                var sat = new SAT_Randomized();
-                sat.Build (this.DB, rand, 64);
+				var sat = new SAT_Random();
+				sat.Build (this.DB, new Random(seed));
                 this.forest[i] = new SAT_ApproxSearch();
                 this.forest[i].Build(sat);
             };
@@ -74,28 +72,21 @@ namespace natix.SimilaritySearch
             var action_list = new Action[num_trees];
             var seed = rand.Next();
             for (int i = 0; i < num_trees; ++i) {
-                action_list[i] = this.ClosureBuildOne(i, RandomSets.GetRandom(seed + i));
+                action_list[i] = this.ClosureBuildOne(i, seed + i);
             }
-            ParallelOptions ops = new ParallelOptions();
-            ops.MaxDegreeOfParallelism = -1;
-            Parallel.ForEach(action_list, (a) => a.Invoke());
+			LongParallel.ForEach(action_list, (a) => a.Invoke());
         }
 
 
         public override IResult SearchKNN (object q, int K, IResult res)
         {
             var R = new ResultCheckDuplicates (res);
-            foreach (var sat in this.forest) {
-                sat.SearchKNN(q, K, R);
+		    foreach (var sat in this.forest) {
+                sat._SearchKNN(q, K, R);
             }
             return res;
         }
 
-        public override IResult SearchRange (object q, double radius)
-        {
-            var R = new ResultRange(radius, this.DB.Count);
-            return this.SearchKNN(q, this.DB.Count, R);
-        }
     }
 }
 

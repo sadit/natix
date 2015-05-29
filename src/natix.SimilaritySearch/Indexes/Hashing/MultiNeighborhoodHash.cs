@@ -69,7 +69,7 @@ namespace natix.SimilaritySearch
 						++matches;
 					}
 				}
-				// we remove one, the first is always found
+				// we remove one, the first item is always found
 				if (i % 10 == 0) {
 					Console.WriteLine ("estimation step, query matches: {0}", matches);
 				}

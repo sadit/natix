@@ -65,6 +65,11 @@ namespace natix.SimilaritySearch
 			set;
 		}
 
+		public int Add(object a)
+		{
+			throw new NotSupportedException ();
+		}
+
 		/// <summary>
 		/// Read the database from a listing file (one filename per line)
 		/// </summary>

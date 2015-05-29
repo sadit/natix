@@ -107,7 +107,7 @@ namespace natix.SimilaritySearch
 			}
 		}
 
-		public object this[ int i ]
+		public object this[int i]
 		{
 			get {
 				return this.Items [i];
@@ -124,13 +124,30 @@ namespace natix.SimilaritySearch
 			Console.WriteLine ("**** creating binary string from {0}", filename);
 			var lines = File.ReadAllLines (filename);
 			foreach (var line in lines) {
-				var arr = line.Split ('\t');
-				var item = new DictItem (arr [0], arr [1], arr [2], arr [3]);
 				if (this.Count % 10000 == 0) {
-					Console.WriteLine ("**** advance {0}/{1}", filename, this.Count, lines.Length);
+					Console.WriteLine ("**** {0} advance {1}/{2}", filename, this.Count, lines.Length);
 				}
+				this.Add (line);
+			}
+		}
+
+		public int Add(object a)
+		{
+			var s = a as string;
+			if (a == null) {
+				throw new ArgumentException ("object should be an string");
+			}
+
+			var arr = s.Split ('\t');
+			if (arr.Length == 1) {
+				var item = new DictItem (null, s, null, null);
+				this.Items.Add (item);
+			} else {
+				var item = new DictItem (arr [0], arr [1], arr [2], arr [3]);
 				this.Items.Add (item);
 			}
+
+			return this.Items.Count - 1;
 		}
 
 		public object Parse(string word)

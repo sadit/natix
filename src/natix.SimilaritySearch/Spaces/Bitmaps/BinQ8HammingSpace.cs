@@ -116,8 +116,9 @@ namespace natix.SimilaritySearch
 			r.Close ();
 		}
 
-		public int Add(byte[] bitmap)
+		public int Add(object a)
 		{
+			var bitmap = a as byte[];
 			this.pool.Add (bitmap);
 			return this.pool.Count - 1;
 		}
@@ -261,12 +262,13 @@ namespace natix.SimilaritySearch
 		/// <summary>
 		/// Converts 'name' into an object
 		/// </summary>
-		public object Parse (string name)
+		public object Parse (string line)
 		{
-			//Console.WriteLine ("Parsing '{0}', isquery: {1}", name, isquery);
-			if (name.StartsWith ("obj")) {
-				return this[int.Parse (name.Split (' ')[1])];
-			}
+			return PrimitiveIO<byte>.LoadVector(line);
+		}
+
+		public object ParseFromFile (string name)
+		{
 			var res = LoadObjectFromFile (name, true);
 			return res;
 		}

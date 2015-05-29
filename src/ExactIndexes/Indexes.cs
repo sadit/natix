@@ -25,13 +25,15 @@ namespace ExactIndexes
 {
 	class Indexes
 	{
-		public static void PerformSearch(string resname, Index idx, string nick, string idxname, string queries, double qarg)
+		public static void PerformSearch(string resname, Index idx, string idxname, IndexArgumentSetup setup)
 		{
-		    Console.WriteLine("======= Searching {0}", resname);
-			var ops = new ShellSearchOptions(queries, idxname, resname);
-			var qstream = new QueryStream (queries, qarg);
-			Commands.Search (idx, qstream.Iterate(), ops);
-			GC.Collect ();
+			if (setup.ExecuteSearch) {
+				Console.WriteLine ("======= Searching {0}", resname);
+				var ops = new ShellSearchOptions (setup.QUERIES, idxname, resname);
+				var qstream = new QueryStream (setup.QUERIES, setup.QARG);
+				Commands.Search (idx, qstream.Iterate (), ops);
+				GC.Collect ();
+			}
 		}
 
 		public static string GetResultName(string nick, string idxname, string queries, double qarg, string suffix)
@@ -53,7 +55,7 @@ namespace ExactIndexes
 		{
 			MetricDB db = SpaceGenericIO.Load (dbname);
 			ILC ilc = new ILC ();
-			ilc.Build (db, expected_k, 1);
+			ilc.Build (db, expected_k, 128, 1);
 			return ilc;
 		}
 
@@ -87,7 +89,7 @@ namespace ExactIndexes
 			} else {
 				idx = IndexGenericIO.Load (idxname);
 			}
-			PerformSearch (resname, idx, nick, idxname, setup.QUERIES, setup.QARG);
+			PerformSearch (resname, idx, idxname, setup);
 			return resname;
 		}
 
@@ -136,7 +138,7 @@ namespace ExactIndexes
 			var idxname = String.Format ("{0}/Index.MILC.{1}", nick, num_indexes);		
 			return Execute (setup, nick, idxname, (db) => {
 				var milc = new MILC ();
-				milc.Build (db, (int)Math.Abs(setup.QARG), num_indexes, setup.TASKS);
+				milc.Build (db, (int)Math.Abs(setup.QARG), num_indexes, setup.CORES);
 				return milc;
 			});
 		}
@@ -146,7 +148,7 @@ namespace ExactIndexes
 			var idxname = String.Format ("{0}/Index.MILCv2.{1}", nick, num_indexes);		
 			return Execute (setup, nick, idxname, (db) => {
 				var milc = new MILCv2 ();
-				milc.Build (db, num_indexes, setup.TASKS);
+				milc.Build (db, (int)Math.Abs(setup.QARG), num_indexes, setup.CORES);
 				return milc;
 			});
 		}
@@ -166,7 +168,7 @@ namespace ExactIndexes
 			var idxname = String.Format ("{0}/Index.EPTA.{1}", nick, numgroups);
 			return Execute (setup, nick, idxname, (db) => {
 				EPTable eptable = new EPTable ();
-				eptable.Build (db, numgroups, (_db, rand) => new EPListOptimizedA (db, numgroups, rand), setup.TASKS);
+				eptable.Build (db, numgroups, (_db, rand) => new EPListOptimizedA (db, numgroups, rand), setup.CORES);
 				return eptable;
 			});
 		}
@@ -176,7 +178,7 @@ namespace ExactIndexes
 			var idxname = String.Format ("{0}/Index.EPTB.{1}", nick, numgroups);
 			return Execute (setup, nick, idxname, (db) => {
 				EPTable eptable = new EPTable ();
-				eptable.Build (db, numgroups, (_db, rand) => new EPListOptimizedB (db, numgroups, rand), setup.TASKS);
+				eptable.Build (db, numgroups, (_db, rand) => new EPListOptimizedB (db, numgroups, rand), setup.CORES);
 				return eptable;
 			});
 		}
@@ -188,7 +190,7 @@ namespace ExactIndexes
 				EPTable eptable = new EPTable ();
 				double beta = 0.8;
 				eptable.Build (db, numgroups,
-				               (_db, rand) => new EPListOptimized (db, numgroups, rand, 3000, beta), setup.TASKS);
+				               (_db, rand) => new EPListOptimized (db, numgroups, rand, 3000, beta), setup.CORES);
 				return eptable;
 			});
 		}
@@ -198,7 +200,7 @@ namespace ExactIndexes
 			var idxname = String.Format ("{0}/Index.LAESA.{1}", nick, numpivs);
 			return Execute (setup, nick, idxname, (db) => {
 				LAESA laesa = new LAESA ();
-				laesa.Build (db, numpivs, setup.TASKS);
+				laesa.Build (db, numpivs, setup.CORES);
 				return laesa;
 			});
 		}
@@ -233,7 +235,7 @@ namespace ExactIndexes
 			var idxname = String.Format ("{0}/Index.SSS.{1}", nick, alpha);
 			return Execute (setup, nick, idxname, (db) => {
 				SSS sss = new SSS ();
-				sss.Build (db, alpha, maxPivs, setup.TASKS);
+				sss.Build (db, alpha, maxPivs, setup.CORES);
 				return sss;
 			});
 		}
@@ -248,11 +250,31 @@ namespace ExactIndexes
 			});
 		}
 
-		public static string ExecuteSAT(IndexArgumentSetup setup, string nick)
+		public static string ExecuteSATRandom(IndexArgumentSetup setup, string nick)
 		{
 			var idxname = String.Format ("{0}/Index.SAT-Random", nick);
 			return Execute (setup, nick, idxname, (db) => {
 				SAT_Random sat = new SAT_Random ();
+				sat.Build (db, RandomSets.GetRandom());
+				return sat;
+			});
+		}
+
+		public static string ExecuteSATDistal(IndexArgumentSetup setup, string nick)
+		{
+			var idxname = String.Format ("{0}/Index.SAT-Distal", nick);
+			return Execute (setup, nick, idxname, (db) => {
+				var sat = new SAT_Distal ();
+				sat.Build (db, RandomSets.GetRandom());
+				return sat;
+			});
+		}
+
+		public static string ExecuteSAT(IndexArgumentSetup setup, string nick)
+		{
+			var idxname = String.Format ("{0}/Index.SAT-Legacy", nick);
+			return Execute (setup, nick, idxname, (db) => {
+				var sat = new SAT ();
 				sat.Build (db, RandomSets.GetRandom());
 				return sat;
 			});
@@ -265,6 +287,26 @@ namespace ExactIndexes
 				var lc = new LC ();
 				lc.Build (db, bsize, RandomSets.GetRandom());
 				return lc;
+			});
+		}
+
+		public static string ExecuteVPT(IndexArgumentSetup setup, string nick)
+		{
+			var idxname = String.Format ("{0}/Index.VPT", nick);
+			return Execute (setup, nick, idxname, (db) => {
+				var vpt = new VPT ();
+				vpt.Build (db, RandomSets.GetRandom());
+				return vpt;
+			});
+		}
+
+		public static string ExecuteVPTX(IndexArgumentSetup setup, string nick)
+		{
+			var idxname = String.Format ("{0}/Index.VPTX", nick);
+			return Execute (setup, nick, idxname, (db) => {
+				var vpt = new VPTX ();
+				vpt.Build (db, RandomSets.GetRandom());
+				return vpt;
 			});
 		}
 

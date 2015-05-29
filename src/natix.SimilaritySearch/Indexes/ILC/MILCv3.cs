@@ -39,7 +39,7 @@ namespace natix.SimilaritySearch
 
 			this.leader = new NILC();
 			var ilc = new ILC();
-			var cost = ilc.InternalBuild (expected_k, 0, 1, db, 2, pivsel);
+			var cost = ilc.InternalBuild (expected_k, 0, 1, db, 128, 2, pivsel);
 			this.leader.Build (ilc);
 			int m = this.leader.clusters.Count;
 			double review_prob = cost.SingleCost - m; review_prob /= this.DB.Count;
@@ -48,7 +48,7 @@ namespace natix.SimilaritySearch
 			while (review_prob > min_prob) {
 				var row = new ILC ();
 				rows.Add (row);
-				var _cost = row.InternalBuild (expected_k, m, review_prob, db, 2, pivsel);
+				var _cost = row.InternalBuild (expected_k, m, review_prob, db, 128, 2, pivsel);
 				var _m = row.ACT.Count;
 				review_prob *= (_cost.SingleCost - _m) / this.DB.Count;
 			}

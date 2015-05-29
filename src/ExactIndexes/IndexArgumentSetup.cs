@@ -24,9 +24,10 @@ namespace ExactIndexes
 		public string DATABASE = null;
 		public string BINARY_DATABASE = null;
 		public string QUERIES = null;
-		public int TASKS = -1;
+		public int CORES = -1;
 		public double QARG = -1;
 		public bool ExecuteParameterless = false;
+		public bool ExecuteSearch = true; // a false value means "only create indexes"
 
 		public List<int> LAESA = new List<int>();
 		public List<int> BNC = new List<int> ();

@@ -85,6 +85,11 @@ namespace natix.SimilaritySearch
 //			return this.DB.CreateResult (K, ceiling);
 //		}
 
+		public int Add(object a)
+		{
+			throw new NotSupportedException ();
+		}
+
 		public object Parse (string s)
 		{
 			return this.DB.Parse (s);

@@ -91,7 +91,11 @@ namespace natix.SimilaritySearch
 			this.Parametrized ["Memory"] = 0;
 			this.Parametrized ["ConstructionCostTime"] = 0;
 			this.Parametrized ["ConstructionCostDistances"] = 0;
-
+			int pop = 0;
+			foreach (var q in this.QueryList) {
+				pop += q.Result.Count;
+			}
+			this.Parametrized ["QueryPopulation"] = pop / (double) this.QueryList.Count;
 			if (File.Exists (this.IndexName)) {
 				using (var f = File.OpenRead(this.IndexName)) {
 					this.Parametrized ["Memory"] = f.Length;

@@ -40,9 +40,13 @@ namespace ExactIndexes
 			arglist.Add (Indexes.ExecuteSeq (setup, nick));
 			if (setup.ExecuteParameterless) {
 				arglist.Add (Indexes.ExecuteSAT (setup, nick));
+				arglist.Add (Indexes.ExecuteSATDistal (setup, nick));
+				arglist.Add (Indexes.ExecuteSATRandom (setup, nick));
+				arglist.Add (Indexes.ExecuteVPT (setup, nick));
+				// arglist.Add (Indexes.ExecuteVPTX (setup, nick));
 				arglist.Add (Indexes.ExecuteNILC (setup, nick));
 				arglist.Add (Indexes.ExecuteTNILC (setup, nick));
-				// arglist.Add (Indexes.ExecuteMILCv3 (setup, nick, dbname));
+				//arglist.Add (Indexes.ExecuteMILCv3 (setup, nick));
 			}
 
 			foreach (var bsize in setup.LC) {
@@ -54,12 +58,12 @@ namespace ExactIndexes
 				arglist.Add (Indexes.ExecuteMILC (setup, nick, numGroups));
 				arglist.Add (Indexes.ExecuteTMILC (setup, nick, numGroups));
 				arglist.Add (Indexes.ExecuteDMILC (setup, nick, numGroups));
-				// arglist.Add (Indexes.ExecuteMILCv2 (setup, nick, dbname, numGroups));
+				//arglist.Add (Indexes.ExecuteMILCv2 (setup, nick, numGroups));
 			}
 
 			foreach (var numGroups in setup.EPT) {
 				arglist.Add (Indexes.ExecuteEPTA (setup, nick, numGroups));
-				arglist.Add (Indexes.ExecuteEPT (setup, nick, numGroups));
+				// arglist.Add (Indexes.ExecuteEPT (setup, nick, numGroups));
 			}
 
 			foreach (var numPivs in setup.BNC) {
@@ -264,7 +268,9 @@ namespace ExactIndexes
 				{"sss=", "Run SSS with the given alpha list (comma sep.)", v => LoadList(v, setup.SSS)},
 				{"sss-max=", "Run SSS with the given alpha list (comma sep.)", v => setup.SSS_max = int.Parse(v)},
 				{"parameterless", "Enable parameterless indexes", v => setup.ExecuteParameterless = true},
-				{"help|h", "Shows this help message", v => ops.WriteOptionDescriptions(Console.Out)}
+				{"help|h", "Shows this help message", v => ops.WriteOptionDescriptions(Console.Out)},
+				{"skip-search", v => setup.ExecuteSearch = false},
+				{"cores=", v => setup.CORES = int.Parse(v)},
 			};
 
 			ops.Parse(args);

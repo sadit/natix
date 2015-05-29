@@ -25,14 +25,20 @@ namespace natix.SimilaritySearch
 	/// <summary>
 	/// String space
 	/// </summary>
-	public class SeqSpace<T> : MetricDB where T : struct,IComparable
+	public class SeqSpace<T> : MetricDB where T : struct, IComparable
 	{
 		public List< T[] > seqs = new List<T[]> ();
 		protected long numdist;
 
-		public void Add(T[] u)
+
+		public int Add(object u)
 		{
-			this.seqs.Add (u);
+			var s = u as T[];
+			if (s == null) {
+				throw new ArgumentException ("object should be a T[] instance");
+			}
+			this.seqs.Add (s);
+			return this.seqs.Count - 1;
 		}
 
 		public virtual void Load (BinaryReader Input)

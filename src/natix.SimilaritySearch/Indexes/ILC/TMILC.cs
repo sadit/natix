@@ -68,8 +68,9 @@ namespace natix.SimilaritySearch
 				this.rows [i].PartialBuild (db, pivsel);
 			}
 
-			//int step_width = (int)Math.Ceiling(64.0 / num_indexes) + 8;
-			int step_width = 128;
+			int step_width = 512 / num_indexes + 8;
+
+			//int step_width = 128;
 			long curr = long.MaxValue;
 			long prev = 0L;
 			int iter = 0;
@@ -89,7 +90,7 @@ namespace natix.SimilaritySearch
 				++iter;
 				Console.WriteLine("xxxxxxxx> iter: {0}, current-search-time: {1}, timestamp: {2}",
 				                  iter, TimeSpan.FromTicks(curr).TotalSeconds / (qlist.Count), DateTime.Now);
-			} while (prev > curr);
+			} while (prev > curr * 1.001);
 		}
 	}
 }

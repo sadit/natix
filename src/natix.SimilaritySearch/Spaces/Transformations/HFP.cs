@@ -65,7 +65,12 @@ namespace natix.SimilaritySearch
 			var u = this.Pairs.Parse (raw);
 			return this.GetFP (u);
 		}
-		
+
+		public int Add(object a)
+		{
+			return this.Fingerprints.Add (a);
+		}
+
 		public void Load (BinaryReader Input)
 		{
 			this.Name = Input.ReadString ();

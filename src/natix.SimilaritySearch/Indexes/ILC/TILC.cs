@@ -94,7 +94,7 @@ namespace natix.SimilaritySearch
 					distcache [c] = dcc;
 				}
 
-				if (dcc <= 4 * this.DT [docID]) {
+				if (dcc <= 2 * this.DT [docID]) {
 					//var dmin = this.DT [docID];
 					//if (Math.Abs(dmin - dcc) <= dmin) {
 					var d = this.DB.Dist (this.DB [docID], piv);

@@ -116,6 +116,16 @@ namespace natix.SimilaritySearch
 		    }
 		}
 
+		public int Add(object a)
+		{
+			var objID = this.VECTORS.Count;
+			var v = a as T[];
+			if (v == null) {
+				throw new ArgumentException ("Object is not a T[] instance");
+			}
+			this.VECTORS.Add (v);
+			return objID;
+		}
 		/// <summary>
 		/// Retrieves the object with identifier docid
 		/// </summary>

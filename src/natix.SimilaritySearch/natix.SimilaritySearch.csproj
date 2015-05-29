@@ -212,8 +212,6 @@
     <Compile Include="Indexes\OPT\LocalSearchMontecarloBeam.cs" />
     <Compile Include="Indexes\OPT\LocalSearch.cs" />
     <Compile Include="Indexes\OPT\LocalSearchBestFirst.cs" />
-    <Compile Include="Indexes\OPT\APG_OPT.cs" />
-    <Compile Include="Indexes\OPT\APG_IS.cs" />
     <Compile Include="Indexes\KNR\KnrEstimateParameters.cs" />
     <Compile Include="Indexes\OPT\HSP.cs" />
     <Compile Include="Indexes\Hashing\NeighborhoodHash.cs" />
@@ -244,6 +242,19 @@
     <Compile Include="Spaces\String\StringPrefixLengthSpace.cs" />
     <Compile Include="Spaces\String\StringJaccardSpace.cs" />
     <Compile Include="Spaces\String\StringDiceSpace.cs" />
+    <Compile Include="Spaces\Transformations\XDistBound.cs" />
+    <Compile Include="Indexes\OPT\APG_OptTabuSatNeighborhood.cs" />
+    <Compile Include="Indexes\OPT\APG_OptTabuSatNeighborhoodMontecarloStart.cs" />
+    <Compile Include="Indexes\OPT\ApproxGraphOptRandomRestarts.cs" />
+    <Compile Include="Indexes\OPT\ApproxGraphOptRestartsIS.cs" />
+    <Compile Include="Indexes\OPT\ApproxGraphIS.cs" />
+    <Compile Include="Indexes\OPT\ApproxGraphAbstractIS.cs" />
+    <Compile Include="Indexes\VPT\VPT.cs" />
+    <Compile Include="Indexes\VPT\VPTX.cs" />
+    <Compile Include="Indexes\OPT\ApproxGraphOptRandomRestartsS.cs" />
+    <Compile Include="Indexes\OPT\MetricGraphAbstract.cs" />
+    <Compile Include="Indexes\OPT\MetricGraphGreedy.cs" />
+    <Compile Include="Indexes\OPT\LocalSearchGallopingBeam.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -266,12 +277,7 @@
     <Folder Include="Indexes\OPT\" />
     <Folder Include="Spaces\Datasets\" />
     <Folder Include="Spaces\String\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\natix\natix.csproj">
-      <Project>{53075BDC-9E14-4DE2-A1E0-90E713317ED1}</Project>
-      <Name>natix</Name>
-    </ProjectReference>
+    <Folder Include="Indexes\VPT\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>
@@ -282,4 +288,10 @@
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
+  <ItemGroup>
+    <ProjectReference Include="..\natix\natix.csproj">
+      <Project>{53075BDC-9E14-4DE2-A1E0-90E713317ED1}</Project>
+      <Name>natix</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

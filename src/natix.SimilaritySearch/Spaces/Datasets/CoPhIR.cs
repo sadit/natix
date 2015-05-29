@@ -292,6 +292,12 @@ namespace natix.SimilaritySearch
 		{
 			this.Items.Add (this.Parse(doc));
 		}
+
+		public int Add(object a) {
+			this.Add (a as string);
+			return this.Items.Count - 1;
+		}
+
 		public void Add(string filename)
 		{
 			var o = (CItem)this.Parse (filename);

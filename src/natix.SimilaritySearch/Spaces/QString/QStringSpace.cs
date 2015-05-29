@@ -126,6 +126,11 @@ namespace natix.SimilaritySearch
 			}
 		}
 
+		public int Add(object a)
+		{
+			throw new NotSupportedException ();
+		}
+
         public string AsString (int docid)
         {
             return this.AsString(this.GetQGram(docid));

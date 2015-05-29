@@ -55,7 +55,12 @@ namespace  natix.SimilaritySearch
 			PrimitiveIO<byte>.LoadVector(Input, len, this.Data);
 			this.Name = Input.ReadString();
 		}
-				
+
+		public int Add(object a)
+		{
+			throw new NotSupportedException ();
+		}
+
 		public object Parse (string name)
 		{
 			if (name.StartsWith ("obj")) {
@@ -85,7 +90,7 @@ namespace  natix.SimilaritySearch
 			var res = BinQ8HammingSpace.LoadObjectFromFile (name, true);
 			return new BinQGramArray (res, 0, this.Q);
 		}
-
+	
 		public long NumberDistances {
 			get {
 				return this.numdist;

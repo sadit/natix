@@ -24,9 +24,10 @@ namespace ApproxIndexes
 		public string DATABASE = null;
 		public string BINARY_DATABASE = null;
 		public string QUERIES = null;
-		public int num_cores = -1;
+		public int CORES = -1;
 		public double QARG = -30;
 		public bool ExecuteParameterless = false;
+		public bool ExecuteSearch = true; // a false value means "only create indexes"
 
 		public List<int> OPTSEARCH_RESTARTS = new List<int> ();
 		public List<int> OPTSEARCH_NEIGHBORS = new List<int> ();

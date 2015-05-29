@@ -35,10 +35,11 @@ namespace natix.SimilaritySearch
 			this.DB = db;
 			var _rows = new ILC[num_indexes];
 			var pivsel = new PivotSelectorRandom(db.Count, RandomSets.GetRandom());
+			var step_width = 512 / num_indexes + 8;
 
 			LongParallel.For (0, num_indexes, (int i) => {
 				_rows [i] = new ILC ();
-				_rows [i].Build (db, expected_k, num_indexes, pivsel);
+				_rows [i].Build (db, expected_k, step_width, num_indexes, pivsel);
 			}, num_tasks);
 //			ParallelOptions ops = new ParallelOptions ();
 //			ops.MaxDegreeOfParallelism = num_processors;
@@ -57,4 +58,3 @@ namespace natix.SimilaritySearch
 		}
 	}
 }
-

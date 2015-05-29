@@ -1,5 +1,5 @@
 //
-//  Copyright 2013  Eric Sadit Tellez Avila
+//  Copyright 2013-2015  Eric Sadit Tellez Avila <eric.tellez@infotec.com.mx>
 //
 //    Licensed under the Apache License, Version 2.0 (the "License");
 //    you may not use this file except in compliance with the License.
@@ -12,16 +12,14 @@
 //    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
+
 using System;
-using System.IO;
-using System.Collections;
 using System.Collections.Generic;
-using natix.CompactDS;
-using natix.SortingSearching;
+
 
 namespace natix.SimilaritySearch
 {
-    public class SAT_ApproxSearch : SAT_Distal
+    public class SAT_ApproxSearch : SAT
     {
 
         public SAT_ApproxSearch () : base()
@@ -35,27 +33,25 @@ namespace natix.SimilaritySearch
         }
 
         public override IResult SearchKNN (object q, int K, IResult res)
+		{
+			return this._SearchKNN (q, K, res);
+		}
+
+		public IResult _SearchKNN (object q, int K, IResult res)
         {
             if (this.root == null) {
                 return res;
             }
             var dist_root = this.DB.Dist(q, this.DB[this.root.objID]);
             res.Push(this.root.objID, dist_root);
+
 			if (this.root.Children.Count > 0) {
-				this.SearchKNNNode (this.root, q, res);
+				this.ApproxSearchKNNNode (this.root, q, res);
 			}
             return res;
         }
 
-
-        public override IResult SearchRange (object q, double radius)
-        {
-            var res = new ResultRange(radius, this.DB.Count);
-            this.SearchKNN(q, this.DB.Count, res);
-            return res;
-        }
-
-        protected override void SearchKNNNode (Node node, object q, IResult res)
+		protected void ApproxSearchKNNNode (Node node, object q, IResult res)
         {
             // res.Push (node.objID, dist);
 			var D = new double[node.Children.Count];
@@ -73,14 +69,9 @@ namespace natix.SimilaritySearch
 				}
 			}
 			if (closer_child.Children.Count > 0) {
-				this.SearchKNNNode (closer_child, q, res);
+				this.ApproxSearchKNNNode (closer_child, q, res);
 			}
-			//                for (int i = 0; i < D.Length; ++i) {
-			//                    if (D[i] <= closer_dist + 2 * res.CoveringRadius) {
-			//                        this.SearchKNNNode(D[i], node.Children[i], q, res);
-			//                    }
-			//                }
-            
+         
         }
     }
 }

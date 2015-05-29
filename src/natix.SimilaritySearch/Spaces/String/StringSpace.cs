@@ -30,9 +30,14 @@ namespace natix.SimilaritySearch
 		public List<string> seqs = new List<string> ();
 		protected long numdist;
 
-		public void Add(string u)
+		public int Add(object u)
 		{
-			this.seqs.Add (u);
+			var s = u as string;
+			if (s == null) {
+				throw new ArgumentException ("objects should be strings");
+			}
+			this.seqs.Add (s);
+			return this.seqs.Count - 1;
 		}
 
 		public virtual void Load (BinaryReader Input)

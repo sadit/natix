@@ -48,6 +48,10 @@ namespace natix.SimilaritySearch
 
 		public static double RecallByDistance (List<ItemPair> basis, List<ItemPair> current)
 		{
+			// fixed by memo
+			if (basis.Count == 0 && current.Count == 0) {
+				return 1.0;
+			}
 			int i = 0;
 			int j = 0;
 			int matches = 0;
@@ -84,6 +88,11 @@ namespace natix.SimilaritySearch
 
 		public static double RecallByObjID (HashSet<int> H, List<ItemPair> current)
 		{
+			// fixed by memo
+			if (H.Count == 0 && current.Count == 0) {
+				return 1.0;
+			}
+
 			int matches = 0;
 			foreach (var p in current) {
 				if (H.Contains (p.ObjID)) {

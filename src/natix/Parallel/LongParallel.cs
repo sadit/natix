@@ -49,9 +49,15 @@ namespace natix
 		public static void Invoke(Action action)
 		{
 			CleanQueue (INVOKE_QUEUE);
+			WaitOne (INVOKE_QUEUE, System.Environment.ProcessorCount);
 			var task = new Task (action, TaskCreationOptions.LongRunning);
 			INVOKE_QUEUE.Add (task);
 			task.Start ();
+		}
+
+		public static void Invoke(System.Reflection.MethodBase method, Object self, Object[] args)
+		{
+			Invoke (() => method.Invoke (self, args));
 		}
 
 		public static void For(int fromInclusive, int toExclusive, Action<int> fun, int max_threads = -1)

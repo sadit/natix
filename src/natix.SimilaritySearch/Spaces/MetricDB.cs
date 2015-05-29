@@ -70,9 +70,15 @@ namespace natix.SimilaritySearch
 		/// Distance between the specified a and b.
 		/// </summary>
 		double Dist(object a, object b);
+
 		/// <summary>
 		/// Obtains a valid object from the specified s.
 		/// </summary>
 		object Parse(string s);
+
+		/// <summary>
+		/// Adds a valid object to the database. It returns the object id of the new item
+		/// </summary>
+		int Add (object a);
 	}
 }

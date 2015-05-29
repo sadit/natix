@@ -41,7 +41,7 @@ namespace natix.SimilaritySearch
 
 			this.leader = new NILC();
 			var ilc = new ILC();
-			var cost = ilc.InternalBuild (expected_k, 0, 1, db, 2, pivsel);
+			var cost = ilc.InternalBuild (expected_k, 0, 1, db, 256/num_indexes+1, 2, pivsel);
 			this.leader.Build (ilc);
 			int m = this.leader.clusters.Count;
 			double review_prob = cost.SingleCost - m; review_prob /= this.DB.Count;
@@ -56,7 +56,7 @@ namespace natix.SimilaritySearch
 			Console.WriteLine ("====> num_indexes: {0}", num_indexes);
 			LongParallel.For (0, num_indexes, (int i) => {
 				this.rows [i] = new ILC ();
-				this.rows [i].InternalBuild (expected_k, m, review_prob, db, num_indexes, pivsel);
+				this.rows [i].InternalBuild (expected_k, m, review_prob, db, 256/num_indexes+1, num_indexes, pivsel);
 			}, num_tasks);
 		}
 	}

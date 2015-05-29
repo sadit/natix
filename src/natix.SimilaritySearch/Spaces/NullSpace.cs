@@ -45,6 +45,11 @@ namespace natix.SimilaritySearch
 			}
 		}
 
+		public int Add(object a)
+		{
+			throw new NotSupportedException ();
+		}
+
 		public object Parse (string s)
 		{
 			throw new NotSupportedException();

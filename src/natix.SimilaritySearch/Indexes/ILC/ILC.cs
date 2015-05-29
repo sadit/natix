@@ -51,12 +51,12 @@ namespace natix.SimilaritySearch
 			PrimitiveIO<double>.SaveVector(Output, this.DT);
 		}
 
-		public void Build (MetricDB db, int k, int num_indexes, PivotSelector pivsel = null)
+		public void Build (MetricDB db, int k, int step_width, int num_indexes, PivotSelector pivsel = null)
 		{
 			if (pivsel == null) {
 				pivsel = new PivotSelectorRandom (db.Count, RandomSets.GetRandom ());
 			}
-			this.InternalBuild(k, 0, 1, db, num_indexes, pivsel);
+			this.InternalBuild(k, 0, 1, db, step_width, num_indexes, pivsel);
 		}
 
 		public struct BuildSearchCost {
@@ -64,7 +64,7 @@ namespace natix.SimilaritySearch
 			public double SingleCost;
 		}
 
-		public BuildSearchCost InternalBuild(int k, int leader_num_centers, double leader_review_prob, MetricDB db, int num_indexes, PivotSelector pivsel)
+		public BuildSearchCost InternalBuild(int k, int leader_num_centers, double leader_review_prob, MetricDB db, int step_width, int num_indexes, PivotSelector pivsel)
 		{
 			this.DB = db;
 			int n = this.DB.Count;
@@ -82,16 +82,14 @@ namespace natix.SimilaritySearch
 				this.DT [docID] = d;
 			}
 
-			int step_width = 128;
-
 			var cache = new Dictionary<int, double> (256);
 			var qlist = new List<int>();
 			for (int i = 0; i < 64; ++i) {
 				qlist.Add(pivsel.NextPivot());
 			}
 
-			Console.WriteLine("xxxxxxxx BEGIN> db: {0}, step: {1}, indexes: {2}, k: {3}",
-			                  Path.GetFileName(this.DB.Name), step_width, num_indexes, k);
+			Console.WriteLine("xxxxxxxx BEGIN> db: {0}, step: {1}, indexes: {2}, k: {3}, timestamp: {4}",
+				Path.GetFileName(this.DB.Name), step_width, num_indexes, k, DateTime.Now);
 
 			int iterID = 0;
 			var cost = new BuildSearchCost ();
@@ -145,9 +143,9 @@ namespace natix.SimilaritySearch
 
 				prev = curr;
 				curr = (long)cost.CompositeCost;
-				Console.WriteLine("---- {0}/{1}> #pivots: {2}, prev-cost: {3}, curr-cost: {4}, #idx: {5}",
-				                  this, Path.GetFileName(this.DB.Name), this.ACT.Count, prev, curr, num_indexes);
-			} while (prev > curr);
+				Console.WriteLine("---- {0}/{1}> #pivots: {2}, prev-cost: {3}, curr-cost: {4}, #idx: {5}, timestamp: {6}",
+					this, Path.GetFileName(this.DB.Name), this.ACT.Count, prev, curr, num_indexes, DateTime.Now);
+			} while (prev > curr * 1.001);
 			return cost;
 		}
 
