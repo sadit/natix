@@ -40,7 +40,7 @@ namespace ApproxIndexes
 
 			var arglist = new System.Collections.Concurrent.ConcurrentQueue<String> ();
 			arglist.Enqueue ("--save");
-			arglist.Enqueue (String.Format ("Tab.{0}.{1}.qarg={2}.json", nick, Path.GetFileName (setup.QUERIES), setup.QARG));
+			arglist.Enqueue (String.Format ("Tab.ApproxIndexes.{0}.{1}.qarg={2}.json", nick, Path.GetFileName (setup.QUERIES), setup.QARG));
 				/*var arglist = new List<string> () {
 				"--save",
 				String.Format("Tab.{0}.{1}.qarg={2}.json", nick, Path.GetFileName(setup.QUERIES), setup.QARG)
