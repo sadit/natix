@@ -32,7 +32,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml" />
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\libs\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -168,14 +168,7 @@
     <Compile Include="QueryStreamSISAP.cs" />
     <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPListOptimizedA.cs" />
     <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPListOptimized.cs" />
-    <Compile Include="Indexes\ILC\NILC.cs" />
-    <Compile Include="Indexes\ILC\PNILC.cs" />
     <Compile Include="Indexes\Pivots\ExtremePivotForest\Table\EPListOptimizedB.cs" />
-    <Compile Include="Indexes\ILC\MILC.cs" />
-    <Compile Include="Indexes\ILC\MILCv2.cs" />
-    <Compile Include="Indexes\ILC\ILC.cs" />
-    <Compile Include="Indexes\ILC\MILCv3.cs" />
-    <Compile Include="Indexes\ILC\MILCAbstract.cs" />
     <Compile Include="Spaces\AcousticID\AcousticID.cs" />
     <Compile Include="Indexes\Pivots\PivotsAbstract.cs" />
     <Compile Include="Indexes\LSC\LSC.cs" />
@@ -220,11 +213,6 @@
     <Compile Include="Result\ResultSummary.cs" />
     <Compile Include="Result\Query.cs" />
     <Compile Include="Result\ResultCheckDuplicates.cs" />
-    <Compile Include="Indexes\ILC\TNILC.cs" />
-    <Compile Include="Indexes\ILC\TMILC.cs" />
-    <Compile Include="Indexes\ILC\TILC.cs" />
-    <Compile Include="Indexes\ILC\TMILCAbstract.cs" />
-    <Compile Include="Indexes\ILC\DMILC.cs" />
     <Compile Include="Spaces\Datasets\CoPhIR.cs" />
     <Compile Include="Spaces\Datasets\Wiktionary.cs" />
     <Compile Include="Spaces\String\StringSpace.cs" />
@@ -242,7 +230,6 @@
     <Compile Include="Spaces\String\StringPrefixLengthSpace.cs" />
     <Compile Include="Spaces\String\StringJaccardSpace.cs" />
     <Compile Include="Spaces\String\StringDiceSpace.cs" />
-    <Compile Include="Spaces\Transformations\XDistBound.cs" />
     <Compile Include="Indexes\OPT\APG_OptTabuSatNeighborhood.cs" />
     <Compile Include="Indexes\OPT\APG_OptTabuSatNeighborhoodMontecarloStart.cs" />
     <Compile Include="Indexes\OPT\ApproxGraphOptRandomRestarts.cs" />
@@ -255,6 +242,19 @@
     <Compile Include="Indexes\OPT\MetricGraphAbstract.cs" />
     <Compile Include="Indexes\OPT\MetricGraphGreedy.cs" />
     <Compile Include="Indexes\OPT\LocalSearchGallopingBeam.cs" />
+    <Compile Include="Indexes\ANNI\NANNI.cs" />
+    <Compile Include="Indexes\ANNI\PNANNI.cs" />
+    <Compile Include="Indexes\ANNI\TMANNI.cs" />
+    <Compile Include="Indexes\ANNI\MANNIv2.cs" />
+    <Compile Include="Indexes\ANNI\ANNI.cs" />
+    <Compile Include="Indexes\ANNI\MANNIv3.cs" />
+    <Compile Include="Indexes\ANNI\MANNIAbstract.cs" />
+    <Compile Include="Indexes\ANNI\TNANNI.cs" />
+    <Compile Include="Indexes\ANNI\TMANNI_1.cs" />
+    <Compile Include="Indexes\ANNI\TANNI.cs" />
+    <Compile Include="Indexes\ANNI\TMANNIAbstract.cs" />
+    <Compile Include="Indexes\ANNI\DMANNI.cs" />
+    <Compile Include="Indexes\ANNI\XNANNI.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -271,13 +271,13 @@
     <Folder Include="Indexes\ApproxRandom\" />
     <Folder Include="Indexes\LC\" />
     <Folder Include="Spaces\Transformations\" />
-    <Folder Include="Indexes\ILC\" />
     <Folder Include="Spaces\AcousticID\" />
     <Folder Include="Indexes\LSH\" />
     <Folder Include="Indexes\OPT\" />
     <Folder Include="Spaces\Datasets\" />
     <Folder Include="Spaces\String\" />
     <Folder Include="Indexes\VPT\" />
+    <Folder Include="Indexes\ANNI\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>
@@ -293,5 +293,8 @@
       <Project>{53075BDC-9E14-4DE2-A1E0-90E713317ED1}</Project>
       <Name>natix</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
