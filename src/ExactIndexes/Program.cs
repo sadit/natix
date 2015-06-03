@@ -32,62 +32,130 @@ namespace ExactIndexes
 
 			prepare_db ();
 
-			var arglist = new List<string> () {
-				"--save",
-				String.Format("Tab.{0}.{1}.qarg={2}.json", nick, Path.GetFileName(setup.QUERIES), setup.QARG)
-			};
+			SpaceGenericIO.Load (setup.BINARY_DATABASE); 
+			var arglist = new System.Collections.Concurrent.ConcurrentQueue<String> ();
+			arglist.Enqueue ("--save");
+			arglist.Enqueue (String.Format ("Tab.ExactIndexes.{0}.{1}.qarg={2}.json", nick, Path.GetFileName (setup.QUERIES), setup.QARG));
 
-			arglist.Add (Indexes.ExecuteSeq (setup, nick));
+			arglist.Enqueue (Indexes.ExecuteSeq (setup, nick));
+			var actionlist = new List<Action> ();
+
+
 			if (setup.ExecuteParameterless) {
-				arglist.Add (Indexes.ExecuteSAT (setup, nick));
-				arglist.Add (Indexes.ExecuteSATDistal (setup, nick));
-				arglist.Add (Indexes.ExecuteSATRandom (setup, nick));
-				arglist.Add (Indexes.ExecuteVPT (setup, nick));
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteVPT (setup, nick);
+					arglist.Enqueue(resname);
+				});
+
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteSAT (setup, nick);
+					arglist.Enqueue(resname);
+				});
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteSATDistal (setup, nick);
+					arglist.Enqueue(resname);
+				});
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteSATRandom (setup, nick);
+					arglist.Enqueue(resname);
+				});
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteNILC(setup, nick);
+					arglist.Enqueue(resname);
+				});
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteTNILC(setup, nick);
+					arglist.Enqueue(resname);
+				});
 				// arglist.Add (Indexes.ExecuteVPTX (setup, nick));
-				arglist.Add (Indexes.ExecuteNILC (setup, nick));
-				arglist.Add (Indexes.ExecuteTNILC (setup, nick));
 				//arglist.Add (Indexes.ExecuteMILCv3 (setup, nick));
 			}
 
 			foreach (var bsize in setup.LC) {
-				arglist.Add (Indexes.ExecuteLC (setup, nick, bsize));
+				var _bsize = bsize;
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteLC (setup, nick, _bsize);
+					arglist.Enqueue(resname);
+				});
 			}
 
 			foreach (var numGroups in setup.MILC) {
-				// arglist.Add (Indexes.ExecuteEPTB (nick, dbname, queries, numGroups));
-				arglist.Add (Indexes.ExecuteMILC (setup, nick, numGroups));
-				arglist.Add (Indexes.ExecuteTMILC (setup, nick, numGroups));
-				arglist.Add (Indexes.ExecuteDMILC (setup, nick, numGroups));
+				var _numGroups = numGroups;
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteMILC (setup, nick, _numGroups);
+					arglist.Enqueue(resname);
+				});
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteTMILC (setup, nick, _numGroups);
+					arglist.Enqueue(resname);
+				});
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteDMILC (setup, nick, _numGroups);
+					arglist.Enqueue(resname);
+				});
 				//arglist.Add (Indexes.ExecuteMILCv2 (setup, nick, numGroups));
 			}
 
 			foreach (var numGroups in setup.EPT) {
-				arglist.Add (Indexes.ExecuteEPTA (setup, nick, numGroups));
+				var _numGroups = numGroups;
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteEPTA (setup, nick, _numGroups);
+					arglist.Enqueue (resname);
+				});
 				// arglist.Add (Indexes.ExecuteEPT (setup, nick, numGroups));
 			}
 
 			foreach (var numPivs in setup.BNC) {
-				arglist.Add (Indexes.ExecuteBNCInc (setup, nick, numPivs));
+				var _numPivs = numPivs;
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteBNCInc (setup, nick, _numPivs);
+					arglist.Enqueue (resname);
+				});
 			}
 
 			foreach (var numPivs in setup.KVP) {
-				arglist.Add (Indexes.ExecuteKVP (setup, nick, numPivs, setup.KVP_Available));
+				var _numPivs = numPivs;
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteKVP (setup, nick, _numPivs, setup.KVP_Available);
+					arglist.Enqueue (resname);
+				});
 			}
 
 			foreach (var numPivs in setup.SPA) {
-				arglist.Add (Indexes.ExecuteSpaghetti (setup, nick, numPivs));
+				var _numPivs = numPivs;
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteSpaghetti (setup, nick, _numPivs);
+					arglist.Enqueue (resname);
+				});
 			}
 
 			foreach (var numPivs in setup.LAESA) {
-				arglist.Add (Indexes.ExecuteLAESA (setup, nick, numPivs));
+				var _numPivs = numPivs;
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteLAESA (setup, nick, _numPivs);
+					arglist.Enqueue (resname);
+				});
 			}
 
 			foreach (var alpha in setup.SSS) {
-				arglist.Add (Indexes.ExecuteSSS (setup, nick, alpha, setup.SSS_max));
-
+				var _alpha = alpha;
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteSSS (setup, nick, _alpha, setup.SSS_max);
+					arglist.Enqueue (resname);
+				});
 			}
 
-			Commands.Check (arglist);
+
+			if (setup.CORES == 1) {
+				foreach (var action in actionlist) {
+					action.Invoke ();
+				}
+			} else {
+				LongParallel.ForEach (actionlist, (a) => a.Invoke (), setup.CORES);
+			}
+			if (setup.ExecuteSearch) {
+				Commands.Check (arglist);
+			}
 		}
 
 		public static void MainSEQED (IndexArgumentSetup setup)

@@ -51,10 +51,10 @@ namespace ExactIndexes
 				);
 		}
 
-		public static ILC CreateILC(string dbname, int expected_k)
+		public static ANNI CreateILC(string dbname, int expected_k)
 		{
 			MetricDB db = SpaceGenericIO.Load (dbname);
-			ILC ilc = new ILC ();
+			ANNI ilc = new ANNI ();
 			ilc.Build (db, expected_k, 128, 1);
 			return ilc;
 		}
@@ -97,7 +97,7 @@ namespace ExactIndexes
 		{
 			var idxname = String.Format ("{0}/Index.NILC", nick);
 			return Execute (setup, nick, idxname, (db) => {
-				var nilc = new NILC ();
+				var nilc = new NANNI ();
 				nilc.Build (CreateILC (setup.BINARY_DATABASE, (int)Math.Abs(setup.QARG)));
 				return nilc;
 			});
@@ -107,7 +107,7 @@ namespace ExactIndexes
 		{
 			var idxname = String.Format ("{0}/Index.TNILC", nick);
 			return Execute (setup, nick, idxname, (db) => {
-				var nilc = new TNILC ();
+				var nilc = new TNANNI ();
 				nilc.Build (db, (int)Math.Abs(setup.QARG), new PivotSelectorRandom(db.Count, new Random()));
 				return nilc;
 			});
@@ -117,7 +117,7 @@ namespace ExactIndexes
 		{
 			var idxname = String.Format ("{0}/Index.TMILC.{1}", nick, num_indexes);		
 			return Execute (setup, nick, idxname, (db) => {
-				var milc = new TMILC ();
+				var milc = new TMANNI ();
 				milc.Build (db, (int)Math.Abs(setup.QARG), num_indexes);
 				return milc;
 			});
@@ -127,7 +127,7 @@ namespace ExactIndexes
 		{
 			var idxname = String.Format ("{0}/Index.DMILC.{1}", nick, num_indexes);		
 			return Execute (setup, nick, idxname, (db) => {
-				var milc = new DMILC ();
+				var milc = new DMANNI ();
 				milc.Build (db, (int)Math.Abs(setup.QARG), num_indexes);
 				return milc;
 			});
@@ -137,7 +137,7 @@ namespace ExactIndexes
 		{
 			var idxname = String.Format ("{0}/Index.MILC.{1}", nick, num_indexes);		
 			return Execute (setup, nick, idxname, (db) => {
-				var milc = new MILC ();
+				var milc = new TMANNI ();
 				milc.Build (db, (int)Math.Abs(setup.QARG), num_indexes, setup.CORES);
 				return milc;
 			});
@@ -147,7 +147,7 @@ namespace ExactIndexes
 		{
 			var idxname = String.Format ("{0}/Index.MILCv2.{1}", nick, num_indexes);		
 			return Execute (setup, nick, idxname, (db) => {
-				var milc = new MILCv2 ();
+				var milc = new MANNIv2 ();
 				milc.Build (db, (int)Math.Abs(setup.QARG), num_indexes, setup.CORES);
 				return milc;
 			});
@@ -157,7 +157,7 @@ namespace ExactIndexes
 		{
 			var idxname = String.Format ("{0}/Index.MILCv3", nick);
 			return Execute (setup, nick, idxname, (db) => {
-				var milc = new MILCv3 ();
+				var milc = new MANNIv3 ();
 				milc.Build (db, (int)Math.Abs(setup.QARG));
 				return milc;
 			});
