@@ -21,7 +21,7 @@ namespace natix.SimilaritySearch
 	/// <summary>
 	/// List/Node based ILC
 	/// </summary>
-	public class NANNI: BasicIndex
+	public class XNANNI: BasicIndex
 	{
 		public class Node : ILoadSave {
 			public int objID;
@@ -63,7 +63,7 @@ namespace natix.SimilaritySearch
 
 		public List<Node> clusters; // the centers
 
-		public NANNI ()
+		public XNANNI ()
 		{
 			this.clusters = new List<Node> ();
 		}
