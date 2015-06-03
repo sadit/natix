@@ -105,9 +105,11 @@ namespace natix.SimilaritySearch
 				this.refID = Input.ReadInt32 ();
 				this.median = Input.ReadDouble ();
 				if (Input.ReadBoolean ()) {
+					this.left = new Node ();
 					this.left.Load (Input);
 				}
 				if (Input.ReadBoolean ()) {
+					this.right = new Node ();
 					this.right.Load (Input);
 				}
 			}
@@ -136,6 +138,7 @@ namespace natix.SimilaritySearch
 		public override void Load (BinaryReader Input)
 		{
 			base.Load (Input);
+			this.root = new Node ();
 			this.root.Load (Input);
 		}
 
