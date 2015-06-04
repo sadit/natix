@@ -51,7 +51,7 @@ namespace ExactIndexes
 				);
 		}
 
-		public static ANNI CreateILC(string dbname, int expected_k)
+		public static ANNI CreateANNI(string dbname, int expected_k)
 		{
 			MetricDB db = SpaceGenericIO.Load (dbname);
 			ANNI ilc = new ANNI ();
@@ -93,19 +93,19 @@ namespace ExactIndexes
 			return resname;
 		}
 
-		public static string ExecuteNILC(IndexArgumentSetup setup, string nick)
+		public static string ExecuteNANNI(IndexArgumentSetup setup, string nick)
 		{
-			var idxname = String.Format ("{0}/Index.NILC", nick);
+			var idxname = String.Format ("{0}/Index.NANNI", nick);
 			return Execute (setup, nick, idxname, (db) => {
 				var nilc = new NANNI ();
-				nilc.Build (CreateILC (setup.BINARY_DATABASE, (int)Math.Abs(setup.QARG)));
+				nilc.Build (CreateANNI (setup.BINARY_DATABASE, (int)Math.Abs(setup.QARG)));
 				return nilc;
 			});
 		}
 
-		public static string ExecuteTNILC(IndexArgumentSetup setup, string nick)
+		public static string ExecuteTNANNI(IndexArgumentSetup setup, string nick)
 		{
-			var idxname = String.Format ("{0}/Index.TNILC", nick);
+			var idxname = String.Format ("{0}/Index.TNANNI", nick);
 			return Execute (setup, nick, idxname, (db) => {
 				var nilc = new TNANNI ();
 				nilc.Build (db, (int)Math.Abs(setup.QARG), new PivotSelectorRandom(db.Count, new Random()));
@@ -113,9 +113,9 @@ namespace ExactIndexes
 			});
 		}
 
-		public static string ExecuteTMILC(IndexArgumentSetup setup, string nick, int num_indexes)
+		public static string ExecuteTMANNI(IndexArgumentSetup setup, string nick, int num_indexes)
 		{
-			var idxname = String.Format ("{0}/Index.TMILC.{1}", nick, num_indexes);		
+			var idxname = String.Format ("{0}/Index.TMANNI.{1}", nick, num_indexes);		
 			return Execute (setup, nick, idxname, (db) => {
 				var milc = new TMANNI ();
 				milc.Build (db, (int)Math.Abs(setup.QARG), num_indexes);
@@ -123,9 +123,9 @@ namespace ExactIndexes
 			});
 		}
 
-		public static string ExecuteDMILC(IndexArgumentSetup setup, string nick, int num_indexes)
+		public static string ExecuteDMANNI(IndexArgumentSetup setup, string nick, int num_indexes)
 		{
-			var idxname = String.Format ("{0}/Index.DMILC.{1}", nick, num_indexes);		
+			var idxname = String.Format ("{0}/Index.DMANNI.{1}", nick, num_indexes);		
 			return Execute (setup, nick, idxname, (db) => {
 				var milc = new DMANNI ();
 				milc.Build (db, (int)Math.Abs(setup.QARG), num_indexes);
@@ -133,9 +133,9 @@ namespace ExactIndexes
 			});
 		}
 
-		public static string ExecuteMILC(IndexArgumentSetup setup, string nick, int num_indexes)
+		public static string ExecuteMANNI(IndexArgumentSetup setup, string nick, int num_indexes)
 		{
-			var idxname = String.Format ("{0}/Index.MILC.{1}", nick, num_indexes);		
+			var idxname = String.Format ("{0}/Index.MANNI.{1}", nick, num_indexes);		
 			return Execute (setup, nick, idxname, (db) => {
 				var milc = new TMANNI ();
 				milc.Build (db, (int)Math.Abs(setup.QARG), num_indexes, setup.CORES);
@@ -143,9 +143,9 @@ namespace ExactIndexes
 			});
 		}
 
-		public static string ExecuteMILCv2(IndexArgumentSetup setup, string nick, int num_indexes)
+		public static string ExecuteMANNIv2(IndexArgumentSetup setup, string nick, int num_indexes)
 		{
-			var idxname = String.Format ("{0}/Index.MILCv2.{1}", nick, num_indexes);		
+			var idxname = String.Format ("{0}/Index.MANNIv2.{1}", nick, num_indexes);		
 			return Execute (setup, nick, idxname, (db) => {
 				var milc = new MANNIv2 ();
 				milc.Build (db, (int)Math.Abs(setup.QARG), num_indexes, setup.CORES);
@@ -153,9 +153,9 @@ namespace ExactIndexes
 			});
 		}
 
-		public static string ExecuteMILCv3(IndexArgumentSetup setup, string nick)
+		public static string ExecuteMANNIv3(IndexArgumentSetup setup, string nick)
 		{
-			var idxname = String.Format ("{0}/Index.MILCv3", nick);
+			var idxname = String.Format ("{0}/Index.MANNIv3", nick);
 			return Execute (setup, nick, idxname, (db) => {
 				var milc = new MANNIv3 ();
 				milc.Build (db, (int)Math.Abs(setup.QARG));

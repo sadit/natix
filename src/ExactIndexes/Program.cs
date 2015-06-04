@@ -60,11 +60,11 @@ namespace ExactIndexes
 					arglist.Enqueue(resname);
 				});
 				actionlist.Add (() => {
-					var resname = Indexes.ExecuteNILC(setup, nick);
+					var resname = Indexes.ExecuteNANNI(setup, nick);
 					arglist.Enqueue(resname);
 				});
 				actionlist.Add (() => {
-					var resname = Indexes.ExecuteTNILC(setup, nick);
+					var resname = Indexes.ExecuteTNANNI(setup, nick);
 					arglist.Enqueue(resname);
 				});
 				// arglist.Add (Indexes.ExecuteVPTX (setup, nick));
@@ -82,15 +82,15 @@ namespace ExactIndexes
 			foreach (var numGroups in setup.MILC) {
 				var _numGroups = numGroups;
 				actionlist.Add (() => {
-					var resname = Indexes.ExecuteMILC (setup, nick, _numGroups);
+					var resname = Indexes.ExecuteMANNI (setup, nick, _numGroups);
 					arglist.Enqueue(resname);
 				});
 				actionlist.Add (() => {
-					var resname = Indexes.ExecuteTMILC (setup, nick, _numGroups);
+					var resname = Indexes.ExecuteTMANNI (setup, nick, _numGroups);
 					arglist.Enqueue(resname);
 				});
 				actionlist.Add (() => {
-					var resname = Indexes.ExecuteDMILC (setup, nick, _numGroups);
+					var resname = Indexes.ExecuteDMANNI (setup, nick, _numGroups);
 					arglist.Enqueue(resname);
 				});
 				//arglist.Add (Indexes.ExecuteMILCv2 (setup, nick, numGroups));
