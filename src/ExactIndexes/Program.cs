@@ -145,7 +145,6 @@ namespace ExactIndexes
 				});
 			}
 
-
 			if (setup.CORES == 1) {
 				foreach (var action in actionlist) {
 					action.Invoke ();

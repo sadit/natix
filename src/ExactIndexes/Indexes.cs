@@ -137,7 +137,7 @@ namespace ExactIndexes
 		{
 			var idxname = String.Format ("{0}/Index.MANNI.{1}", nick, num_indexes);		
 			return Execute (setup, nick, idxname, (db) => {
-				var milc = new TMANNI ();
+				var milc = new MANNI ();
 				milc.Build (db, (int)Math.Abs(setup.QARG), num_indexes, setup.CORES);
 				return milc;
 			});
