@@ -145,7 +145,7 @@ namespace natix.SimilaritySearch
 				curr = (long)cost.CompositeCost;
 				Console.WriteLine("---- {0}/{1}> #pivots: {2}, prev-cost: {3}, curr-cost: {4}, #idx: {5}, timestamp: {6}",
 					this, Path.GetFileName(this.DB.Name), this.ACT.Count, prev, curr, num_indexes, DateTime.Now);
-			} while (prev > curr * 1.01);
+			} while (prev > curr * 1.001);
 			return cost;
 		}
 

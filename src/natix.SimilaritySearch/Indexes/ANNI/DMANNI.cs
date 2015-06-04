@@ -96,7 +96,7 @@ namespace natix.SimilaritySearch
 				++iter;
 				Console.WriteLine("xxxxxxxx> iter: {0}, total-cost: {1}, timestamp: {2}",
 				                  iter, curr / qlist.Count, DateTime.Now);
-			} while (prev > curr * 1.01);
+			} while (prev > curr * 1.001);
 		}
 	}
 }

@@ -200,7 +200,7 @@ namespace natix.SimilaritySearch
 				curr = DateTime.Now.Ticks - curr;
 				++iter;
 				Console.WriteLine("xxxxxxxx> iter: {0}, current-search-time: {1}, timestamp: {2}", iter, curr / 1e8, DateTime.Now);
-			} while (prev > curr * 1.01);
+			} while (prev > curr * 1.001);
 		}
 
 		public override IResult SearchKNN (object q, int K, IResult res)
