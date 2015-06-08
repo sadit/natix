@@ -254,6 +254,8 @@
     <Compile Include="Indexes\ANNI\DMANNI.cs" />
     <Compile Include="Indexes\ANNI\MANNI.cs" />
     <Compile Include="Indexes\ANNI\TMANNI.cs" />
+    <Compile Include="Indexes\ANNI\NANNIS.cs" />
+    <Compile Include="Indexes\ANNI\TNANNIS.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
