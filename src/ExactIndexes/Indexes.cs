@@ -93,24 +93,42 @@ namespace ExactIndexes
 			return resname;
 		}
 
-		public static string ExecuteNANNI(IndexArgumentSetup setup, string nick)
+		public static List<string> ExecuteNANNI(IndexArgumentSetup setup, string nick)
 		{
 			var idxname = String.Format ("{0}/Index.NANNI", nick);
-			return Execute (setup, nick, idxname, (db) => {
+			var reslist = new List<string> ();
+			var resname = Execute (setup, nick, idxname, (db) => {
 				var nilc = new NANNI ();
-				nilc.Build (CreateANNI (setup.BINARY_DATABASE, (int)Math.Abs(setup.QARG)));
+				nilc.Build (CreateANNI (setup.BINARY_DATABASE, (int)Math.Abs (setup.QARG)));
 				return nilc;
 			});
+
+			reslist.Add (resname);
+//			resname = Execute (setup, nick, idxname + "S", (db) => {
+//				var nilc = IndexGenericIO.Load(idxname);
+//				return nilc;
+//			});
+//			reslist.Add (resname);
+			return reslist;
 		}
 
-		public static string ExecuteTNANNI(IndexArgumentSetup setup, string nick)
+		public static List<string> ExecuteTNANNI(IndexArgumentSetup setup, string nick)
 		{
 			var idxname = String.Format ("{0}/Index.TNANNI", nick);
-			return Execute (setup, nick, idxname, (db) => {
+			var reslist = new List<string> ();
+			var resname = Execute (setup, nick, idxname, (db) => {
 				var nilc = new TNANNI ();
 				nilc.Build (db, (int)Math.Abs(setup.QARG), new PivotSelectorRandom(db.Count, new Random()));
 				return nilc;
 			});
+
+			reslist.Add (resname);
+//			resname = Execute (setup, nick, idxname + "S", (db) => {
+//				var nilc = IndexGenericIO.Load(idxname);
+//				return nilc;
+//			});
+//			reslist.Add (resname);
+			return reslist;
 		}
 
 		public static string ExecuteTMANNI(IndexArgumentSetup setup, string nick, int num_indexes)
