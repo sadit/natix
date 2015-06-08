@@ -40,13 +40,22 @@ namespace ExactIndexes
 			arglist.Enqueue (Indexes.ExecuteSeq (setup, nick));
 			var actionlist = new List<Action> ();
 
-
-			if (setup.ExecuteParameterless) {
+			if (setup.ExecuteNANNI) {
 				actionlist.Add (() => {
-					var resname = Indexes.ExecuteVPT (setup, nick);
-					arglist.Enqueue(resname);
+					foreach (var resname in Indexes.ExecuteNANNI(setup, nick)) {
+						arglist.Enqueue(resname);
+					}
 				});
+			}
+			if (setup.ExecuteTNANNI) {
+				actionlist.Add (() => {
+					foreach (var resname in Indexes.ExecuteTNANNI(setup, nick)) {
+						arglist.Enqueue(resname);
+					}
+				});
+			}
 
+			if (setup.ExecuteSAT) {
 				actionlist.Add (() => {
 					var resname = Indexes.ExecuteSAT (setup, nick);
 					arglist.Enqueue(resname);
@@ -59,17 +68,18 @@ namespace ExactIndexes
 					var resname = Indexes.ExecuteSATRandom (setup, nick);
 					arglist.Enqueue(resname);
 				});
-				actionlist.Add (() => {
-					var resname = Indexes.ExecuteNANNI(setup, nick);
-					arglist.Enqueue(resname);
-				});
-				actionlist.Add (() => {
-					var resname = Indexes.ExecuteTNANNI(setup, nick);
-					arglist.Enqueue(resname);
-				});
-				// arglist.Add (Indexes.ExecuteVPTX (setup, nick));
-				//arglist.Add (Indexes.ExecuteMILCv3 (setup, nick));
 			}
+
+			if (setup.ExecuteVPT) {
+				actionlist.Add (() => {
+					var resname = Indexes.ExecuteVPT (setup, nick);
+					arglist.Enqueue (resname);
+				});
+			}
+
+			// arglist.Add (Indexes.ExecuteVPTX (setup, nick));
+			//arglist.Add (Indexes.ExecuteMILCv3 (setup, nick));
+
 
 			foreach (var bsize in setup.LC) {
 				var _bsize = bsize;
@@ -79,7 +89,7 @@ namespace ExactIndexes
 				});
 			}
 
-			foreach (var numGroups in setup.MILC) {
+			foreach (var numGroups in setup.MANNI) {
 				var _numGroups = numGroups;
 				actionlist.Add (() => {
 					var resname = Indexes.ExecuteMANNI (setup, nick, _numGroups);
@@ -330,11 +340,14 @@ namespace ExactIndexes
 				{"kvp=", "Run KVP with the given pivot sizes (comma sep.)",	v => LoadList(v, setup.KVP)},
 				{"kvp-available=", "Run KVP with the given available pivots (defaults to 1024; zero means sqrt(n))", v => setup.KVP_Available = int.Parse(v)},
 				{"ept=", "Run EPT with the given group sizes (comma sep.)", v => LoadList(v, setup.EPT)},
-				{"milc=", "Run MILC* with the given number of indexes (comma sep.)", v => LoadList(v, setup.MILC)},
+				{"manni=", "Run *MANNI* with the given number of indexes (comma sep.)", v => LoadList(v, setup.MANNI)},
 				{"lc=", "Run LC with the given block sizes (comma sep.)", v => LoadList(v, setup.LC)},
 				{"sss=", "Run SSS with the given alpha list (comma sep.)", v => LoadList(v, setup.SSS)},
 				{"sss-max=", "Run SSS with the given alpha list (comma sep.)", v => setup.SSS_max = int.Parse(v)},
-				{"parameterless", "Enable parameterless indexes", v => setup.ExecuteParameterless = true},
+				{"vpt", "Run VPT", v => setup.ExecuteVPT = true},
+				{"sat", "Run Random, Legacy and Distal SAT", v => setup.ExecuteSAT = true},
+				{"nanni", "Run NANNI", v => setup.ExecuteNANNI = true},
+				{"tnanni", "Run TNANNI", v => setup.ExecuteTNANNI = true},
 				{"help|h", "Shows this help message", v => ops.WriteOptionDescriptions(Console.Out)},
 				{"skip-search", v => setup.ExecuteSearch = false},
 				{"cores=", v => setup.CORES = int.Parse(v)},

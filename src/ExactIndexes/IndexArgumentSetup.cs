@@ -26,14 +26,17 @@ namespace ExactIndexes
 		public string QUERIES = null;
 		public int CORES = -1;
 		public double QARG = -1;
-		public bool ExecuteParameterless = false;
 		public bool ExecuteSearch = true; // a false value means "only create indexes"
+		public bool ExecuteNANNI = false;
+		public bool ExecuteTNANNI = false;
+		public bool ExecuteSAT = false;
+		public bool ExecuteVPT = false;
 
 		public List<int> LAESA = new List<int>();
 		public List<int> BNC = new List<int> ();
 		public List<int> SPA = new List<int> ();
 		public List<int> EPT = new List<int> ();
-		public List<int> MILC = new List<int> ();
+		public List<int> MANNI = new List<int> ();
 		public List<int> KVP = new List<int> ();
 		public int KVP_Available = 1024;
 
