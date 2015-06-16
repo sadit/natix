@@ -28,7 +28,7 @@ namespace natix.SimilaritySearch
 		{
 			this.Selector = new PivotSelectorRandom (n);
 			this.StepWidth = (int)Math.Sqrt (n) + 1;
-			this.NumberQueries = (int)Math.Log (n, 2) + 1;
+			this.NumberQueries = 32; // (int)Math.Log (n, 2) + 1;
 			this.ExpectedK = expectedK;
 		}
 
