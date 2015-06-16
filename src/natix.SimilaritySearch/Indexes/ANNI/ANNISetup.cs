@@ -16,7 +16,7 @@ using System;
 
 namespace natix.SimilaritySearch
 {
-	public class SetupANNI
+	public class ANNISetup
 	{
 		public int ExpectedK = 1;
 		public double AlphaStop = 0.001;
@@ -24,7 +24,7 @@ namespace natix.SimilaritySearch
 		public int NumberQueries = 64;
 		public PivotSelector Selector = null;
 
-		public SetupANNI (int n, int expectedK)
+		public ANNISetup (int n, int expectedK)
 		{
 			this.Selector = new PivotSelectorRandom (n);
 			this.StepWidth = (int)Math.Sqrt (n) + 1;
@@ -32,7 +32,7 @@ namespace natix.SimilaritySearch
 			this.ExpectedK = expectedK;
 		}
 
-		public SetupANNI (PivotSelector sel, int expectedK, double alphaStop, int step, int numQueries)
+		public ANNISetup (PivotSelector sel, int expectedK, double alphaStop, int step, int numQueries)
 		{
 			this.Selector = sel;
 			this.ExpectedK = expectedK;

@@ -51,12 +51,9 @@ namespace natix.SimilaritySearch
 			PrimitiveIO<double>.SaveVector(Output, this.DT);
 		}
 
-		public void Build (MetricDB db, int k, int step_width, int num_indexes, PivotSelector pivsel = null)
+		public void Build (MetricDB db, ANNISetup setup)
 		{
-			if (pivsel == null) {
-				pivsel = new PivotSelectorRandom (db.Count, RandomSets.GetRandom ());
-			}
-			this.InternalBuild(k, 0, 1, db, step_width, num_indexes, pivsel);
+			this.InternalBuild(setup.ExpectedK, 0, 1, db, setup.StepWidth, 1, setup.Selector);
 		}
 
 		public struct BuildSearchCost {
