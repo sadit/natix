@@ -91,11 +91,11 @@ namespace natix.SimilaritySearch
 				Console.WriteLine ("------> prevT: {0}, currT: {1}, prevT / currT: {2}", prevT, currT, prevT / currT);
 				Console.WriteLine ("------> prevD: {0}, currD: {1}, prevD / currD: {2}", prevD, currD, prevD / currD);
 				if (optimizeDistances) {
-					if (prevD > currD * (1 + setup.AlphaStop)) {
+					if (prevD < currD * (1 + setup.AlphaStop)) {
 						break;
 					}
 				} else {
-					if (prevT > currT * (1 + setup.AlphaStop)) {
+					if (prevT < currT * (1 + setup.AlphaStop)) {
 						break;
 					}
 				}
