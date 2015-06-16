@@ -23,9 +23,9 @@ using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
-	public class TMANNI : XMANNIAbstract
+	public class XMANNI : XMANNIAbstract
 	{
-		public TMANNI ()
+		public XMANNI ()
 		{
 		}
 		

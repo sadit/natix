@@ -23,12 +23,12 @@ using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
-	public class TMANNIAbstract : BasicIndex
+	public class XMANNIAbstract : BasicIndex
 	{
 		public TANNI[] rows;
 		public XNANNI leader;
 
-		public TMANNIAbstract ()
+		public XMANNIAbstract ()
 		{
 		}
 
