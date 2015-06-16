@@ -29,7 +29,10 @@ namespace ExactIndexes
 		public bool ExecuteSearch = true; // a false value means "only create indexes"
 		public bool ExecuteNANNI = false;
 		public bool ExecuteTNANNI = false;
+		public bool ExecuteDNANNI = false;
 		public bool ExecuteSAT = false;
+		public bool ExecuteSATDistal = false;
+		public bool ExecuteSATRandom = false;
 		public bool ExecuteVPT = false;
 
 		public List<int> LAESA = new List<int>();
