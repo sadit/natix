@@ -49,21 +49,28 @@ namespace ExactIndexes
 			}
 			if (setup.ExecuteTNANNI) {
 				actionlist.Add (() => {
-					foreach (var resname in Indexes.ExecuteTNANNI(setup, nick)) {
-						arglist.Enqueue(resname);
-					}
+					arglist.Enqueue(Indexes.ExecuteTNANNI(setup, nick));
+				});
+			}
+			if (setup.ExecuteDNANNI) {
+				actionlist.Add (() => {
+					arglist.Enqueue(Indexes.ExecuteDNANNI(setup, nick));
 				});
 			}
 
 			if (setup.ExecuteSAT) {
 				actionlist.Add (() => {
 					var resname = Indexes.ExecuteSAT (setup, nick);
-					arglist.Enqueue(resname);
+					arglist.Enqueue (resname);
 				});
+			}
+			if (setup.ExecuteSATDistal) {
 				actionlist.Add (() => {
 					var resname = Indexes.ExecuteSATDistal (setup, nick);
-					arglist.Enqueue(resname);
+					arglist.Enqueue (resname);
 				});
+			}
+			if (setup.ExecuteSATRandom) {
 				actionlist.Add (() => {
 					var resname = Indexes.ExecuteSATRandom (setup, nick);
 					arglist.Enqueue(resname);

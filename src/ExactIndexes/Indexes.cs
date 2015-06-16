@@ -55,7 +55,8 @@ namespace ExactIndexes
 		{
 			MetricDB db = SpaceGenericIO.Load (dbname);
 			ANNI ilc = new ANNI ();
-			ilc.Build (db, expected_k, 128, 1);
+			var annisetup = new ANNISetup (db.Count, expected_k);
+			ilc.Build (db, annisetup);
 			return ilc;
 		}
 
@@ -112,44 +113,58 @@ namespace ExactIndexes
 			return reslist;
 		}
 
-		public static List<string> ExecuteTNANNI(IndexArgumentSetup setup, string nick)
+		public static string ExecuteTNANNI(IndexArgumentSetup setup, string nick)
 		{
 			var idxname = String.Format ("{0}/Index.TNANNI", nick);
-			var reslist = new List<string> ();
 			var resname = Execute (setup, nick, idxname, (db) => {
-				var nilc = new TNANNI ();
-				nilc.Build (db, (int)Math.Abs(setup.QARG), new PivotSelectorRandom(db.Count, new Random()));
+				var nilc = new XNANNI ();
+				var annisetup = new ANNISetup(db.Count, (int)Math.Abs(setup.QARG));
+				// var annisetup = new ANNISetup(new PivotSelectorRandom(db.Count), (int)Math.Abs(setup.QARG), 0.001, 128, 64);
+				nilc.Build (db, annisetup, false);
 				return nilc;
 			});
 
-			reslist.Add (resname);
-//			resname = Execute (setup, nick, idxname + "S", (db) => {
-//				var nilc = IndexGenericIO.Load(idxname);
-//				return nilc;
-//			});
-//			reslist.Add (resname);
-			return reslist;
+			return resname;
+		}
+
+		public static string ExecuteDNANNI(IndexArgumentSetup setup, string nick)
+		{
+			var idxname = String.Format ("{0}/Index.DNANNI", nick);
+			var resname = Execute (setup, nick, idxname, (db) => {
+				var nilc = new XNANNI ();
+				var annisetup = new ANNISetup(db.Count, (int)Math.Abs(setup.QARG));
+				// var annisetup = new ANNISetup(new PivotSelectorRandom(db.Count), (int)Math.Abs(setup.QARG), 0.001, 128, 64);
+				nilc.Build (db, annisetup, true);
+				return nilc;
+			});
+
+			return resname;
 		}
 
 		public static string ExecuteTMANNI(IndexArgumentSetup setup, string nick, int num_indexes)
 		{
 			var idxname = String.Format ("{0}/Index.TMANNI.{1}", nick, num_indexes);		
 			return Execute (setup, nick, idxname, (db) => {
-				var milc = new TMANNI ();
-				milc.Build (db, (int)Math.Abs(setup.QARG), num_indexes);
+				var milc = new XMANNI ();
+				// var annisetup = new ANNISetup(new PivotSelectorRandom(db.Count), (int)Math.Abs(setup.QARG), 0.001, 512, 64);
+				var annisetup = new ANNISetup(db.Count, (int)Math.Abs(setup.QARG));
+				milc.Build (db, annisetup, num_indexes, false);
 				return milc;
 			});
 		}
 
 		public static string ExecuteDMANNI(IndexArgumentSetup setup, string nick, int num_indexes)
 		{
-			var idxname = String.Format ("{0}/Index.DMANNI.{1}", nick, num_indexes);		
+			var idxname = String.Format ("{0}/Index.DMANNI.{1}", nick, num_indexes);
 			return Execute (setup, nick, idxname, (db) => {
-				var milc = new DMANNI ();
-				milc.Build (db, (int)Math.Abs(setup.QARG), num_indexes);
+				var milc = new XMANNI ();
+				// var annisetup = new ANNISetup(new PivotSelectorRandom(db.Count), (int)Math.Abs(setup.QARG), 0.001, 512, 64);
+				var annisetup = new ANNISetup(db.Count, (int)Math.Abs(setup.QARG));
+				milc.Build (db, annisetup, num_indexes, true);
 				return milc;
 			});
 		}
+
 
 		public static string ExecuteMANNI(IndexArgumentSetup setup, string nick, int num_indexes)
 		{
