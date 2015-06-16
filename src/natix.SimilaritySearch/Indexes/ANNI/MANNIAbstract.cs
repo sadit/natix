@@ -73,6 +73,9 @@ namespace natix.SimilaritySearch
 			var dcq_cache = new double[this.leader.clusters.Count];
 			var m = this.leader.clusters.Count;
 			double min_dist = double.MaxValue;
+			var cost = m;
+			this.internal_numdists += m;
+			var order = new int[m];
 			for (int centerID = 0; centerID < m; ++centerID) {
 				var node = this.leader.clusters [centerID];
 				var center = this.DB [node.objID];
@@ -82,10 +85,10 @@ namespace natix.SimilaritySearch
 				if (dcq < min_dist) {
 					min_dist = dcq;
 				}
+				order [centerID] = centerID;
 			}
-
-			this.internal_numdists += m;
 			//var min_dist = res.First.Dist;
+			Sorting.Sort(order, (a, b) => dcq_cache[a].CompareTo(dcq_cache[b]));
 
 			var rows_dcq_cache = new double[this.rows.Length][];
 			for (int rowID = 0; rowID < this.rows.Length; ++rowID) {
@@ -100,9 +103,11 @@ namespace natix.SimilaritySearch
 					res.Push(_c, dcq);
 					_row_dcq_cache [i] = dcq;
 				}
+				cost += _m;
 			}
 
-			for (int centerID = 0; centerID < m; ++centerID) {
+			// for (int centerID = 0; centerID < m; ++centerID) {
+			foreach (var centerID in order) {
 				var node = this.leader.clusters [centerID];
 				var center = this.DB [node.objID];
 				var dcq = dcq_cache [centerID];
@@ -117,30 +122,31 @@ namespace natix.SimilaritySearch
 				for (int i = 0; i < l; ++i) {
 					if (Math.Abs (dcq - node.dists [i]) <= rad) {
 						var docID = node.objects [i];
-						this.VerifyInRows(docID, q, res, rad, rows_dcq_cache);
+						cost += this.VerifyInRows(docID, q, res, rad, rows_dcq_cache);
 					}
 				}
 			}
 			return res;
 		}
 
-		void VerifyInRows(int objID, object q, IResult res, double rad, double[][] cache)
+		int VerifyInRows(int objID, object q, IResult res, double rad, double[][] cache)
 		{
 			for (int rowID = 0; rowID < this.rows.Length; ++rowID) {
 				var row = this.rows [rowID];
 				var c = row.CT [objID];
 				if (c == -1) {
-					return;
+					return 0;
 				}
 				double dcq = cache [rowID] [c];
 
 				if (Math.Abs (dcq - row.DT[objID]) > rad) {
-					return;
+					return 0;
 				}
 			}
 
 			var d = this.DB.Dist(q, this.DB[objID]);
 			res.Push (objID, d);
+			return 1;
 		}
 	}
 }

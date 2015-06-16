@@ -39,7 +39,7 @@ namespace natix.SimilaritySearch
 
 			LongParallel.For (0, num_indexes, (int i) => {
 				_rows [i] = new ANNI ();
-				_rows [i].Build (db, expected_k, step_width, num_indexes, pivsel);
+				_rows [i].InternalBuild (expected_k, 0, 1, db, step_width, num_indexes, pivsel);
 			}, num_tasks);
 //			ParallelOptions ops = new ParallelOptions ();
 //			ops.MaxDegreeOfParallelism = num_processors;
