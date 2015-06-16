@@ -243,19 +243,16 @@
     <Compile Include="Indexes\OPT\MetricGraphGreedy.cs" />
     <Compile Include="Indexes\OPT\LocalSearchGallopingBeam.cs" />
     <Compile Include="Indexes\ANNI\NANNI.cs" />
-    <Compile Include="Indexes\ANNI\PNANNI.cs" />
     <Compile Include="Indexes\ANNI\MANNIv2.cs" />
     <Compile Include="Indexes\ANNI\ANNI.cs" />
     <Compile Include="Indexes\ANNI\MANNIv3.cs" />
     <Compile Include="Indexes\ANNI\MANNIAbstract.cs" />
-    <Compile Include="Indexes\ANNI\TNANNI.cs" />
     <Compile Include="Indexes\ANNI\TANNI.cs" />
-    <Compile Include="Indexes\ANNI\TMANNIAbstract.cs" />
-    <Compile Include="Indexes\ANNI\DMANNI.cs" />
     <Compile Include="Indexes\ANNI\MANNI.cs" />
-    <Compile Include="Indexes\ANNI\TMANNI.cs" />
-    <Compile Include="Indexes\ANNI\NANNIS.cs" />
-    <Compile Include="Indexes\ANNI\TNANNIS.cs" />
+    <Compile Include="Indexes\ANNI\ANNISetup.cs" />
+    <Compile Include="Indexes\ANNI\XNANNI.cs" />
+    <Compile Include="Indexes\ANNI\XMANNIAbstract.cs" />
+    <Compile Include="Indexes\ANNI\XMANNI.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
