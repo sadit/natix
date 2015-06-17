@@ -30,7 +30,7 @@ namespace natix.SimilaritySearch
 		{
 		}
 		
-		public virtual void Build (MetricDB db, int expected_k, int num_indexes, int num_tasks = -1)
+		public virtual void Build (MetricDB db, ANNISetup setup, int num_indexes, int num_tasks = -1)
 		{
 			// num_build_processors = 1;
 			this.DB = db;
@@ -41,7 +41,7 @@ namespace natix.SimilaritySearch
 
 			this.leader = new NANNI();
 			var ilc = new ANNI();
-			var cost = ilc.InternalBuild (expected_k, 0, 1, db, 256/num_indexes+1, 2, pivsel);
+			var cost = ilc.InternalBuild (setup, 0, 1.0, db, 2);
 			this.leader.Build (ilc);
 			int m = this.leader.clusters.Count;
 			double review_prob = cost.SingleCost - m; review_prob /= this.DB.Count;
@@ -56,7 +56,7 @@ namespace natix.SimilaritySearch
 			Console.WriteLine ("====> num_indexes: {0}", num_indexes);
 			LongParallel.For (0, num_indexes, (int i) => {
 				this.rows [i] = new ANNI ();
-				this.rows [i].InternalBuild (expected_k, m, review_prob, db, 256/num_indexes+1, num_indexes, pivsel);
+				this.rows [i].InternalBuild (setup, m, review_prob, db, num_indexes);
 			}, num_tasks);
 		}
 	}

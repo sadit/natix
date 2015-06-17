@@ -53,7 +53,7 @@ namespace natix.SimilaritySearch
 
 		public void Build (MetricDB db, ANNISetup setup)
 		{
-			this.InternalBuild(setup.ExpectedK, 0, 1, db, setup.StepWidth, 1, setup.Selector);
+			this.InternalBuild(setup, 0, 1.0, db, 1);
 		}
 
 		public struct BuildSearchCost {
@@ -61,16 +61,17 @@ namespace natix.SimilaritySearch
 			public double SingleCost;
 		}
 
-		public BuildSearchCost InternalBuild(int k, int leader_num_centers, double leader_review_prob, MetricDB db, int step_width, int num_indexes, PivotSelector pivsel)
+		public BuildSearchCost InternalBuild(ANNISetup setup, int leader_num_centers, double leader_review_prob, MetricDB db,  int num_indexes)
 		{
 			this.DB = db;
 			int n = this.DB.Count;
-			++k; // since we use items from the database as training queries
+			var k = 1 + setup.ExpectedK; // since we use items from the database as training queries
+			var step_width = setup.StepWidth / num_indexes + 1;
 			this.ACT = new List<int>(256); // just a starting size
 			this.CT = new int[n];
 			this.DT = new double[n];
 			var pivID = 0;
-			this.ACT.Add (pivsel.NextPivot());
+			this.ACT.Add (setup.Selector.NextPivot());
 			var piv = this.DB [this.ACT[pivID]];
 
 			for (int docID = 0; docID < n; ++docID) {
@@ -80,13 +81,10 @@ namespace natix.SimilaritySearch
 			}
 
 			var cache = new Dictionary<int, double> (256);
-			var qlist = new List<int>();
-			for (int i = 0; i < 64; ++i) {
-				qlist.Add(pivsel.NextPivot());
-			}
+			var qlist = RandomSets.GetRandomSubSet(setup.NumberQueries, this.DB.Count);
 
-			Console.WriteLine("xxxxxxxx BEGIN> db: {0}, step: {1}, indexes: {2}, k: {3}, timestamp: {4}",
-				Path.GetFileName(this.DB.Name), step_width, num_indexes, k, DateTime.Now);
+			Console.WriteLine("xxxxxxxx BEGIN> db: {0}, setup: {1}, indexes: {2}, timestamp: {3}",
+				Path.GetFileName(this.DB.Name), setup, num_indexes, DateTime.Now);
 
 			int iterID = 0;
 			var cost = new BuildSearchCost ();
@@ -98,7 +96,7 @@ namespace natix.SimilaritySearch
 				for (int s = 0; s < step_width; ++s, ++iterID) {
 					cache.Clear ();
 					pivID = this.ACT.Count;
-					var nextPivot = pivsel.NextPivot ();
+					var nextPivot = setup.Selector.NextPivot ();
 					this.ACT.Add (nextPivot);
 					this.CT [nextPivot] = -1;
 					this.DT [nextPivot] = 0.0;
@@ -130,7 +128,7 @@ namespace natix.SimilaritySearch
 				foreach (var qID in qlist) {
 					cost.SingleCost += this.InternalSearchKNN(this.DB[qID], new Result(k));
 				}
-				cost.SingleCost /= qlist.Count;
+				cost.SingleCost /= qlist.Length;
 				double _prob = (Math.Max(cost.SingleCost - iterID, 1.0)) / n;
 				_prob = Math.Pow (_prob, num_indexes) * leader_review_prob;
 
@@ -142,7 +140,7 @@ namespace natix.SimilaritySearch
 				curr = (long)cost.CompositeCost;
 				Console.WriteLine("---- {0}/{1}> #pivots: {2}, prev-cost: {3}, curr-cost: {4}, #idx: {5}, timestamp: {6}",
 					this, Path.GetFileName(this.DB.Name), this.ACT.Count, prev, curr, num_indexes, DateTime.Now);
-			} while (prev > curr * 1.001);
+			} while (prev > curr * (1.0 + setup.AlphaStop));
 			return cost;
 		}
 

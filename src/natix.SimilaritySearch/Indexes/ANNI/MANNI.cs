@@ -29,17 +29,15 @@ namespace natix.SimilaritySearch
 		{
 		}
 
-		public void Build (MetricDB db, int expected_k, int num_indexes, int num_tasks = -1)
+		public void Build (MetricDB db, ANNISetup setup, int num_indexes, int num_tasks = -1)
 		{
 			// num_build_processors = 1;
 			this.DB = db;
 			var _rows = new ANNI[num_indexes];
-			var pivsel = new PivotSelectorRandom(db.Count, RandomSets.GetRandom());
-			var step_width = 512 / num_indexes + 8;
 
 			LongParallel.For (0, num_indexes, (int i) => {
 				_rows [i] = new ANNI ();
-				_rows [i].InternalBuild (expected_k, 0, 1, db, step_width, num_indexes, pivsel);
+				_rows [i].InternalBuild (setup, 0, 1.0, db, num_indexes);
 			}, num_tasks);
 //			ParallelOptions ops = new ParallelOptions ();
 //			ops.MaxDegreeOfParallelism = num_processors;
