@@ -23,13 +23,13 @@ using System.Threading.Tasks;
 
 namespace natix.SimilaritySearch
 {
-	public class MANNIv3 : MANNIAbstract
+	public class FANNI : MANNIAbstract
 	{
-		public MANNIv3 ()
+		public FANNI ()
 		{
 		}
 		
-		public virtual void Build (MetricDB db, int expected_k)
+		public virtual void Build (MetricDB db, ANNISetup setup)
 		{
 			// num_build_processors = 1;
 			this.DB = db;
@@ -39,7 +39,7 @@ namespace natix.SimilaritySearch
 
 			this.leader = new NANNI();
 			var ilc = new ANNI();
-			var cost = ilc.InternalBuild (expected_k, 0, 1, db, 128, 2, pivsel);
+			var cost = ilc.InternalBuild (setup, 0, 1.0, db, 2);
 			this.leader.Build (ilc);
 			int m = this.leader.clusters.Count;
 			double review_prob = cost.SingleCost - m; review_prob /= this.DB.Count;
@@ -48,7 +48,7 @@ namespace natix.SimilaritySearch
 			while (review_prob > min_prob) {
 				var row = new ANNI ();
 				rows.Add (row);
-				var _cost = row.InternalBuild (expected_k, m, review_prob, db, 128, 2, pivsel);
+				var _cost = row.InternalBuild (setup, m, review_prob, db, 2);
 				var _m = row.ACT.Count;
 				review_prob *= (_cost.SingleCost - _m) / this.DB.Count;
 			}
