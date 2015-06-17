@@ -162,12 +162,12 @@ namespace ExactIndexes
 				});
 			}
 
-			if (setup.CORES == 1) {
+			if (setup.SPAWN == 1) {
 				foreach (var action in actionlist) {
 					action.Invoke ();
 				}
 			} else {
-				LongParallel.ForEach (actionlist, (a) => a.Invoke (), setup.CORES);
+				LongParallel.ForEach (actionlist, (a) => a.Invoke (), setup.SPAWN);
 			}
 			if (setup.ExecuteSearch) {
 				Commands.Check (arglist);
@@ -360,7 +360,8 @@ namespace ExactIndexes
 				{"dnanni", "Run DNANNI", v => setup.ExecuteDNANNI = true},
 				{"help|h", "Shows this help message", v => ops.WriteOptionDescriptions(Console.Out)},
 				{"skip-search", v => setup.ExecuteSearch = false},
-				{"cores=", v => setup.CORES = int.Parse(v)},
+				{"cores=", "Maximum number of threads/cores to be used by independent indexes", v => setup.CORES = int.Parse(v)},
+				{"spawn=", "Number of running concurrent tests (indexes), notice that a spawn != 1 could produce weird values on performance variables sensed by self tunning indexes", v => setup.SPAWN = int.Parse(v)},
 			};
 
 			ops.Parse(args);

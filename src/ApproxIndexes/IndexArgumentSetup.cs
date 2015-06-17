@@ -25,6 +25,7 @@ namespace ApproxIndexes
 		public string BINARY_DATABASE = null;
 		public string QUERIES = null;
 		public int CORES = -1;
+		public int SPAWN = 1;
 		public double QARG = -30;
 		public bool ExecuteParameterless = false;
 		public bool ExecuteSearch = true; // a false value means "only create indexes"
