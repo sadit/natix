@@ -35,6 +35,7 @@ namespace ExactIndexes
 		public bool ExecuteSATDistal = false;
 		public bool ExecuteSATRandom = false;
 		public bool ExecuteVPT = false;
+		public bool ExecuteFANNI = false;
 
 		public List<int> LAESA = new List<int>();
 		public List<int> BNC = new List<int> ();

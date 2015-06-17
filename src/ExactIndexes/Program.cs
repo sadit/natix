@@ -355,6 +355,7 @@ namespace ExactIndexes
 				{"sat", "Run Legacy SAT", v => setup.ExecuteSAT = true},
 				{"satrandom", "Run Random SAT", v => setup.ExecuteSATRandom = true},
 				{"satdistal", "Run Distal SAT", v => setup.ExecuteSATDistal = true},
+				{"fanni", "Run FANNI", v => setup.ExecuteFANNI = true},
 				{"nanni", "Run NANNI", v => setup.ExecuteNANNI = true},
 				{"tnanni", "Run TNANNI", v => setup.ExecuteTNANNI = true},
 				{"dnanni", "Run DNANNI", v => setup.ExecuteDNANNI = true},

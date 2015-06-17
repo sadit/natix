@@ -245,7 +245,6 @@
     <Compile Include="Indexes\ANNI\NANNI.cs" />
     <Compile Include="Indexes\ANNI\MANNIv2.cs" />
     <Compile Include="Indexes\ANNI\ANNI.cs" />
-    <Compile Include="Indexes\ANNI\MANNIv3.cs" />
     <Compile Include="Indexes\ANNI\MANNIAbstract.cs" />
     <Compile Include="Indexes\ANNI\TANNI.cs" />
     <Compile Include="Indexes\ANNI\MANNI.cs" />
@@ -253,6 +252,7 @@
     <Compile Include="Indexes\ANNI\XNANNI.cs" />
     <Compile Include="Indexes\ANNI\XMANNIAbstract.cs" />
     <Compile Include="Indexes\ANNI\XMANNI.cs" />
+    <Compile Include="Indexes\ANNI\FANNI.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

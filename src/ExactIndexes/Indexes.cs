@@ -141,6 +141,20 @@ namespace ExactIndexes
 			return resname;
 		}
 
+		public static string ExecuteFANNI(IndexArgumentSetup setup, string nick)
+		{
+			var idxname = String.Format ("{0}/Index.FANNI", nick);
+			var resname = Execute (setup, nick, idxname, (db) => {
+				var nilc = new XNANNI ();
+				var annisetup = new ANNISetup(db.Count, (int)Math.Abs(setup.QARG));
+				// var annisetup = new ANNISetup(new PivotSelectorRandom(db.Count), (int)Math.Abs(setup.QARG), 0.001, 128, 64);
+				nilc.Build (db, annisetup, false);
+				return nilc;
+			});
+
+			return resname;
+		}
+
 		public static string ExecuteTMANNI(IndexArgumentSetup setup, string nick, int num_indexes)
 		{
 			var idxname = String.Format ("{0}/Index.TMANNI.{1}", nick, num_indexes);		
@@ -171,7 +185,8 @@ namespace ExactIndexes
 			var idxname = String.Format ("{0}/Index.MANNI.{1}", nick, num_indexes);		
 			return Execute (setup, nick, idxname, (db) => {
 				var milc = new MANNI ();
-				milc.Build (db, (int)Math.Abs(setup.QARG), num_indexes, setup.CORES);
+				var annisetup = new ANNISetup(db.Count, (int)Math.Abs(setup.QARG));
+				milc.Build (db, annisetup, num_indexes, setup.CORES);
 				return milc;
 			});
 		}
@@ -181,7 +196,8 @@ namespace ExactIndexes
 			var idxname = String.Format ("{0}/Index.MANNIv2.{1}", nick, num_indexes);		
 			return Execute (setup, nick, idxname, (db) => {
 				var milc = new MANNIv2 ();
-				milc.Build (db, (int)Math.Abs(setup.QARG), num_indexes, setup.CORES);
+				var annisetup = new ANNISetup(db.Count, (int)Math.Abs(setup.QARG));
+				milc.Build (db, annisetup, num_indexes, setup.CORES);
 				return milc;
 			});
 		}
@@ -190,8 +206,9 @@ namespace ExactIndexes
 		{
 			var idxname = String.Format ("{0}/Index.MANNIv3", nick);
 			return Execute (setup, nick, idxname, (db) => {
-				var milc = new MANNIv3 ();
-				milc.Build (db, (int)Math.Abs(setup.QARG));
+				var milc = new FANNI ();
+				var annisetup = new ANNISetup(db.Count, (int)Math.Abs(setup.QARG));
+				milc.Build (db, annisetup);
 				return milc;
 			});
 		}
