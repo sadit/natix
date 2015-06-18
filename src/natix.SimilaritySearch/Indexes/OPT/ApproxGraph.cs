@@ -109,6 +109,26 @@ namespace natix.SimilaritySearch
 				this.Vertices [docID] = vertex;
 			}
 		}
+
+
+		public void TrimAt(int n)
+		{
+			for (int i = 0; i < n; ++i) {
+				var vertex = this.Vertices [i];
+				var list = new List<int> ();
+				foreach (var v in vertex) {
+					if (v < n) {
+						list.Add (v);
+					}
+				}
+				vertex.Clear ();
+				vertex.AddRange (list);
+			}
+
+			while (this.Vertices.Count > n) {
+				this.Vertices.RemoveAt (this.Vertices.Count - 1);
+			}
+		}
 		
 		public void Build(MetricDB db, short arity, short repeat_search)
 		{

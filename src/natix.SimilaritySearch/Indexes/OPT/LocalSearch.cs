@@ -88,6 +88,25 @@ namespace natix.SimilaritySearch
 			}
 		}
 
+		public void TrimAt(int n)
+		{
+			for (int i = 0; i < n; ++i) {
+				var vertex = this.Vertices [i];
+				var list = new List<int> ();
+				foreach (var v in vertex) {
+					if (v < n) {
+						list.Add (v);
+					}
+				}
+				vertex.Clear ();
+				vertex.AddRange (list);
+			}
+
+			for (int i = n; i < this.Vertices.Count; ++i) {
+				this.Vertices.Remove(i);
+			}
+		}
+
 		protected void InternalBuild (MetricDB db, int neighbors)
 		{
 			this.DB = db;
