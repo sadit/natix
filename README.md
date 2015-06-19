@@ -31,6 +31,7 @@ algorithms. However, it should be robust enough to be of use in application
 development.
 
 
+
 Requirements:
 -------------
 
@@ -42,6 +43,20 @@ Natix has few dependencies
 
 New: We added a Makefile that compile libraries and programs. Moreover, it fetches dependencies using nuget.exe
      Using this Makefile is also of use for environments without an IDE
+
+Building:
+-----------
+At the main directory execute
+
+`make all`
+
+It will fetch `nuget.exe` from NuGet and then get Json from Newtonsoft (using nuget.exe). After that, it will build the natix libraries and programs:
+
+- `natix.dll` and `natix.SimilaritySearch.dll`
+- `ExactIndexes.exe` and `ApproxIndexes.exe`
+
+You can copy all `*.dll` and `*.exe` to your working directory or work directly in the current path
+
 
 How to use it:
 --------------
@@ -65,6 +80,7 @@ we provide the `summary.py` script.
 
 All these tools are not intended to be exhaustive for the available
 indexes, and should be adjusted as need.
+
 
 
 Queries and Databases:
