@@ -359,7 +359,11 @@ namespace ExactIndexes
 				{"nanni", "Run NANNI", v => setup.ExecuteNANNI = true},
 				{"tnanni", "Run TNANNI", v => setup.ExecuteTNANNI = true},
 				{"dnanni", "Run DNANNI", v => setup.ExecuteDNANNI = true},
-				{"help|h", "Shows this help message", v => ops.WriteOptionDescriptions(Console.Out)},
+				{"help|h", "Shows this help message", v => {
+						ops.WriteOptionDescriptions(Console.Out);
+						System.Environment.Exit(0);
+					}
+				},
 				{"skip-search", v => setup.ExecuteSearch = false},
 				{"cores=", "Maximum number of threads/cores to be used by independent indexes", v => setup.CORES = int.Parse(v)},
 				{"spawn=", "Number of running concurrent tests (indexes), notice that a spawn != 1 could produce weird values on performance variables sensed by self tunning indexes", v => setup.SPAWN = int.Parse(v)},
@@ -367,12 +371,15 @@ namespace ExactIndexes
 
 			ops.Parse(args);
 			if (setup.DATABASE == null) {
+				ops.WriteOptionDescriptions (Console.Out);
 				throw new ArgumentNullException ("The database argument is mandatory");
 			}
 			if (setup.QUERIES == null) {
+				ops.WriteOptionDescriptions (Console.Out);
 				throw new ArgumentNullException ("The queries argument is mandatory");
 			}
 			if (stype == null) {
+				ops.WriteOptionDescriptions (Console.Out);
 				throw new ArgumentNullException ("The stype argument is mandatory");
 			}
 			if (stype.StartsWith("VEC")) {

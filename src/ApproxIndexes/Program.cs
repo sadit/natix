@@ -346,12 +346,15 @@ namespace ApproxIndexes
 			};
 			ops.Parse(args);
 			if (setup.DATABASE == null) {
+				ops.WriteOptionDescriptions (Console.Out);
 				throw new ArgumentNullException ("The database argument is mandatory");
 			}
 			if (setup.QUERIES == null) {
+				ops.WriteOptionDescriptions (Console.Out);
 				throw new ArgumentNullException ("The queries argument is mandatory");
 			}
 			if (stype == null) {
+				ops.WriteOptionDescriptions (Console.Out);
 				throw new ArgumentNullException ("The stype argument is mandatory");
 			}
 			if (stype.StartsWith("VEC")) {
