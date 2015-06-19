@@ -338,7 +338,7 @@ namespace ApproxIndexes
 				{"skip-search", v => setup.ExecuteSearch = false},
 				{"cores=", v => setup.CORES = int.Parse(v)},
 				{"spawn=", "Number of running concurrent tests (indexes), notice that a spawn != 1 could produce weird values on performance variables sensed by self tunning indexes", v => setup.SPAWN = int.Parse(v)},
-				{"help|h", "Shows this help message", v => {
+				{"help|h", "Shows this help", v => {
 						ops.WriteOptionDescriptions(Console.Out);
 						System.Environment.Exit(0);
 					}

@@ -359,7 +359,7 @@ namespace ExactIndexes
 				{"nanni", "Run NANNI", v => setup.ExecuteNANNI = true},
 				{"tnanni", "Run TNANNI", v => setup.ExecuteTNANNI = true},
 				{"dnanni", "Run DNANNI", v => setup.ExecuteDNANNI = true},
-				{"help|h", "Shows this help message", v => {
+				{"help|h", "Shows this help", v => {
 						ops.WriteOptionDescriptions(Console.Out);
 						System.Environment.Exit(0);
 					}

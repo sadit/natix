@@ -40,6 +40,8 @@ Natix has few dependencies
 * [JSon.NET](http://www.newtonsoft.com) from Newtonsoft
 * (Optional) An IDE to modify the C# project Monodevelop / XamarinStudio / #Develop / VisualStudio. We use [monodevelop](http://www.monodevelop.com) in Linux.
 
+New: We added a Makefile that compile libraries and programs. Moreover, it fetches dependencies using nuget.exe
+     Using this Makefile is also of use for environments without an IDE
 
 How to use it:
 --------------
