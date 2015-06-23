@@ -27,8 +27,10 @@ namespace ApproxIndexes
 		public int CORES = -1;
 		public int SPAWN = 1;
 		public double QARG = -30;
-		public bool ExecuteParameterless = false;
+		//		public bool ExecuteParameterless = false;
 		public bool ExecuteSearch = true; // a false value means "only create indexes"
+
+		public bool ExecuteSequential = false;
 
 		public List<int> OPTSEARCH_RESTARTS = new List<int> ();
 		public List<int> OPTSEARCH_NEIGHBORS = new List<int> ();

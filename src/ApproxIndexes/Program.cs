@@ -46,7 +46,9 @@ namespace ApproxIndexes
 				String.Format("Tab.{0}.{1}.qarg={2}.json", nick, Path.GetFileName(setup.QUERIES), setup.QARG)
 				*/
 
-			arglist.Enqueue (Indexes.ExecuteSeq (setup, nick));
+			if (setup.ExecuteSequential) {
+			    arglist.Enqueue (Indexes.ExecuteSeq (setup, nick));
+			}
 			var actionlist = new List<Action> ();
 			// arglist.Add (Indexes.ExecuteSATApprox (setup, nick));
 			// arglist.Add (Indexes.ExecuteSATForest (setup, nick));
@@ -322,6 +324,7 @@ namespace ApproxIndexes
 				{"qtype=", "Type of query, negative values should be integers and means for near neighbor search, positive values means for range search. Defaults to -30 (30NN)", v => setup.QARG = Double.Parse(v)},
 				{"prefix=", "Experiment's prefix", v => setup.PREFIX = v},
 				{"neighborhoodhash-instances=", "Run NeighborhoodHash with the given maximum number of hashes", v => LoadList(v, setup.NeighborhoodHash_MaxInstances)},
+				{"seq", "Execute sequential search", v => setup.ExecuteSequential = true},
 				{"neighborhoodhash-recall=", "Create NeighborhoodHash to achieve the given recalls", v => LoadList(v, setup.NeighborhoodHash_ExpectedRecall)},
 
 				{"optsearch-beamsize=", "Run LOCALSEARCH with the given list of beam sizes", v => LoadList(v, setup.OPTSEARCH_BEAMSIZE)},
