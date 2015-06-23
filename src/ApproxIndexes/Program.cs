@@ -18,6 +18,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Collections;
 using System.Collections.Concurrent;
+using Newtonsoft.Json;
 using NDesk.Options;
 
 using natix;
@@ -323,18 +324,45 @@ namespace ApproxIndexes
 				{"stype=", "The type of the metric space. Valid names VEC, VEC_Int16, VEC_UInt16, VEC_Int8, VEC_UInt8, DOC, SEQ-ED, STR-ED, WIKTIONARY, COPHIR282", v => stype = v},
 				{"qtype=", "Type of query, negative values should be integers and means for near neighbor search, positive values means for range search. Defaults to -30 (30NN)", v => setup.QARG = Double.Parse(v)},
 				{"prefix=", "Experiment's prefix", v => setup.PREFIX = v},
-				{"neighborhoodhash-instances=", "Run NeighborhoodHash with the given maximum number of hashes", v => LoadList(v, setup.NeighborhoodHash_MaxInstances)},
 				{"seq", "Execute sequential search", v => setup.ExecuteSequential = true},
-				{"neighborhoodhash-recall=", "Create NeighborhoodHash to achieve the given recalls", v => LoadList(v, setup.NeighborhoodHash_ExpectedRecall)},
+				{"neighborhoodhash=", "Run MutiNeighborhoodHash with the given parameters (recalllist:instanceslist)",
+					v => {
+						var _args = v.Split(':');
+						LoadList(_args[0], setup.NeighborhoodHash_ExpectedRecall);
+						LoadList(_args[1], setup.NeighborhoodHash_MaxInstances);
+					}
+				},
+				/*{"neighborhoodhash-recall=", "Run MutiNeighborhoodHash with the given parameters (recalllist:instanceslist)", v => LoadList(v, setup.NeighborhoodHash_ExpectedRecall)},
+				{"neighborhoodhash-instances=", "Run NeighborhoodHash with the given maximum number of hashes", v => LoadList(v, setup.NeighborhoodHash_MaxInstances)},*/
+				{"optsearch=", "Run optsearch with the specified parameters (in format neighborlist:beamsizelist:restartlist)",
+					v => {
+						var _args = v.Split(':');
+						LoadList(_args[0], setup.OPTSEARCH_NEIGHBORS);
+						LoadList(_args[1], setup.OPTSEARCH_BEAMSIZE);
+						LoadList(_args[2], setup.OPTSEARCH_RESTARTS);
+					}
+				},
 
-				{"optsearch-beamsize=", "Run LOCALSEARCH with the given list of beam sizes", v => LoadList(v, setup.OPTSEARCH_BEAMSIZE)},
+				{"knr=", "Run knr with the specified parameters (format numrefslist:kbuildlist:maxcandlist[:nappksearchlist])",
+					v => {
+						var _args = v.Split(':');
+						LoadList(_args[0], setup.KNR_NUMREFS);
+						LoadList(_args[1], setup.KNR_KBUILD);
+						LoadList(_args[2], setup.KNR_MAXCANDRATIO);
+						if (_args.Length == 4) {
+							LoadList(_args[3], setup.KNR_KSEARCH);
+						}
+					}
+				},
+
+				/*{"optsearch-beamsize=", "Run LOCALSEARCH with the given list of beam sizes", v => LoadList(v, setup.OPTSEARCH_BEAMSIZE)},
 				{"optsearch-restarts=", "Run LOCALSEARCH/APG with the given list of restarts", v => LoadList(v, setup.OPTSEARCH_RESTARTS)},
-				{"optsearch-neighbors=", "Run LOCALSEARCH/APG with the given list of outgoing degrees (neighbors)", v => LoadList(v, setup.OPTSEARCH_NEIGHBORS)},
+				{"optsearch-neighbors=", "Run LOCALSEARCH/APG with the given list of outgoing degrees (neighbors)", v => LoadList(v, setup.OPTSEARCH_NEIGHBORS)},*/
 
-				{"knr-numrefs=", "Run KnrSeq methods with the given list of # refs (comma sep.)",	v => LoadList(v, setup.KNR_NUMREFS)},
+				/*{"knr-numrefs=", "Run KnrSeq methods with the given list of # refs (comma sep.)",	v => LoadList(v, setup.KNR_NUMREFS)},
 				{"knr-kbuild=", "Create KnrSeq indexes with the given list of near references (comma sep.)",	v => LoadList(v, setup.KNR_KBUILD)},
 				{"napp-ksearch=", "Search KnrSeq indexes with the given list of near references (comma sep.)",	v => LoadList(v, setup.KNR_KSEARCH)},
-				{"knr-maxcand=", "Run KnrSeq methods with the given list of maxcand (comma sep., ratio)",	v => LoadList(v, setup.KNR_MAXCANDRATIO)},
+				{"knr-maxcand=", "Run KnrSeq methods with the given list of maxcand (comma sep., ratio)",	v => LoadList(v, setup.KNR_MAXCANDRATIO)},*/
 				{"lsh-instances=", "A list of instances to for LSH_FloatVectors (comma sep.)", v=> LoadList(v, setup.LSHFloatVector_INDEXES)},
 				{"lsh-width=", "A list of widths for LSH_FloatVectors (comma sep.)", v=> LoadList(v, setup.LSHFloatVector_SAMPLES)},
 				//{"parameterless", "Enable parameterless indexes", v => setup.ExecuteParameterless = true},
