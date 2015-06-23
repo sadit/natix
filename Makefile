@@ -18,17 +18,17 @@ nuget.exe:
 	wget https://nuget.org/nuget.exe
 
 Newtonsoft.Json.dll: nuget.exe
-	mono nuget.exe install Newtonsoft.Json -Version 6.0.8
-	cp Newtonsoft.Json.6.0.8/lib/net40/Newtonsoft.Json.* .
+	mono nuget.exe install Newtonsoft.Json
+	cp Newtonsoft.Json*/lib/net40/Newtonsoft.Json.* .
 
-natix.dll:
+natix.dll: $(SRCNATIX)
 	$(MCS) $(SRCNATIX) -target:library -out:natix.dll
 
-natix.SimilaritySearch.dll:  Newtonsoft.Json.dll
+natix.SimilaritySearch.dll:  Newtonsoft.Json.dll $(SRCSIMSEARCH)
 	$(MCS) $(SRCSIMSEARCH) -target:library -out:natix.SimilaritySearch.dll -r:natix.dll -r:Newtonsoft.Json.dll
 
-ExactIndexes.exe: natix.dll natix.SimilaritySearch.dll
+ExactIndexes.exe: natix.dll natix.SimilaritySearch.dll $(SRCEXACT)
 	$(MCS) $(SRCEXACT) -target:exe -out:ExactIndexes.exe -r:natix.dll -r:natix.SimilaritySearch.dll -r:Newtonsoft.Json.dll
 
-ApproxIndexes.exe: natix.dll natix.SimilaritySearch.dll
+ApproxIndexes.exe: natix.dll natix.SimilaritySearch.dll $(SRCAPPROX)
 	$(MCS) $(SRCAPPROX) -target:exe -out:ApproxIndexes.exe -r:natix.dll -r:natix.SimilaritySearch.dll -r:Newtonsoft.Json.dll
